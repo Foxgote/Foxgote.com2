@@ -1,79 +1,76 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+color-scheme: dark;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --bg: #0a0b0d;         
+  --panel: #14110e;       
+  --panel-2: #1a1511;       
+  --text: rgba(255, 244, 230, 0.92);  
+  --muted: rgba(255, 220, 180, 0.55);
+  --hairline: rgba(255, 200, 140, 0.10);
+  --accent: #d4a15e;    
+
+background-color: var(--bg);
+color: var(--text);
+
+text-rendering: optimizeLegibility;
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+
+*{
+  box-sizing:border-box
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+html,body{
+  height:100%;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  margin:0;
+  min-width:320px;
+  display:block;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+a{
+  color-inherit;
+  text-decoration:none;
+  color: var(--muted);
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
+a:hover {
+  color: var(--accent);
 }
 
 #app {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 2.5rem 1,75rem;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+h1 {
+  margin: 0 0 0.75rem 0;
+  font-size: 3rem;
+  line-height:1.05;
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin: 0.5rem 0 0 0;
+  color; var(--muted);
+}
+
+.box {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  padding:2rem;
+}
+
+
+
+
+
 }
