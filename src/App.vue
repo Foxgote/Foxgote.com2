@@ -25,7 +25,7 @@ function updateScrollEffect() {
   const blurPx = p * 18
   const dim = 0.15 + p * 0.55
 
-  // keep nav alpha responding to actual progress (not cutoff)
+
   const navAlpha = clamp01((progress - 0.15) / 0.35)
 
   const parallax_speed = 0.12
@@ -163,7 +163,7 @@ onBeforeUnmount(() => {
 .barlite-inner{
   grid-row: 1;
   align-self: end;
-  padding: 0 1.75rem 3rem; /* keep your spacing */
+  padding: 0 1.75rem 3rem; 
 }
 
 .barlite-card {
@@ -179,7 +179,7 @@ onBeforeUnmount(() => {
 /* Shared nav look */
 .nav {
   height: var(--nav-h);
-  padding: 0;                 /* <- this is the big one */
+  padding: 0;             
   display: flex;
   align-items: center;        /* vertical centering */
   backdrop-filter: blur(14px);
@@ -213,7 +213,7 @@ onBeforeUnmount(() => {
 /* Bottom-of-hero nav */
 .nav-hero{
   grid-row: 2;
-  position: relative;   /* stop using absolute */
+  position: relative; 
   left: auto;
   right: auto;
   bottom: auto;
