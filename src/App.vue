@@ -11,6 +11,7 @@ const routeTransitionName = ref("route-slide-left")
 
 let rafId = 0
 let io = null
+let scrollEffectEnabled = false
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 const routeOrder = {
@@ -58,14 +59,22 @@ function updateScrollEffect() {
 }
 
 function onScroll() {
+  if (!scrollEffectEnabled) return
   cancelAnimationFrame(rafId)
   rafId = requestAnimationFrame(updateScrollEffect)
+}
+
+function onNavClick(event) {
+  if (!(event.target instanceof Element)) return
+  if (!event.target.closest(".nav-link")) return
+  if (scrollEffectEnabled) return
+  scrollEffectEnabled = true
+  onScroll()
 }
 
 onMounted(() => {
   document.documentElement.style.setProperty("--sticky-on", "0")
   document.documentElement.style.setProperty("--sticky-pe", "none")
-  updateScrollEffect()
   window.addEventListener("scroll", onScroll, { passive: true })
   window.addEventListener("resize", onScroll)
 
@@ -97,7 +106,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="app">
     <!-- Sticky nav (hidden until hero nav scrolls away) -->
-    <nav id="site-nav" class="nav nav-sticky">
+    <nav id="site-nav" class="nav nav-sticky" @click.capture="onNavClick">
       <div class="nav-inner">
         <RouterLink to="/" class="nav-link">Home</RouterLink>
         <RouterLink to="/services" class="nav-link">Services</RouterLink>
@@ -123,7 +132,7 @@ onBeforeUnmount(() => {
       <div ref="navAnchorRef" class="nav-anchor" aria-hidden="true"></div>
 
       <!-- Hero-bottom nav -->
-      <nav class="nav nav-hero">
+      <nav class="nav nav-hero" @click.capture="onNavClick">
         <div class="nav-inner">
           <RouterLink to="/" class="nav-link">Home</RouterLink>
           <RouterLink to="/services" class="nav-link">Services</RouterLink>
@@ -183,135 +192,54 @@ onBeforeUnmount(() => {
   background: rgba(0, 0, 0, var(--barlite-dim, 0.2));
   z-index: -1;
 }
-
 .welcome-sign {
-  --blur-pad: 120px;
-  --blue-soft-opacity: 0.4;
-  --blue-medium-opacity: 0.72;
-  --blue-tube-opacity: 0.85;
-  --blue-hue-rotate: 100deg;
-  --blue-saturation: 100%;
-  --blue-brightness: 89%;
-  --slab-left: 6%;
-  --slab-top: 16%;
-  --slab-width: 88%;
-  --slab-height: 60%;
-  --slab-radius: 999px;
-  --slab-transform: translate(-1%, 18%) scale(1.08, 1.2);
-  --slab-fill-opacity: 0.58;
-  --slab-frost-opacity: 0.22;
-  --slab-blur: 30px;
-  --slab-border-color: transparent;
-  --slab-shadow: 0 0 80px rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   grid-row: 1;
   justify-self: start;
   align-self: end;
-  display: block;
+  width: clamp(280px, 45vw, 600px);
+  margin: 0 1rem 2rem;
+  padding: 0.75rem 1rem;
+  padding-left: clamp(0.45rem, 1.4vw, 1rem);
   position: relative;
+  pointer-events: none;
   isolation: isolate;
-  margin: 0;
-  margin-left: calc(1.75rem - var(--blur-pad));
-  margin-bottom: calc(3rem - var(--blur-pad));
-  padding: var(--blur-pad);
-  width: clamp(360px, 62vw, 1120px);
-  max-width: calc(100% - 3.5rem - var(--blur-pad) - var(--blur-pad));
-  box-sizing: content-box;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.welcome-sign::before,
-.welcome-sign::after {
-  content: "";
-  position: absolute;
-  left: var(--slab-left);
-  top: var(--slab-top);
-  width: var(--slab-width);
-  height: var(--slab-height);
-  border-radius: var(--slab-radius);
-  transform-origin: center;
-  transform: var(--slab-transform);
-  pointer-events: none;
 }
 
 .welcome-sign::before {
-  z-index: 0;
-  background:
-    radial-gradient(120% 90% at 50% 45%, rgba(0, 0, 0, calc(var(--slab-fill-opacity) + var(--nav-alpha, 0) * 0.15)) 0%, rgba(0, 0, 0, calc(var(--slab-fill-opacity) * 0.78)) 55%, rgba(0, 0, 0, 0) 100%),
-    radial-gradient(90% 70% at 22% 52%, rgba(0, 0, 0, calc(var(--slab-fill-opacity) * 0.45)) 0%, rgba(0, 0, 0, 0) 100%),
-    radial-gradient(90% 70% at 78% 48%, rgba(0, 0, 0, calc(var(--slab-fill-opacity) * 0.45)) 0%, rgba(0, 0, 0, 0) 100%);
-  border: 1px solid var(--slab-border-color);
-  box-shadow: var(--slab-shadow);
-  filter: blur(var(--slab-blur));
-}
-
-.welcome-sign::after {
-  z-index: 0;
-  background: radial-gradient(120% 100% at 50% 50%, rgba(0, 0, 0, var(--slab-frost-opacity)) 0%, rgba(0, 0, 0, calc(var(--slab-frost-opacity) * 0.55)) 46%, rgba(0, 0, 0, 0) 100%);
-  filter: blur(calc(var(--slab-blur) + 10px));
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  transform: scale(1.5,2);
+  filter:blur(60px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .welcome-sign :deep(svg) {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: auto;
-  overflow: visible;
-  transform-origin: left bottom;
-  transform: translate(-6%, 15%) scale(0.8);
-  position: relative;
-  z-index: 1;
 }
-
-.welcome-sign :deep(#yellow-solid1) {
-  filter: url("#yellow-soft-glow");
-  opacity: 0.56;
-}
-
-.welcome-sign :deep(#yellow-solid2) {
-  filter: url("#yellow-medium-glow");
-  opacity: 0.92;
-}
-
-.welcome-sign :deep(#yellow-tube) {
-  filter: none;
-  opacity: 1;
-}
-
-.welcome-sign :deep(#blue-solid1) {
-  filter: url("#blue-soft-glow") hue-rotate(var(--blue-hue-rotate)) saturate(var(--blue-saturation)) brightness(var(--blue-brightness));
-  opacity: var(--blue-soft-opacity);
-}
-
-.welcome-sign :deep(#blue-solid2) {
-  filter: url("#blue-medium-glow") hue-rotate(var(--blue-hue-rotate)) saturate(var(--blue-saturation)) brightness(var(--blue-brightness));
-  opacity: var(--blue-medium-opacity);
-}
-
-.welcome-sign :deep(#blue-tube) {
-  filter: hue-rotate(var(--blue-hue-rotate)) saturate(var(--blue-saturation)) brightness(var(--blue-brightness));
-  opacity: var(--blue-tube-opacity);
-}
-
-.welcome-sign :deep(#blue-solid1),
-.welcome-sign :deep(#blue-solid2),
-.welcome-sign :deep(#blue-tube) {
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: translate(0.5%,-10%) scale(-1.05, 1);
-}
-
 .welcome-sign :deep(#yellow-solid1),
-.welcome-sign :deep(#yellow-solid2),
-.welcome-sign :deep(#yellow-tube) {
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: translate(2.4%,-14%) scale(1.2, 1.3);
+.welcome-sign :deep(#blue-solid1) {
+  filter: blur(36px);
+  opacity: 0.3;
 }
-
-@media (max-width: 900px) {
-  .welcome-sign {
-    width: min(94vw, 1120px);
-  }
+.welcome-sign :deep(#yellow-solid2),
+.welcome-sign :deep(#blue-solid2) {
+  filter: blur(10.5px);
+    opacity: 0.7;
+}
+.welcome-sign :deep(#blue-tube){
+  filter: brightness(90%);
 }
 
 /* Shared nav look */
