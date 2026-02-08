@@ -12,6 +12,7 @@ const routeTransitionName = ref("route-slide-left")
 let rafId = 0
 let io = null
 let scrollEffectEnabled = false
+let anchorIsIntersecting = true
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 const routeOrder = {
@@ -64,17 +65,40 @@ function onScroll() {
   rafId = requestAnimationFrame(updateScrollEffect)
 }
 
+function applyStickyState() {
+  const stickyActive = scrollEffectEnabled && !anchorIsIntersecting
+  document.documentElement.style.setProperty("--sticky-on", stickyActive ? "1" : "0")
+  document.documentElement.style.setProperty("--sticky-pe", stickyActive ? "auto" : "none")
+}
+
+function resetReloadScrollPosition() {
+  const navEntries = typeof performance.getEntriesByType === "function"
+    ? performance.getEntriesByType("navigation")
+    : []
+  const navEntry = navEntries.length > 0 ? navEntries[0] : null
+  const legacyReload = performance.navigation?.type === 1
+  if (navEntry?.type !== "reload" && !legacyReload) return
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual"
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+  })
+}
+
 function onNavClick(event) {
   if (!(event.target instanceof Element)) return
   if (!event.target.closest(".nav-link")) return
   if (scrollEffectEnabled) return
   scrollEffectEnabled = true
+  applyStickyState()
   onScroll()
 }
 
 onMounted(() => {
-  document.documentElement.style.setProperty("--sticky-on", "0")
-  document.documentElement.style.setProperty("--sticky-pe", "none")
+  scrollEffectEnabled = false
+  anchorIsIntersecting = true
+  applyStickyState()
+  resetReloadScrollPosition()
   window.addEventListener("scroll", onScroll, { passive: true })
   window.addEventListener("resize", onScroll)
 
@@ -84,9 +108,8 @@ onMounted(() => {
 
     const NAV_H = 64
 io = new IntersectionObserver(([entry]) => {
-  const on = entry.isIntersecting ? "0" : "1"
-  document.documentElement.style.setProperty("--sticky-on", on)
-  document.documentElement.style.setProperty("--sticky-pe", entry.isIntersecting ? "none" : "auto")
+  anchorIsIntersecting = entry.isIntersecting
+  applyStickyState()
 }, {
   threshold: 0,
   rootMargin: `-${NAV_H}px 0px 0px 0px`
@@ -214,8 +237,9 @@ onBeforeUnmount(() => {
   inset: 0;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.6);
-  transform: scale(1.5,2);
-  filter:blur(60px);
+  transform: translate(-5%,0) scale(1.6,1.6);
+
+  filter:blur(40px);
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
   z-index: -1;
   pointer-events: none;
@@ -241,7 +265,11 @@ onBeforeUnmount(() => {
 .welcome-sign :deep(#blue-tube){
   filter: brightness(90%);
 }
-
+.welcome-sign :deep(#blue-solid2),
+.welcome-sign :deep(#blue-solid1),
+.welcome-sign :deep(#blue-tube){
+    transform: translate(-6.7%,-15%);
+}
 /* Shared nav look */
 .nav {
   height: var(--nav-h);
