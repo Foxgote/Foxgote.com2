@@ -251,7 +251,7 @@ onBeforeUnmount(() => {
   display: block;
   width: 100%;
   height: auto;
-  transform: translate(-5%,5%) scale(1.1,1.1);
+  transform: translate(-5%,23%) scale(1.1,1.1);
 }
 .welcome-sign :deep(#yellow-solid1),
 .welcome-sign :deep(#blue-solid1) {
