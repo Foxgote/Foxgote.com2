@@ -441,17 +441,44 @@ onBeforeUnmount(() => {
   margin: 0 auto;
   padding: 0 1.75rem;
   display: flex;
-  gap: 1.7rem;
+  gap: 2.6rem;
   justify-content: center;
   align-items: center;    
 }
 .nav-link {
+  position: relative;
   opacity: 0.7;
+  padding-bottom: 0.2rem;
+  text-decoration: none;
   transition: opacity 150ms ease, color 150ms ease;
 }
 
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.24rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent, #d4a15e);
+  transform: scaleX(0);
+  transform-origin: var(--underline-origin-x, 50%) 50%;
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-inner .nav-link:nth-child(1) { --underline-origin-x: 0%; }
+.nav-inner .nav-link:nth-child(3) { --underline-origin-x: 50%; }
+.nav-inner .nav-link:nth-child(5) { --underline-origin-x: 100%; }
+
 .nav-link:hover {
   opacity: 1;
+}
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after,
+.nav-link.router-link-active::after {
+  transform: scaleX(1);
 }
 
 .nav-link.router-link-active {
