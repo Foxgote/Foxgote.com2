@@ -223,7 +223,7 @@ onBeforeUnmount(() => {
   justify-self: start;
   align-self: end;
   width: clamp(280px, 45vw, 600px);
-  margin: 0 1rem 2rem;
+  margin: 0 0rem 0rem;
   padding: 0.75rem 1rem;
   padding-left: clamp(0.45rem, 1.4vw, 1rem);
   position: relative;
@@ -251,6 +251,7 @@ onBeforeUnmount(() => {
   display: block;
   width: 100%;
   height: auto;
+  transform: translate(-5%,5%) scale(1.1,1.1);
 }
 .welcome-sign :deep(#yellow-solid1),
 .welcome-sign :deep(#blue-solid1) {
