@@ -13,12 +13,16 @@ const routes = [
   { path: "/projects", name: "Projects", component: Projects },
 ]
 
-function smoothScrollToElement(selector, duration = 800) {
+function smoothScrollToElement(selector, duration = 800, offset = 0) {
   const el = document.querySelector(selector)
   if (!el) return
 
+  const VIEWPORT_TOP_PAD = 64
   const start = window.scrollY
-  const end = el.getBoundingClientRect().top + window.scrollY
+  const rawEnd = el.getBoundingClientRect().top + window.scrollY - VIEWPORT_TOP_PAD - offset
+  const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+  const end = Math.max(0, Math.min(rawEnd, maxTop))
+  if (end <= start) return
   const distance = end - start
   let startTime = null
 
@@ -57,7 +61,7 @@ export default createRouter({
     if (isInitialNavigation && isReloadNavigation()) return { left: 0, top: 0 }
     if (isInitialNavigation) return { left: 0, top: 0 }
 
-    requestAnimationFrame(() => smoothScrollToElement("#content-top", 1500))
+    requestAnimationFrame(() => smoothScrollToElement(".welcome-sign", 2000, -178))
     return false
   },
 })

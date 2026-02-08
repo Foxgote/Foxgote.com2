@@ -6,13 +6,18 @@ import welcomeSignMarkup from "./assets/img/welcomesign2.svg?raw"
 
 const barliteRef = ref(null)
 const navAnchorRef = ref(null)
+const welcomeSignRef = ref(null)
 const route = useRoute()
 const routeTransitionName = ref("route-slide-left")
+
+const NEON_FLICKER_DURATION_MS = 1800
+const ENABLE_NEON_FLICKER = false
 
 let rafId = 0
 let io = null
 let scrollEffectEnabled = false
 let anchorIsIntersecting = true
+let neonFlickerTimeoutId = 0
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 const routeOrder = {
@@ -60,7 +65,11 @@ function updateScrollEffect() {
 }
 
 function onScroll() {
-  if (!scrollEffectEnabled) return
+  if (!scrollEffectEnabled) {
+    if ((window.scrollY || 0) <= 0) return
+    scrollEffectEnabled = true
+    applyStickyState()
+  }
   cancelAnimationFrame(rafId)
   rafId = requestAnimationFrame(updateScrollEffect)
 }
@@ -88,15 +97,33 @@ function resetReloadScrollPosition() {
 function onNavClick(event) {
   if (!(event.target instanceof Element)) return
   if (!event.target.closest(".nav-link")) return
+  if (ENABLE_NEON_FLICKER) triggerNeonFlicker()
   if (scrollEffectEnabled) return
   scrollEffectEnabled = true
   applyStickyState()
   onScroll()
 }
 
+function triggerNeonFlicker() {
+  const sign = welcomeSignRef.value
+  if (!sign) return
+
+  sign.classList.remove("is-flickering")
+  // Force reflow so the CSS animation restarts on repeated clicks.
+  void sign.offsetWidth
+  sign.classList.add("is-flickering")
+
+  window.clearTimeout(neonFlickerTimeoutId)
+  neonFlickerTimeoutId = window.setTimeout(() => {
+    sign.classList.remove("is-flickering")
+    neonFlickerTimeoutId = 0
+  }, NEON_FLICKER_DURATION_MS)
+}
+
 onMounted(() => {
   scrollEffectEnabled = false
   anchorIsIntersecting = true
+  welcomeSignRef.value?.classList.remove("is-flickering")
   applyStickyState()
   resetReloadScrollPosition()
   window.addEventListener("scroll", onScroll, { passive: true })
@@ -122,6 +149,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("scroll", onScroll)
   window.removeEventListener("resize", onScroll)
   cancelAnimationFrame(rafId)
+  window.clearTimeout(neonFlickerTimeoutId)
   if (io) io.disconnect()
 })
 </script>
@@ -145,6 +173,7 @@ onBeforeUnmount(() => {
       :style="{ '--barlite-url': `url(${barlite})` }"
     >
       <figure
+        ref="welcomeSignRef"
         class="welcome-sign"
         role="img"
         aria-label="Welcome neon sign"
@@ -168,7 +197,6 @@ onBeforeUnmount(() => {
 
     <main class="content">
         <div id="content-top" aria-hidden="true"></div>
-        <div id="sticky-spacer" aria-hidden="true"></div>
       <RouterView v-slot="{ Component, route: currentRoute }">
         <Transition :name="routeTransitionName" mode="out-in">
           <component :is="Component" :key="currentRoute.fullPath" />
@@ -243,6 +271,8 @@ onBeforeUnmount(() => {
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
   z-index: -1;
   pointer-events: none;
+  opacity: 0;
+  animation: slab-fade-in 1500ms ease-out 250ms both;
 }
 
 .welcome-sign :deep(svg) {
@@ -252,6 +282,8 @@ onBeforeUnmount(() => {
   width: 100%;
   height: auto;
   transform: translate(-5%,23%) scale(1.1,1.1);
+  opacity: 0;
+  animation: sign-fade-in 2000ms ease-out 1700ms both;
 }
 .welcome-sign :deep(#yellow-solid1),
 .welcome-sign :deep(#blue-solid1) {
@@ -263,6 +295,7 @@ onBeforeUnmount(() => {
   filter: blur(10.5px);
     opacity: 0.7;
 }
+.welcome-sign :deep(#yellow-tube),
 .welcome-sign :deep(#blue-tube){
   filter: brightness(90%);
 }
@@ -270,6 +303,127 @@ onBeforeUnmount(() => {
 .welcome-sign :deep(#blue-solid1),
 .welcome-sign :deep(#blue-tube){
     transform: translate(-6.7%,-15%);
+}
+
+.welcome-sign.is-flickering :deep(#blue-tube) {
+  animation: neon-flicker-high 1800ms linear both;
+}
+
+.welcome-sign.is-flickering :deep(#blue-solid2),
+.welcome-sign.is-flickering :deep(#blue-medium-glow) {
+  animation: neon-flicker-mid 1800ms linear both;
+}
+
+.welcome-sign.is-flickering :deep(#blue-solid1),
+.welcome-sign.is-flickering :deep(#blue-soft-glow) {
+  animation: neon-flicker-low 1800ms linear both;
+}
+
+.welcome-sign.is-flickering :deep(#yellow-flicker-a),
+.welcome-sign.is-flickering :deep(#yellow-flicker-b) {
+  animation: neon-flicker-high 1800ms linear both;
+}
+
+.welcome-sign.is-flickering :deep(#yellow-flicker-c) {
+  animation: neon-flicker-mid 1800ms linear both;
+}
+
+.welcome-sign.is-flickering :deep(#yellow-flicker-d) {
+  animation: neon-flicker-low 1800ms linear both;
+}
+
+@keyframes slab-fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-5%, 6%) scale(1.45, 1.45);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-5%, 0) scale(1.6, 1.6);
+  }
+}
+
+@keyframes sign-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes neon-flicker-high {
+  0% { opacity: 1; }
+  9% { opacity: 0.08; }
+  12% { opacity: 1; }
+  18% { opacity: 0.3; }
+  24% { opacity: 1; }
+  32% { opacity: 0.1; }
+  34% { opacity: 1; }
+  47% { opacity: 0.15; }
+  49% { opacity: 1; }
+  63% { opacity: 0.35; }
+  66% { opacity: 1; }
+  74% { opacity: 0.2; }
+  77% { opacity: 1; }
+  88% { opacity: 0.45; }
+  90% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes neon-flicker-mid {
+  0% { opacity: 0.7; }
+  9% { opacity: 0.04; }
+  12% { opacity: 0.7; }
+  18% { opacity: 0.2; }
+  24% { opacity: 0.7; }
+  32% { opacity: 0.08; }
+  34% { opacity: 0.7; }
+  47% { opacity: 0.12; }
+  49% { opacity: 0.7; }
+  63% { opacity: 0.22; }
+  66% { opacity: 0.7; }
+  74% { opacity: 0.14; }
+  77% { opacity: 0.7; }
+  88% { opacity: 0.3; }
+  90% { opacity: 0.7; }
+  100% { opacity: 0.7; }
+}
+
+@keyframes neon-flicker-low {
+  0% { opacity: 0.3; }
+  9% { opacity: 0.02; }
+  12% { opacity: 0.3; }
+  18% { opacity: 0.1; }
+  24% { opacity: 0.3; }
+  32% { opacity: 0.03; }
+  34% { opacity: 0.3; }
+  47% { opacity: 0.07; }
+  49% { opacity: 0.3; }
+  63% { opacity: 0.12; }
+  66% { opacity: 0.3; }
+  74% { opacity: 0.08; }
+  77% { opacity: 0.3; }
+  88% { opacity: 0.2; }
+  90% { opacity: 0.3; }
+  100% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-sign::before,
+  .welcome-sign :deep(svg),
+  .welcome-sign.is-flickering :deep(#blue-tube),
+  .welcome-sign.is-flickering :deep(#blue-solid2),
+  .welcome-sign.is-flickering :deep(#blue-medium-glow),
+  .welcome-sign.is-flickering :deep(#blue-solid1),
+  .welcome-sign.is-flickering :deep(#blue-soft-glow),
+  .welcome-sign.is-flickering :deep(#yellow-flicker-a),
+  .welcome-sign.is-flickering :deep(#yellow-flicker-b),
+  .welcome-sign.is-flickering :deep(#yellow-flicker-c),
+  .welcome-sign.is-flickering :deep(#yellow-flicker-d) {
+    animation: none !important;
+    opacity: 1;
+  }
 }
 /* Shared nav look */
 .nav {
@@ -369,7 +523,4 @@ onBeforeUnmount(() => {
   transform: translateX(-30px);
 }
 
-.sticky-spacer {
-  height: var(--nav-h);
-}
 </style>
