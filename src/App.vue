@@ -354,58 +354,48 @@ onBeforeUnmount(() => {
 
 @keyframes neon-flicker-high {
   0% { opacity: 1; }
-  9% { opacity: 0.08; }
-  12% { opacity: 1; }
-  18% { opacity: 0.3; }
-  24% { opacity: 1; }
-  32% { opacity: 0.1; }
-  34% { opacity: 1; }
-  47% { opacity: 0.15; }
-  49% { opacity: 1; }
-  63% { opacity: 0.35; }
-  66% { opacity: 1; }
-  74% { opacity: 0.2; }
-  77% { opacity: 1; }
-  88% { opacity: 0.45; }
-  90% { opacity: 1; }
+  8% { opacity: 0.9; }
+  16% { opacity: 0.45; }
+  22% { opacity: 0; }
+  29% { opacity: 0.82; }
+  37% { opacity: 0.28; }
+  43% { opacity: 0; }
+  54% { opacity: 0.92; }
+  66% { opacity: 0.33; }
+  74% { opacity: 0; }
+  85% { opacity: 0.88; }
+  92% { opacity: 0.55; }
   100% { opacity: 1; }
 }
 
 @keyframes neon-flicker-mid {
   0% { opacity: 0.7; }
-  9% { opacity: 0.04; }
-  12% { opacity: 0.7; }
-  18% { opacity: 0.2; }
-  24% { opacity: 0.7; }
-  32% { opacity: 0.08; }
-  34% { opacity: 0.7; }
-  47% { opacity: 0.12; }
-  49% { opacity: 0.7; }
-  63% { opacity: 0.22; }
-  66% { opacity: 0.7; }
-  74% { opacity: 0.14; }
-  77% { opacity: 0.7; }
-  88% { opacity: 0.3; }
-  90% { opacity: 0.7; }
+  10% { opacity: 0.6; }
+  18% { opacity: 0.24; }
+  24% { opacity: 0; }
+  32% { opacity: 0.62; }
+  42% { opacity: 0.18; }
+  48% { opacity: 0; }
+  59% { opacity: 0.65; }
+  70% { opacity: 0.2; }
+  78% { opacity: 0; }
+  89% { opacity: 0.62; }
+  94% { opacity: 0.38; }
   100% { opacity: 0.7; }
 }
 
 @keyframes neon-flicker-low {
   0% { opacity: 0.3; }
-  9% { opacity: 0.02; }
-  12% { opacity: 0.3; }
-  18% { opacity: 0.1; }
-  24% { opacity: 0.3; }
-  32% { opacity: 0.03; }
-  34% { opacity: 0.3; }
-  47% { opacity: 0.07; }
-  49% { opacity: 0.3; }
-  63% { opacity: 0.12; }
-  66% { opacity: 0.3; }
-  74% { opacity: 0.08; }
-  77% { opacity: 0.3; }
-  88% { opacity: 0.2; }
-  90% { opacity: 0.3; }
+  10% { opacity: 0.22; }
+  19% { opacity: 0.1; }
+  26% { opacity: 0; }
+  35% { opacity: 0.27; }
+  46% { opacity: 0.09; }
+  53% { opacity: 0; }
+  64% { opacity: 0.29; }
+  75% { opacity: 0.11; }
+  82% { opacity: 0; }
+  92% { opacity: 0.26; }
   100% { opacity: 0.3; }
 }
 
