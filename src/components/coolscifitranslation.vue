@@ -1,16 +1,21 @@
 <script setup>
-import { computed, onMounted, ref } from "vue"
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
 
 const PHRASE_CARD_WIDTH = 150
 const PHRASE_CARD_HEIGHT = 70
 const GLYPH_CARD_HEIGHT = 70
 const SENTENCE_GLYPH_HEIGHT = 52
 const PHRASES_PER_PAGE = 24
+const FIRST_GLYPH_FLICKER_STEPS = 20
+const FIRST_GLYPH_FLICKER_DURATION_MS = 1000
 
 const isLoading = ref(true)
 const errorText = ref("")
 const manifest = ref(null)
 const currentPage = ref(1)
+const firstGlyphFlickerFile = ref("")
+const firstGlyphFlickerVisible = ref(false)
+let firstGlyphFlickerTimeoutIds = []
 
 function withBase(path) {
   const base = String(import.meta.env.BASE_URL || "/")
@@ -59,6 +64,22 @@ const allItems = computed(() => {
   }
   return manifest.value.items
 })
+
+const allGlyphFiles = computed(() =>
+  allItems.value.flatMap((item) =>
+    (Array.isArray(item?.glyphs) ? item.glyphs : [])
+      .map((glyph) => String(glyph?.file || ""))
+      .filter(Boolean),
+  ),
+)
+
+const canTriggerFirstGlyphFlicker = computed(
+  () =>
+    !isLoading.value &&
+    !errorText.value &&
+    pagedGlyphEntries.value.length > 0 &&
+    allGlyphFiles.value.length > 0,
+)
 
 const totalPages = computed(() => {
   const total = Math.ceil(allItems.value.length / PHRASES_PER_PAGE)
@@ -142,8 +163,75 @@ function previousPage() {
   }
 }
 
+function clearFirstGlyphFlickerTimers() {
+  firstGlyphFlickerTimeoutIds.forEach((timeoutId) => {
+    clearTimeout(timeoutId)
+  })
+  firstGlyphFlickerTimeoutIds = []
+}
+
+function hideFirstGlyphFlicker() {
+  firstGlyphFlickerVisible.value = false
+  firstGlyphFlickerFile.value = ""
+}
+
+function pickRandomGlyphFile() {
+  const files = allGlyphFiles.value
+  if (!files.length) {
+    return ""
+  }
+  return files[Math.floor(Math.random() * files.length)]
+}
+
+function runFirstGlyphFlicker() {
+  clearFirstGlyphFlickerTimers()
+  hideFirstGlyphFlicker()
+
+  if (!pagedGlyphEntries.value.length || !allGlyphFiles.value.length) {
+    return
+  }
+
+  const stepDurationMs = Math.max(
+    1,
+    Math.floor(FIRST_GLYPH_FLICKER_DURATION_MS / FIRST_GLYPH_FLICKER_STEPS),
+  )
+
+  for (let step = 0; step < FIRST_GLYPH_FLICKER_STEPS; step++) {
+    const timeoutId = setTimeout(() => {
+      firstGlyphFlickerFile.value = pickRandomGlyphFile()
+      firstGlyphFlickerVisible.value = true
+    }, step * stepDurationMs)
+
+    firstGlyphFlickerTimeoutIds.push(timeoutId)
+  }
+
+  const despawnTimeoutId = setTimeout(() => {
+    hideFirstGlyphFlicker()
+  }, FIRST_GLYPH_FLICKER_DURATION_MS)
+
+  firstGlyphFlickerTimeoutIds.push(despawnTimeoutId)
+}
+
+watch(
+  pagedGlyphEntries,
+  (entries) => {
+    if (!entries.length) {
+      clearFirstGlyphFlickerTimers()
+      hideFirstGlyphFlicker()
+      return
+    }
+    clearFirstGlyphFlickerTimers()
+    hideFirstGlyphFlicker()
+  },
+  { immediate: true },
+)
+
 onMounted(() => {
   void loadManifest()
+})
+
+onBeforeUnmount(() => {
+  clearFirstGlyphFlickerTimers()
 })
 </script>
 
@@ -249,17 +337,41 @@ onMounted(() => {
 
       <div class="pool-block">
         <h3>Single Slice Sentence</h3>
+        <div class="sentence-controls">
+          <button
+            type="button"
+            class="flicker-button"
+            :disabled="!canTriggerFirstGlyphFlicker"
+            @click="runFirstGlyphFlicker"
+          >
+            Trigger First Glyph Flicker
+          </button>
+        </div>
         <div class="sentence-box">
           <p class="sentence-line">
-            <img
-              v-for="entry in pagedGlyphEntries"
+            <span
+              v-for="(entry, index) in pagedGlyphEntries"
               :key="`sentence-${entry.phraseId}-${entry.glyphIndex}`"
-              :src="poolAsset(entry.file)"
-              :alt="`${entry.phraseId} glyph-${String(entry.glyphIndex).padStart(2, '0')}`"
-              loading="lazy"
-              class="sentence-glyph"
-              :style="sentenceGlyphStyle(entry)"
-            />
+              class="sentence-glyph-slot"
+            >
+              <img
+                :src="poolAsset(entry.file)"
+                :alt="`${entry.phraseId} glyph-${String(entry.glyphIndex).padStart(2, '0')}`"
+                loading="lazy"
+                class="sentence-glyph"
+                :class="{ 'sentence-glyph-hidden': index === 0 }"
+                :style="sentenceGlyphStyle(entry)"
+              />
+              <img
+                v-if="index === 0 && firstGlyphFlickerVisible && firstGlyphFlickerFile"
+                :src="poolAsset(firstGlyphFlickerFile)"
+                alt=""
+                aria-hidden="true"
+                loading="eager"
+                class="sentence-glyph sentence-glyph-flicker"
+                :style="sentenceGlyphStyle(entry)"
+              />
+            </span>
           </p>
         </div>
       </div>
@@ -393,6 +505,26 @@ onMounted(() => {
   background: #111820;
 }
 
+.sentence-controls {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.flicker-button {
+  border: 1px solid #2f4f73;
+  background: #142435;
+  color: #b9d2ef;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.flicker-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .sentence-line {
   margin: 0;
   display: flex;
@@ -402,10 +534,27 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+.sentence-glyph-slot {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+}
+
 .sentence-glyph {
   display: block;
   flex: 0 0 auto;
   object-fit: contain;
   object-position: center center;
+}
+
+.sentence-glyph-hidden {
+  opacity: 0;
+}
+
+.sentence-glyph-flicker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
 }
 </style>
