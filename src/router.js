@@ -5,6 +5,12 @@ import Portfolio from "./components/3Portfolio.vue"
 import Contact from "./components/4Contact.vue"
 import Projects from "./components/5Projects.vue"
 
+const VIEWPORT_TOP_PAD_PX = 64
+const ANCHOR_GATE_EPSILON_PX = 2
+const MIN_SCROLL_DISTANCE_PX = 4
+
+let smoothScrollRafId = 0
+
 const routes = [
   { path: "/", name: "Home", component: Home },
   { path: "/services", name: "Services", component: Services },
@@ -13,17 +19,35 @@ const routes = [
   { path: "/projects", name: "Projects", component: Projects },
 ]
 
+function stopSmoothScrollAnimation() {
+  if (!smoothScrollRafId) return
+  cancelAnimationFrame(smoothScrollRafId)
+  smoothScrollRafId = 0
+}
+
+function isAtOrBelowNavAnchor(selector = ".nav-anchor") {
+  const anchor = document.querySelector(selector)
+  if (!anchor) return false
+
+  const anchorDocY = anchor.getBoundingClientRect().top + window.scrollY
+  const gateLineDocY = window.scrollY + VIEWPORT_TOP_PAD_PX
+  return gateLineDocY >= anchorDocY - ANCHOR_GATE_EPSILON_PX
+}
+
 function smoothScrollToElement(selector, duration = 800, offset = 0) {
   const el = document.querySelector(selector)
   if (!el) return
 
-  const VIEWPORT_TOP_PAD = 64
+  stopSmoothScrollAnimation()
+
   const start = window.scrollY
-  const rawEnd = el.getBoundingClientRect().top + window.scrollY - VIEWPORT_TOP_PAD - offset
+  const rawEnd = el.getBoundingClientRect().top + window.scrollY - VIEWPORT_TOP_PAD_PX - offset
   const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
   const end = Math.max(0, Math.min(rawEnd, maxTop))
   if (end <= start) return
+
   const distance = end - start
+  if (distance < MIN_SCROLL_DISTANCE_PX) return
   let startTime = null
 
   function easeInOutQuad(t) {
@@ -36,10 +60,14 @@ function smoothScrollToElement(selector, duration = 800, offset = 0) {
     const progress = Math.min(elapsed / duration, 1)
     const ease = easeInOutQuad(progress)
     window.scrollTo(0, start + distance * ease)
-    if (progress < 1) requestAnimationFrame(scroll)
+    if (progress < 1) {
+      smoothScrollRafId = requestAnimationFrame(scroll)
+      return
+    }
+    smoothScrollRafId = 0
   }
 
-  requestAnimationFrame(scroll)
+  smoothScrollRafId = requestAnimationFrame(scroll)
 }
 
 function isReloadNavigation() {
@@ -61,7 +89,16 @@ export default createRouter({
     if (isInitialNavigation && isReloadNavigation()) return { left: 0, top: 0 }
     if (isInitialNavigation) return { left: 0, top: 0 }
 
-    requestAnimationFrame(() => smoothScrollToElement(".welcome-sign", 2000, -178))
+    // Do not trigger smooth hero scroll when we're already at/below the hero nav anchor.
+    if (isAtOrBelowNavAnchor()) {
+      stopSmoothScrollAnimation()
+      return false
+    }
+
+    requestAnimationFrame(() => {
+      if (isAtOrBelowNavAnchor()) return
+      smoothScrollToElement(".welcome-sign", 2000, -178)
+    })
     return false
   },
 })

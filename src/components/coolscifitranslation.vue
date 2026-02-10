@@ -6,16 +6,25 @@ const PHRASE_CARD_HEIGHT = 70
 const GLYPH_CARD_HEIGHT = 70
 const SENTENCE_GLYPH_HEIGHT = 52
 const PHRASES_PER_PAGE = 24
-const FIRST_GLYPH_FLICKER_STEPS = 20
-const FIRST_GLYPH_FLICKER_DURATION_MS = 1000
+const TIMESCAN_GLYPHS_PER_SECOND = 30
+const SENTENCE_GLYPH_FLICKER_STEPS = 4
+const SENTENCE_GLYPH_EFFECT_DURATION_MS = 300
+const SENTENCE_GLYPH_GAP_PX = 3
+const GLYPH_RATIO_BUCKET_SCALE = 100
+const SENTENCE_OVERLAY_TEXT =
+  "This is a test statement meant to show after the effect has passed. This is a test statement meant to show after the effect has passed. This is a test statement meant to show after the effect has passed."
 
 const isLoading = ref(true)
 const errorText = ref("")
 const manifest = ref(null)
 const currentPage = ref(1)
-const firstGlyphFlickerFile = ref("")
-const firstGlyphFlickerVisible = ref(false)
-let firstGlyphFlickerTimeoutIds = []
+const sentenceFlickerFiles = ref([])
+const sentenceFlickerLastFiles = ref([])
+const sentenceFlickerVisible = ref([])
+const sentenceConsumedHidden = ref([])
+const sentenceOverlayRevealPx = ref(0)
+let sentenceTimescanRunId = 0
+let sentenceTimescanTimeoutIds = []
 
 function withBase(path) {
   const base = String(import.meta.env.BASE_URL || "/")
@@ -65,15 +74,39 @@ const allItems = computed(() => {
   return manifest.value.items
 })
 
-const allGlyphFiles = computed(() =>
+function glyphAspectRatio(entry) {
+  const width = Math.max(1, toNumber(entry?.width, 1))
+  const height = Math.max(1, toNumber(entry?.height, 1))
+  return width / height
+}
+
+const allGlyphEntries = computed(() =>
   allItems.value.flatMap((item) =>
     (Array.isArray(item?.glyphs) ? item.glyphs : [])
-      .map((glyph) => String(glyph?.file || ""))
-      .filter(Boolean),
+      .map((glyph) => ({
+        file: String(glyph?.file || ""),
+        width: toNumber(glyph?.width, 1),
+        height: toNumber(glyph?.height, 1),
+      }))
+      .filter((glyph) => Boolean(glyph.file)),
   ),
 )
 
-const canTriggerFirstGlyphFlicker = computed(
+const allGlyphFiles = computed(() => allGlyphEntries.value.map((glyph) => glyph.file))
+
+const glyphRatioBuckets = computed(() => {
+  const buckets = new Map()
+  allGlyphEntries.value.forEach((glyph) => {
+    const key = Math.round(glyphAspectRatio(glyph) * GLYPH_RATIO_BUCKET_SCALE)
+    if (!buckets.has(key)) {
+      buckets.set(key, [])
+    }
+    buckets.get(key).push(glyph.file)
+  })
+  return buckets
+})
+
+const canTriggerSentenceTimescan = computed(
   () =>
     !isLoading.value &&
     !errorText.value &&
@@ -151,6 +184,64 @@ function sentenceGlyphStyle(entry) {
   }
 }
 
+function sentenceGlyphMaskStyle(entry, file) {
+  const maskUrl = `url("${poolAsset(file)}")`
+  return {
+    ...sentenceGlyphStyle(entry),
+    maskImage: maskUrl,
+    WebkitMaskImage: maskUrl,
+    maskRepeat: "no-repeat",
+    WebkitMaskRepeat: "no-repeat",
+    maskPosition: "center center",
+    WebkitMaskPosition: "center center",
+    maskSize: "contain",
+    WebkitMaskSize: "contain",
+  }
+}
+
+const sentenceSlotWidthsPx = computed(() =>
+  pagedGlyphEntries.value.map(
+    (entry) => glyphRenderSize(entry, SENTENCE_GLYPH_HEIGHT).renderWidth,
+  ),
+)
+
+const sentenceScanTotalWidthPx = computed(() => {
+  if (!sentenceSlotWidthsPx.value.length) {
+    return 0
+  }
+  const glyphWidths = sentenceSlotWidthsPx.value.reduce((sum, width) => sum + width, 0)
+  const gapWidths = Math.max(0, sentenceSlotWidthsPx.value.length - 1) * SENTENCE_GLYPH_GAP_PX
+  return glyphWidths + gapWidths
+})
+
+const sentenceRevealWidthsByIndexPx = computed(() => {
+  const revealWidths = []
+  let consumedWidth = 0
+
+  sentenceSlotWidthsPx.value.forEach((width, index) => {
+    consumedWidth += width
+    revealWidths.push(consumedWidth + index * SENTENCE_GLYPH_GAP_PX)
+  })
+
+  return revealWidths
+})
+
+const sentenceStageStyle = computed(() => ({
+  width: `${Math.max(1, sentenceScanTotalWidthPx.value)}px`,
+}))
+
+const sentenceOverlayRevealStyle = computed(() => {
+  const clippedWidth = Math.max(
+    0,
+    Math.min(sentenceOverlayRevealPx.value, sentenceScanTotalWidthPx.value),
+  )
+
+  return {
+    width: `${clippedWidth}px`,
+    opacity: clippedWidth > 0 ? 1 : 0,
+  }
+})
+
 function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
@@ -163,65 +254,175 @@ function previousPage() {
   }
 }
 
-function clearFirstGlyphFlickerTimers() {
-  firstGlyphFlickerTimeoutIds.forEach((timeoutId) => {
-    clearTimeout(timeoutId)
-  })
-  firstGlyphFlickerTimeoutIds = []
+function hideAllSentenceFlickers() {
+  sentenceFlickerVisible.value = Array.from(
+    { length: pagedGlyphEntries.value.length },
+    () => false,
+  )
+  sentenceFlickerFiles.value = Array.from(
+    { length: pagedGlyphEntries.value.length },
+    () => "",
+  )
 }
 
-function hideFirstGlyphFlicker() {
-  firstGlyphFlickerVisible.value = false
-  firstGlyphFlickerFile.value = ""
+function resetSentenceFlickerLastFiles() {
+  sentenceFlickerLastFiles.value = Array.from(
+    { length: pagedGlyphEntries.value.length },
+    () => "",
+  )
 }
 
-function pickRandomGlyphFile() {
-  const files = allGlyphFiles.value
-  if (!files.length) {
+function resetSentenceConsumedHidden() {
+  sentenceConsumedHidden.value = Array.from(
+    { length: pagedGlyphEntries.value.length },
+    () => false,
+  )
+}
+
+function revealSentenceOverlayThroughIndex(index) {
+  const revealWidth = sentenceRevealWidthsByIndexPx.value[index] || 0
+  sentenceOverlayRevealPx.value = Math.max(sentenceOverlayRevealPx.value, revealWidth)
+}
+
+function pickRandomGlyphFileForEntry(entry, previousFile = "") {
+  const allFiles = allGlyphFiles.value
+  if (!allFiles.length) {
     return ""
   }
-  return files[Math.floor(Math.random() * files.length)]
+
+  const baseFile = String(entry?.file || "")
+  const targetKey = Math.round(glyphAspectRatio(entry) * GLYPH_RATIO_BUCKET_SCALE)
+  const seen = new Set()
+  let candidates = []
+
+  for (let radius = 0; radius <= 18; radius++) {
+    const lower = glyphRatioBuckets.value.get(targetKey - radius) || []
+    const upper = radius === 0 ? [] : glyphRatioBuckets.value.get(targetKey + radius) || []
+    for (const file of lower.concat(upper)) {
+      if (!seen.has(file)) {
+        seen.add(file)
+        candidates.push(file)
+      }
+    }
+    if (candidates.length >= 48) {
+      break
+    }
+  }
+
+  if (!candidates.length) {
+    candidates = allFiles
+  }
+
+  let filtered = candidates.filter((file) => file !== baseFile && file !== previousFile)
+  if (!filtered.length) {
+    filtered = allFiles.filter((file) => file !== baseFile && file !== previousFile)
+  }
+  if (!filtered.length) {
+    filtered = allFiles.filter((file) => file !== baseFile)
+  }
+  if (!filtered.length) {
+    filtered = allFiles
+  }
+
+  return filtered[Math.floor(Math.random() * filtered.length)]
 }
 
-function runFirstGlyphFlicker() {
-  clearFirstGlyphFlickerTimers()
-  hideFirstGlyphFlicker()
+function clearSentenceTimescanTimeouts() {
+  sentenceTimescanTimeoutIds.forEach((timeoutId) => {
+    clearTimeout(timeoutId)
+  })
+  sentenceTimescanTimeoutIds = []
+}
+
+function scheduleSentenceTimescanTimeout(callback, delayMs) {
+  const timeoutId = setTimeout(callback, delayMs)
+  sentenceTimescanTimeoutIds.push(timeoutId)
+}
+
+function stopSentenceTimescan() {
+  sentenceTimescanRunId++
+  clearSentenceTimescanTimeouts()
+  hideAllSentenceFlickers()
+  resetSentenceFlickerLastFiles()
+  resetSentenceConsumedHidden()
+  sentenceOverlayRevealPx.value = 0
+}
+
+function applyGlyphFlickerEffect(index, runId) {
+  if (index < 0 || index >= pagedGlyphEntries.value.length) {
+    return
+  }
+
+  if (runId !== sentenceTimescanRunId) {
+    return
+  }
+
+  const glyphDurationMs = Math.max(1, Math.floor(SENTENCE_GLYPH_EFFECT_DURATION_MS))
+  const stepDurationMs = Math.max(
+    1,
+    Math.floor(glyphDurationMs / SENTENCE_GLYPH_FLICKER_STEPS),
+  )
+  const targetEntry = pagedGlyphEntries.value[index]
+
+  for (let step = 0; step < SENTENCE_GLYPH_FLICKER_STEPS; step++) {
+    scheduleSentenceTimescanTimeout(() => {
+      if (runId !== sentenceTimescanRunId) {
+        return
+      }
+      sentenceConsumedHidden.value[index] = false
+      const nextFile = pickRandomGlyphFileForEntry(
+        targetEntry,
+        sentenceFlickerLastFiles.value[index] || "",
+      )
+      sentenceFlickerFiles.value[index] = nextFile
+      sentenceFlickerLastFiles.value[index] = nextFile
+      sentenceFlickerVisible.value[index] = true
+    }, step * stepDurationMs)
+  }
+
+  scheduleSentenceTimescanTimeout(() => {
+    if (runId !== sentenceTimescanRunId) {
+      return
+    }
+    sentenceFlickerVisible.value[index] = false
+    sentenceFlickerFiles.value[index] = ""
+    sentenceConsumedHidden.value[index] = true
+    revealSentenceOverlayThroughIndex(index)
+  }, glyphDurationMs)
+}
+
+function runSentenceTimescan() {
+  sentenceTimescanRunId++
+  const runId = sentenceTimescanRunId
+  clearSentenceTimescanTimeouts()
+  hideAllSentenceFlickers()
+  resetSentenceFlickerLastFiles()
+  resetSentenceConsumedHidden()
+  sentenceOverlayRevealPx.value = 0
 
   if (!pagedGlyphEntries.value.length || !allGlyphFiles.value.length) {
     return
   }
 
-  const stepDurationMs = Math.max(
-    1,
-    Math.floor(FIRST_GLYPH_FLICKER_DURATION_MS / FIRST_GLYPH_FLICKER_STEPS),
-  )
-
-  for (let step = 0; step < FIRST_GLYPH_FLICKER_STEPS; step++) {
-    const timeoutId = setTimeout(() => {
-      firstGlyphFlickerFile.value = pickRandomGlyphFile()
-      firstGlyphFlickerVisible.value = true
-    }, step * stepDurationMs)
-
-    firstGlyphFlickerTimeoutIds.push(timeoutId)
+  const scanStepMs = Math.max(1, Math.floor(1000 / TIMESCAN_GLYPHS_PER_SECOND))
+  for (let index = 0; index < pagedGlyphEntries.value.length; index++) {
+    scheduleSentenceTimescanTimeout(() => {
+      if (runId !== sentenceTimescanRunId) {
+        return
+      }
+      applyGlyphFlickerEffect(index, runId)
+    }, index * scanStepMs)
   }
-
-  const despawnTimeoutId = setTimeout(() => {
-    hideFirstGlyphFlicker()
-  }, FIRST_GLYPH_FLICKER_DURATION_MS)
-
-  firstGlyphFlickerTimeoutIds.push(despawnTimeoutId)
 }
 
 watch(
   pagedGlyphEntries,
   (entries) => {
     if (!entries.length) {
-      clearFirstGlyphFlickerTimers()
-      hideFirstGlyphFlicker()
+      stopSentenceTimescan()
       return
     }
-    clearFirstGlyphFlickerTimers()
-    hideFirstGlyphFlicker()
+    stopSentenceTimescan()
   },
   { immediate: true },
 )
@@ -231,7 +432,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  clearFirstGlyphFlickerTimers()
+  stopSentenceTimescan()
 })
 </script>
 
@@ -341,38 +542,49 @@ onBeforeUnmount(() => {
           <button
             type="button"
             class="flicker-button"
-            :disabled="!canTriggerFirstGlyphFlicker"
-            @click="runFirstGlyphFlicker"
+            :disabled="!canTriggerSentenceTimescan"
+            @click="runSentenceTimescan"
           >
-            Trigger First Glyph Flicker
+            Trigger Sentence Timescan
           </button>
         </div>
         <div class="sentence-box">
-          <p class="sentence-line">
-            <span
-              v-for="(entry, index) in pagedGlyphEntries"
-              :key="`sentence-${entry.phraseId}-${entry.glyphIndex}`"
-              class="sentence-glyph-slot"
-            >
-              <img
-                :src="poolAsset(entry.file)"
-                :alt="`${entry.phraseId} glyph-${String(entry.glyphIndex).padStart(2, '0')}`"
-                loading="lazy"
-                class="sentence-glyph"
-                :class="{ 'sentence-glyph-hidden': index === 0 }"
-                :style="sentenceGlyphStyle(entry)"
-              />
-              <img
-                v-if="index === 0 && firstGlyphFlickerVisible && firstGlyphFlickerFile"
-                :src="poolAsset(firstGlyphFlickerFile)"
-                alt=""
-                aria-hidden="true"
-                loading="eager"
-                class="sentence-glyph sentence-glyph-flicker"
-                :style="sentenceGlyphStyle(entry)"
-              />
-            </span>
-          </p>
+          <div
+            class="sentence-stage"
+            :style="sentenceStageStyle"
+          >
+            <p class="sentence-overlay">
+              <span
+                class="sentence-overlay-reveal"
+                :style="sentenceOverlayRevealStyle"
+              >
+                {{ SENTENCE_OVERLAY_TEXT }}
+              </span>
+            </p>
+            <p class="sentence-line">
+              <span
+                v-for="(entry, index) in pagedGlyphEntries"
+                :key="`sentence-${entry.phraseId}-${entry.glyphIndex}`"
+                class="sentence-glyph-slot"
+              >
+                <span
+                  class="sentence-glyph sentence-glyph-mask"
+                  :class="{
+                    'sentence-glyph-hidden':
+                      sentenceFlickerVisible[index] || sentenceConsumedHidden[index],
+                  }"
+                  :style="sentenceGlyphMaskStyle(entry, entry.file)"
+                  aria-hidden="true"
+                ></span>
+                <span
+                  v-if="sentenceFlickerVisible[index] && sentenceFlickerFiles[index]"
+                  class="sentence-glyph sentence-glyph-mask sentence-glyph-flicker"
+                  :style="sentenceGlyphMaskStyle(entry, sentenceFlickerFiles[index])"
+                  aria-hidden="true"
+                ></span>
+              </span>
+            </p>
+          </div>
         </div>
       </div>
     </template>
@@ -503,6 +715,7 @@ onBeforeUnmount(() => {
   border: 1px solid #2f4f73;
   border-radius: 12px;
   background: #111820;
+  overflow-x: auto;
 }
 
 .sentence-controls {
@@ -527,11 +740,42 @@ onBeforeUnmount(() => {
 
 .sentence-line {
   margin: 0;
+  position: relative;
+  z-index: 2;
   display: flex;
   gap: 3px;
   align-items: flex-end;
-  overflow-x: auto;
+}
+
+.sentence-stage {
+  --sentence-ink: rgba(187, 223, 255, 0.95);
+  position: relative;
+  min-height: 52px;
+}
+
+.sentence-overlay {
+  margin: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sentence-overlay-reveal {
+  display: block;
   white-space: nowrap;
+  overflow: hidden;
+  color: var(--sentence-ink);
+  font-size: 1.3rem;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 12px rgba(109, 196, 255, 0.35);
+  transition: opacity 60ms steps(1, end);
 }
 
 .sentence-glyph-slot {
@@ -543,8 +787,10 @@ onBeforeUnmount(() => {
 .sentence-glyph {
   display: block;
   flex: 0 0 auto;
-  object-fit: contain;
-  object-position: center center;
+}
+
+.sentence-glyph-mask {
+  background-color: var(--sentence-ink);
 }
 
 .sentence-glyph-hidden {
