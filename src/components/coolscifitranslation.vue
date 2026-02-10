@@ -8,8 +8,8 @@ const SENTENCE_GLYPH_HEIGHT = 52
 const PHRASES_PER_PAGE = 24
 const TIMESCAN_GLYPHS_PER_SECOND = 36
 const SENTENCE_GLYPH_PRECOMPUTED_FRAMES = 15
-const SENTENCE_GLYPH_FLICKER_STEPS = 15
-const SENTENCE_GLYPH_EFFECT_DURATION_MS = 300
+const SENTENCE_GLYPH_FLICKER_STEPS = 9
+const SENTENCE_GLYPH_EFFECT_DURATION_MS = 200
 const SENTENCE_GLYPH_GAP_PX = 3
 const SENTENCE_OVERLAY_TEXT =
   "This is a test statement meant to show after the effect has passed. This is a test statement meant to show after the effect has passed. This is a test statement meant to show after the effect has passed."
