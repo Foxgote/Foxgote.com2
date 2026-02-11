@@ -1,7 +1,11 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from "vue"
 import { RouterLink, RouterView, useRoute } from "vue-router"
-import barlite from "./assets/img/barlite.png"
+import heroHome from "./assets/img/barlite.png"
+import heroServices from "./assets/img/services.jpg"
+import heroPortfolio from "./assets/img/toni-pykalaniemi-kb3d-cyberpunkcity-cmp-v019-0020.jpg"
+import heroContact from "./assets/img/neil-ross-west-kayro-mezzotint.jpg"
+import heroProjects from "./assets/img/luis-carrasco-hotel-04.jpg"
 import welcomeSignMarkup from "./assets/img/welcomesign2.svg?raw"
 
 const barliteRef = ref(null)
@@ -12,12 +16,32 @@ const routeTransitionName = ref("route-slide-left")
 
 const NEON_FLICKER_DURATION_MS = 1800
 const ENABLE_NEON_FLICKER = false
+const HERO_FADE_DURATION_MS = 700
+const ROUTE_HERO_URLS = {
+  "/": heroHome,
+  "/services": heroServices,
+  "/portfolio": heroPortfolio,
+  "/contact": heroContact,
+  "/projects": heroProjects,
+}
+const ROUTE_THEME_KEYS = {
+  "/": "home",
+  "/services": "services",
+  "/portfolio": "portfolio",
+  "/contact": "contact",
+  "/projects": "projects",
+}
 
 let rafId = 0
 let io = null
 let scrollEffectEnabled = false
 let anchorIsIntersecting = true
 let neonFlickerTimeoutId = 0
+let heroFadeTimeoutId = 0
+
+const baseHeroUrl = ref(ROUTE_HERO_URLS[route.path] || heroHome)
+const overlayHeroUrl = ref("")
+const heroOverlayActive = ref(false)
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 const routeOrder = {
@@ -35,6 +59,46 @@ watch(
     const fromIndex = routeOrder[fromPath] ?? 0
     routeTransitionName.value = toIndex < fromIndex ? "route-slide-right" : "route-slide-left"
   },
+)
+
+function heroUrlForPath(path) {
+  return ROUTE_HERO_URLS[path] || heroHome
+}
+
+function transitionHeroForPath(path) {
+  const nextHeroUrl = heroUrlForPath(path)
+  if (nextHeroUrl === baseHeroUrl.value) {
+    return
+  }
+
+  window.clearTimeout(heroFadeTimeoutId)
+  overlayHeroUrl.value = nextHeroUrl
+  heroOverlayActive.value = false
+
+  requestAnimationFrame(() => {
+    heroOverlayActive.value = true
+  })
+
+  heroFadeTimeoutId = window.setTimeout(() => {
+    baseHeroUrl.value = nextHeroUrl
+    overlayHeroUrl.value = ""
+    heroOverlayActive.value = false
+    heroFadeTimeoutId = 0
+  }, HERO_FADE_DURATION_MS)
+}
+
+function applyRouteTheme(path) {
+  const themeKey = ROUTE_THEME_KEYS[path] || "home"
+  document.documentElement.setAttribute("data-route-theme", themeKey)
+}
+
+watch(
+  () => route.path,
+  (toPath) => {
+    transitionHeroForPath(toPath)
+    applyRouteTheme(toPath)
+  },
+  { immediate: true },
 )
 
 function updateScrollEffect() {
@@ -150,6 +214,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", onScroll)
   cancelAnimationFrame(rafId)
   window.clearTimeout(neonFlickerTimeoutId)
+  window.clearTimeout(heroFadeTimeoutId)
   if (io) io.disconnect()
 })
 </script>
@@ -170,8 +235,21 @@ onBeforeUnmount(() => {
     <header
       ref="barliteRef"
       class="barlite"
-      :style="{ '--barlite-url': `url(${barlite})` }"
     >
+      <div class="hero-bg-stack" aria-hidden="true">
+        <div
+          class="hero-bg hero-bg-base"
+          :style="{ '--hero-url': `url(${baseHeroUrl})` }"
+        ></div>
+        <div
+          v-if="overlayHeroUrl"
+          class="hero-bg hero-bg-overlay"
+          :class="{ 'hero-bg-overlay-active': heroOverlayActive }"
+          :style="{ '--hero-url': `url(${overlayHeroUrl})` }"
+        ></div>
+        <div class="hero-dim"></div>
+      </div>
+
       <figure
         ref="welcomeSignRef"
         class="welcome-sign"
@@ -224,24 +302,42 @@ onBeforeUnmount(() => {
   }
 }
 
-.barlite::before {
-  content: "";
+.hero-bg-stack {
   position: fixed;
   inset: 0;
-  background-image: var(--barlite-url);
+  pointer-events: none;
+  z-index: -2;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image: var(--hero-url);
   background-size: cover;
   background-position: center;
   filter: blur(var(--barlite-blur, 0px));
   transform: translateY(calc(var(--barlite-y, 0px) * -1 + 50px)) scale(1.12);
-  z-index: -2;
 }
 
-.barlite::after {
-  content: "";
-  position: fixed;
+.hero-bg-base {
+  z-index: 1;
+}
+
+.hero-bg-overlay {
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+
+.hero-bg-overlay-active {
+  opacity: 1;
+}
+
+.hero-dim {
+  position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, var(--barlite-dim, 0.2));
-  z-index: -1;
+  z-index: 3;
 }
 .welcome-sign {
   display: flex;
@@ -500,7 +596,34 @@ onBeforeUnmount(() => {
 }
 
 /* When sticky is active, allow clicks */
-:global(:root) { --sticky-on: 0; --sticky-pe: none; --nav-h: 64px; }
+:global(:root) {
+  --sticky-on: 0;
+  --sticky-pe: none;
+  --nav-h: 64px;
+
+  --home-colour: #d4a15e;
+  --services-colour: #73d4ff;
+  --portfolio-colour: #ff9a63;
+  --contact-colour: #74e8cf;
+  --projects-colour: #b6a2ff;
+
+  --route-colour: var(--home-colour);
+}
+:global(:root[data-route-theme="home"]) {
+  --route-colour: var(--home-colour);
+}
+:global(:root[data-route-theme="services"]) {
+  --route-colour: var(--services-colour);
+}
+:global(:root[data-route-theme="portfolio"]) {
+  --route-colour: var(--portfolio-colour);
+}
+:global(:root[data-route-theme="contact"]) {
+  --route-colour: var(--contact-colour);
+}
+:global(:root[data-route-theme="projects"]) {
+  --route-colour: var(--projects-colour);
+}
 .nav-sticky {
   pointer-events: var(--sticky-pe, none);
 }
