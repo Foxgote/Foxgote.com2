@@ -111,11 +111,12 @@
   display: grid;
   align-content: start;
   gap: 0.85rem;
-  border: 2px solid rgba(0, 0, 0, 0.1);
   border-radius: 16px;
-  background: linear-gradient(rgba(10, 11, 13, 0.88));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: linear-gradient(rgba(10, 11, 13, 0.4));
   box-shadow:
-    0 10px 26px rgba(0, 0, 0, 0.34),
+    10px 18px 26px rgba(0, 0, 0, 0.34),
     inset 0 0 0 1px rgba(212, 161, 94, 0.06);
 }
 
