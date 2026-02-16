@@ -5,10 +5,10 @@ import CoolSciFiTranslation from "./coolscifitranslation.vue"
 <template>
   <section class="home-container">
     <h1>Home</h1>
-    <p class="intro">Browse the generated glyph phrase and slice pool.</p>
+    <p class="intro">Trigger the timescan effect powered by the build-time glyph pool.</p>
 
     <section class="pool-section">
-      <h2>Cool Sci-Fi Translation Pool</h2>
+      <h2>Cool Sci-Fi Timescan</h2>
       <CoolSciFiTranslation />
     </section>
   </section>

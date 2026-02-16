@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "precompute:flicker": "node scripts/precompute-flicker-variants.mjs",
-    "prebuild": "npm run precompute:flicker",
+    "prebuild": "npm run precompute:flicker && npm run build:glyph-pools",
     "build": "vite build",
     "build:glyph-pools": "node scripts/build-glyph-pools.mjs",
     "preview": "vite preview"
