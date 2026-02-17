@@ -1,5 +1,5 @@
 <script setup>
-import { computed, defineExpose } from "vue"
+import { computed, defineExpose, watch } from "vue"
 import { useTimescanSentence } from "@/composables/useTimescanSentence"
 
 const props = defineProps({
@@ -31,6 +31,10 @@ const props = defineProps({
     type: String,
     default: "Glyph pool is empty.",
   },
+  triggerKey: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const tokens = computed(() => props.glyphTokens ?? [])
@@ -50,6 +54,15 @@ const {
 } = useTimescanSentence({ glyphTokens: tokens, containerWidth: width })
 
 const hasTokens = computed(() => sentenceGlyphEntries.value.length > 0)
+
+watch(
+  () => props.triggerKey,
+  (next, prev) => {
+    if (next === prev) return
+    if (!canTriggerSentenceTimescan.value) return
+    runSentenceTimescan()
+  },
+)
 
 defineExpose({
   trigger: runSentenceTimescan,
@@ -140,8 +153,8 @@ defineExpose({
 .timescan-sentence {
   display: inline-flex;
   flex-direction: column;
-  gap: 10px;
-  color: #b9d2ef;
+  gap: var(--timescan-gap, 10px);
+  color: var(--timescan-ink, #b9d2ef);
 }
 
 .timescan-sentence-framed .sentence-box {
@@ -198,9 +211,10 @@ defineExpose({
 }
 
 .sentence-stage {
-  --sentence-ink: rgba(187, 223, 255, 0.95);
+  --sentence-ink: var(--timescan-ink, rgba(187, 223, 255, 0.95));
+  --sentence-glow: var(--timescan-glow, rgba(109, 196, 255, 0.35));
   position: relative;
-  min-height: 52px;
+  min-height: var(--timescan-min-height, 52px);
 }
 
 .sentence-overlay {
@@ -221,10 +235,10 @@ defineExpose({
   white-space: nowrap;
   overflow: hidden;
   color: var(--sentence-ink);
-  font-size: 1.3rem;
-  line-height: 1;
-  letter-spacing: 0.03em;
-  text-shadow: 0 0 12px rgba(109, 196, 255, 0.35);
+  font-size: var(--timescan-overlay-font-size, 1.3rem);
+  line-height: var(--timescan-overlay-line-height, 1);
+  letter-spacing: var(--timescan-overlay-letter-spacing, 0.03em);
+  text-shadow: 0 0 12px var(--sentence-glow);
   transition: opacity 60ms steps(1, end);
 }
 

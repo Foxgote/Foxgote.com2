@@ -1,8 +1,8 @@
 import fs from "node:fs"
 import path from "node:path"
 
-const SAMPLE_SIZE = Number(process.env.GLYPH_POOL_SIZE ?? 1000)
-const PRECOMPUTED_FRAMES = Number(process.env.GLYPH_POOL_FRAMES ?? 15)
+const SAMPLE_SIZE = Number(process.env.GLYPH_POOL_SIZE ?? 500)
+const PRECOMPUTED_FRAMES = Number(process.env.GLYPH_POOL_FRAMES ?? 4)
 
 const rootDir = process.cwd()
 const sourceRoot = path.join(rootDir, "public", "ithkuil-glyph-phrases")

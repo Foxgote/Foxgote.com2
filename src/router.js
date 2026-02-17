@@ -1,9 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router"
-import Home from "./components/1Home.vue"
-import Services from "./components/2Services.vue"
-import Portfolio from "./components/3Portfolio.vue"
-import Contact from "./components/4Contact.vue"
-import Projects from "./components/5Projects.vue"
 
 const VIEWPORT_TOP_PAD_PX = 64
 const ANCHOR_GATE_EPSILON_PX = 2
@@ -12,11 +7,11 @@ const MIN_SCROLL_DISTANCE_PX = 4
 let smoothScrollRafId = 0
 
 const routes = [
-  { path: "/", name: "Home", component: Home },
-  { path: "/services", name: "Services", component: Services },
-  { path: "/portfolio", name: "Portfolio", component: Portfolio },
-  { path: "/contact", name: "Contact", component: Contact },
-  { path: "/projects", name: "Projects", component: Projects },
+  { path: "/", name: "Home", component: () => import("./components/1Home.vue") },
+  { path: "/services", name: "Services", component: () => import("./components/2Services.vue") },
+  { path: "/portfolio", name: "Portfolio", component: () => import("./components/3Portfolio.vue") },
+  { path: "/contact", name: "Contact", component: () => import("./components/4Contact.vue") },
+  { path: "/projects", name: "Projects", component: () => import("./components/5Projects.vue") },
 ]
 
 function stopSmoothScrollAnimation() {

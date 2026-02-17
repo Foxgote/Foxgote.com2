@@ -1,7 +1,7 @@
 import fs from "node:fs"
 import path from "node:path"
 
-const FRAMES_PER_GLYPH = 15
+const FRAMES_PER_GLYPH = Number(process.env.GLYPH_FLICKER_FRAMES ?? 4)
 const BUCKET_SCALE = 100
 const SEARCH_RADIUS = 18
 const MIN_BUCKET_CANDIDATES = 48

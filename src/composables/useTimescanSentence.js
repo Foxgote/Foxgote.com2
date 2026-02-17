@@ -6,7 +6,7 @@ const DEFAULTS = {
   glyphsPerSecond: 36,
   flickerSteps: 9,
   effectDurationMs: 200,
-  precomputedFrames: 15,
+  precomputedFrames: 4,
 }
 
 function toNumber(value, fallback = 0) {
