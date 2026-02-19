@@ -72,3 +72,85 @@ p {
 
 
 }
+
+:root {
+  --timescan-gap: 0;
+  --timescan-ink: rgba(255, 205, 145, 0.98);
+  --timescan-glow: rgba(255, 186, 109, 0.24);
+  --timescan-glyph-scale: 1;
+  --timescan-min-height: 52px;
+  --timescan-overlay-font-size: 1rem;
+  --timescan-overlay-line-height: 1.1;
+  --timescan-overlay-letter-spacing: 0.03em;
+}
+
+.timescan-base {
+  --timescan-gap: 0;
+  --timescan-ink: rgba(255, 205, 145, 0.98);
+  --timescan-glow: rgba(255, 186, 109, 0.24);
+  --timescan-glyph-scale: 1;
+}
+
+.timescan-h1 {
+  --timescan-overlay-font-size: clamp(1.9rem, 4.8vw, 3rem);
+  --timescan-min-height: clamp(44px, 6.5vw, 62px);
+  --timescan-ink: rgba(255, 205, 145, 0.98);
+  --timescan-glow: rgba(255, 186, 109, 0.24);
+}
+
+.timescan-h2 {
+  --timescan-overlay-font-size: 1.05rem;
+  --timescan-min-height: 24px;
+  --timescan-overlay-line-height: 1.15;
+  --timescan-overlay-letter-spacing: 0.01em;
+  --timescan-ink: rgba(255, 220, 180, 0.72);
+}
+
+.timescan-h3 {
+  --timescan-overlay-font-size: 1.2rem;
+  --timescan-min-height: 30px;
+  --timescan-overlay-line-height: 1.1;
+  --timescan-overlay-letter-spacing: 0.08em;
+  --timescan-ink: rgba(255, 237, 214, 0.95);
+}
+
+.timescan-h6 {
+  --timescan-glyph-scale: 0.42;
+  --timescan-overlay-font-size: 0.72rem;
+  --timescan-min-height: 14px;
+  --timescan-overlay-letter-spacing: 0.14em;
+  --timescan-ink: rgba(212, 161, 94, 0.92);
+}
+
+.timescan-p {
+  --timescan-glyph-scale: 0.42;
+  --timescan-overlay-font-size: 0.93rem;
+  --timescan-min-height: 20px;
+  --timescan-overlay-line-height: 1.28;
+  --timescan-overlay-letter-spacing: 0.01em;
+  --timescan-ink: rgba(255, 220, 180, 0.8);
+}
+
+.timescan-caption {
+  --timescan-overlay-font-size: 0.83rem;
+  --timescan-min-height: 20px;
+  --timescan-overlay-line-height: 1.1;
+  --timescan-overlay-letter-spacing: 0.08em;
+  --timescan-ink: rgba(255, 237, 214, 0.95);
+}
+
+.timescan-layout-center .sentence-stage {
+  margin: 0 auto;
+}
+
+.timescan-layout-center .sentence-line {
+  justify-content: center;
+}
+
+.timescan-layout-left .sentence-stage {
+  margin: 0;
+}
+
+.timescan-layout-left .sentence-line {
+  justify-content: flex-start;
+}

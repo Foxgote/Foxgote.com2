@@ -1,5 +1,13 @@
 <script setup>
-import { computed, defineExpose, watch } from "vue"
+import {
+  computed,
+  defineExpose,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue"
 import { useTimescanSentence } from "@/composables/useTimescanSentence"
 
 const props = defineProps({
@@ -14,6 +22,10 @@ const props = defineProps({
   containerWidth: {
     type: Number,
     default: 0,
+  },
+  glyphScale: {
+    type: Number,
+    default: null,
   },
   framed: {
     type: Boolean,
@@ -35,15 +47,198 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  autoTriggerOnView: {
+    type: Boolean,
+    default: false,
+  },
+  viewTriggerThreshold: {
+    type: Number,
+    default: 0.2,
+  },
+  viewTriggerRootMargin: {
+    type: String,
+    default: "0px",
+  },
+  viewTriggerDelayMs: {
+    type: Number,
+    default: 0,
+  },
+  viewTriggerOnce: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const tokens = computed(() => props.glyphTokens ?? [])
+const timescanRootRef = ref(null)
+const overlayMeasureRef = ref(null)
+const overlayTextWidthPx = ref(0)
 const width = computed(() => props.containerWidth ?? 0)
+const classGlyphScale = ref(1)
+const glyphScale = computed(() => {
+  const explicit = Number(props.glyphScale)
+  if (Number.isFinite(explicit) && explicit > 0) {
+    return explicit
+  }
+  return classGlyphScale.value
+})
+
+let overlayResizeObserver = null
+let viewTriggerObserver = null
+let viewTriggerDelayId = 0
+let viewTriggerHasRun = false
+const pendingViewTrigger = ref(false)
+
+function viewportVisibilityRatio(el) {
+  const rect = el.getBoundingClientRect()
+  const viewportHeight =
+    window.innerHeight || document.documentElement?.clientHeight || 0
+  const viewportWidth =
+    window.innerWidth || document.documentElement?.clientWidth || 0
+
+  if (viewportHeight <= 0 || viewportWidth <= 0) return 0
+
+  const visibleHeight =
+    Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
+  const visibleWidth =
+    Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)
+
+  if (visibleHeight <= 0 || visibleWidth <= 0) return 0
+
+  const elementArea = Math.max(1, rect.height * rect.width)
+  const visibleArea = visibleHeight * visibleWidth
+  return Math.max(0, Math.min(1, visibleArea / elementArea))
+}
+
+function syncOverlayTextWidth() {
+  const measureEl = overlayMeasureRef.value
+  if (!measureEl) {
+    overlayTextWidthPx.value = 0
+    return
+  }
+  overlayTextWidthPx.value = Math.max(0, Math.ceil(measureEl.getBoundingClientRect().width))
+}
+
+function syncClassGlyphScale() {
+  const rootEl = timescanRootRef.value
+  if (!rootEl || typeof window === "undefined") {
+    classGlyphScale.value = 1
+    return
+  }
+
+  const raw = window.getComputedStyle(rootEl).getPropertyValue("--timescan-glyph-scale")
+  const parsed = Number.parseFloat(raw)
+  classGlyphScale.value =
+    Number.isFinite(parsed) && parsed > 0
+      ? parsed
+      : 1
+}
+
+function clampViewTriggerThreshold() {
+  const parsed = Number(props.viewTriggerThreshold)
+  if (!Number.isFinite(parsed)) return 0.2
+  return Math.max(0, Math.min(1, parsed))
+}
+
+function clearViewTriggerDelay() {
+  if (!viewTriggerDelayId) return
+  window.clearTimeout(viewTriggerDelayId)
+  viewTriggerDelayId = 0
+}
+
+function canRunViewTrigger() {
+  return !props.viewTriggerOnce || !viewTriggerHasRun
+}
+
+function runViewTriggerNow() {
+  if (!canRunViewTrigger()) return
+  if (!canTriggerSentenceTimescan.value || overlayTextWidthPx.value <= 0) {
+    pendingViewTrigger.value = true
+    return
+  }
+  pendingViewTrigger.value = false
+  viewTriggerHasRun = true
+  runSentenceTimescan()
+}
+
+function scheduleViewTrigger() {
+  if (!props.autoTriggerOnView || !canRunViewTrigger()) return
+  if (viewTriggerDelayId) return
+
+  const delayMs = Math.max(0, Math.round(Number(props.viewTriggerDelayMs) || 0))
+  if (delayMs <= 0) {
+    runViewTriggerNow()
+    return
+  }
+
+  viewTriggerDelayId = window.setTimeout(() => {
+    viewTriggerDelayId = 0
+    runViewTriggerNow()
+  }, delayMs)
+}
+
+function maybeRunViewTrigger() {
+  if (!props.autoTriggerOnView || !canRunViewTrigger()) return
+  const rootEl = timescanRootRef.value
+  if (!rootEl) return
+  const threshold = clampViewTriggerThreshold()
+  const requiredVisibleRatio = threshold > 0 ? threshold : 0.001
+  if (viewportVisibilityRatio(rootEl) < requiredVisibleRatio) return
+  scheduleViewTrigger()
+}
+
+function teardownViewTriggerObserver() {
+  if (!viewTriggerObserver) return
+  viewTriggerObserver.disconnect()
+  viewTriggerObserver = null
+}
+
+function setupViewTriggerObserver() {
+  if (!props.autoTriggerOnView || typeof IntersectionObserver !== "function") {
+    return
+  }
+
+  const rootEl = timescanRootRef.value
+  if (!rootEl) return
+
+  const threshold = clampViewTriggerThreshold()
+  const requiredVisibleRatio = threshold > 0 ? threshold : 0.001
+  const rootMargin =
+    typeof props.viewTriggerRootMargin === "string"
+      ? props.viewTriggerRootMargin
+      : "0px"
+
+  viewTriggerObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          clearViewTriggerDelay()
+          return
+        }
+        if (!canRunViewTrigger()) return
+
+        const ratio = Number(entry?.intersectionRatio)
+        const visibleRatio = Number.isFinite(ratio)
+          ? ratio
+          : viewportVisibilityRatio(rootEl)
+        if (visibleRatio < requiredVisibleRatio) return
+        scheduleViewTrigger()
+      })
+    },
+    { threshold, rootMargin },
+  )
+
+  viewTriggerObserver.observe(rootEl)
+  requestAnimationFrame(() => {
+    maybeRunViewTrigger()
+  })
+}
 
 const {
   sentenceGlyphEntries,
   sentenceGlyphMaskStyle,
   sentenceOverlayRevealStyle,
+  sentenceOverlayRevealPx,
   sentenceStageStyle,
   sentenceFlickerVisible,
   sentenceFlickerVariants,
@@ -51,7 +246,12 @@ const {
   sentenceConsumedHidden,
   runSentenceTimescan,
   canTriggerSentenceTimescan,
-} = useTimescanSentence({ glyphTokens: tokens, containerWidth: width })
+} = useTimescanSentence({
+  glyphTokens: tokens,
+  containerWidth: width,
+  glyphScale,
+  overlayTextWidth: overlayTextWidthPx,
+})
 
 const hasTokens = computed(() => sentenceGlyphEntries.value.length > 0)
 
@@ -60,9 +260,80 @@ watch(
   (next, prev) => {
     if (next === prev) return
     if (!canTriggerSentenceTimescan.value) return
+    clearViewTriggerDelay()
+    pendingViewTrigger.value = false
+    viewTriggerHasRun = true
     runSentenceTimescan()
   },
 )
+
+watch(canTriggerSentenceTimescan, (next) => {
+  if (!next || !pendingViewTrigger.value) return
+  runViewTriggerNow()
+})
+
+watch(overlayTextWidthPx, (next) => {
+  if (next <= 0 || !pendingViewTrigger.value) return
+  runViewTriggerNow()
+})
+
+watch(sentenceOverlayRevealPx, (next, prev) => {
+  if (!props.autoTriggerOnView || !props.viewTriggerOnce) return
+  if (next !== 0) return
+  if (!(typeof prev === "number" && prev > 0)) return
+  viewTriggerHasRun = false
+  pendingViewTrigger.value = true
+  maybeRunViewTrigger()
+})
+
+watch(
+  () => props.overlayText,
+  () => {
+    if (!props.viewTriggerOnce) {
+      viewTriggerHasRun = false
+    }
+    nextTick(() => {
+      syncOverlayTextWidth()
+      maybeRunViewTrigger()
+    })
+  },
+  { immediate: true },
+)
+
+onMounted(() => {
+  nextTick(() => {
+    syncOverlayTextWidth()
+    syncClassGlyphScale()
+    setupViewTriggerObserver()
+    maybeRunViewTrigger()
+  })
+
+  if (typeof ResizeObserver !== "function") {
+    return
+  }
+
+  const measureEl = overlayMeasureRef.value
+  if (!measureEl) {
+    return
+  }
+
+  overlayResizeObserver = new ResizeObserver(() => {
+    syncOverlayTextWidth()
+    syncClassGlyphScale()
+    maybeRunViewTrigger()
+  })
+  overlayResizeObserver.observe(measureEl)
+})
+
+onBeforeUnmount(() => {
+  clearViewTriggerDelay()
+  teardownViewTriggerObserver()
+  if (!overlayResizeObserver) {
+    return
+  }
+  overlayResizeObserver.disconnect()
+  overlayResizeObserver = null
+})
 
 defineExpose({
   trigger: runSentenceTimescan,
@@ -71,6 +342,7 @@ defineExpose({
 
 <template>
   <div
+    ref="timescanRootRef"
     class="timescan-sentence"
     :class="{ 'timescan-sentence-framed': framed }"
   >
@@ -103,6 +375,13 @@ defineExpose({
         class="sentence-stage"
         :style="sentenceStageStyle"
       >
+        <span
+          ref="overlayMeasureRef"
+          class="sentence-overlay-measure"
+          aria-hidden="true"
+        >
+          {{ overlayText }}
+        </span>
         <p class="sentence-overlay">
           <span
             class="sentence-overlay-reveal"
@@ -240,6 +519,19 @@ defineExpose({
   letter-spacing: var(--timescan-overlay-letter-spacing, 0.03em);
   text-shadow: 0 0 12px var(--sentence-glow);
   transition: opacity 60ms steps(1, end);
+}
+
+.sentence-overlay-measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  visibility: hidden;
+  color: transparent;
+  font-size: var(--timescan-overlay-font-size, 1.3rem);
+  line-height: var(--timescan-overlay-line-height, 1);
+  letter-spacing: var(--timescan-overlay-letter-spacing, 0.03em);
 }
 
 .sentence-glyph-slot {

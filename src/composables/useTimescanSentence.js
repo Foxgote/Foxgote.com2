@@ -8,6 +8,10 @@ const DEFAULTS = {
   effectDurationMs: 200,
   precomputedFrames: 4,
 }
+const MAX_RENDER_GLYPHS = 240
+const MIN_RENDER_HEIGHT_PX = 8
+const MIN_RENDER_WIDTH_PX = 4
+const MIN_EFFECTIVE_GAP_PX = 0.5
 
 function toNumber(value, fallback = 0) {
   const n = Number(value)
@@ -22,7 +26,7 @@ function unwrapGlyphTokens(input) {
 
 export function useTimescanSentence(options = {}) {
   const config = { ...DEFAULTS, ...options }
-  const glyphTokens = computed(() => unwrapGlyphTokens(config.glyphTokens))
+  const sourceGlyphTokens = computed(() => unwrapGlyphTokens(config.glyphTokens))
   const containerWidth = computed(() => {
     const value =
       typeof config.containerWidth === "object"
@@ -30,6 +34,31 @@ export function useTimescanSentence(options = {}) {
         : config.containerWidth
     return toNumber(value, 0)
   })
+  const glyphScaleMultiplier = computed(() => {
+    const value =
+      typeof config.glyphScale === "object"
+        ? config.glyphScale?.value
+        : config.glyphScale
+    return Math.max(0.1, toNumber(value, 1))
+  })
+  const overlayTextWidth = computed(() => {
+    const value =
+      typeof config.overlayTextWidth === "object"
+        ? config.overlayTextWidth?.value
+        : config.overlayTextWidth
+    return Math.max(0, toNumber(value, 0))
+  })
+  const baseGlyphHeightPx = computed(() =>
+    Math.max(12, config.glyphHeight * glyphScaleMultiplier.value),
+  )
+  const baseGapPx = computed(() =>
+    Math.max(
+      0,
+      config.glyphGapPx *
+        glyphScaleMultiplier.value *
+        (glyphScaleMultiplier.value < 1 ? 0.75 : 1),
+    ),
+  )
 
   const sentenceFlickerVariants = ref([])
   const sentenceFlickerActiveLayer = ref([])
@@ -44,15 +73,18 @@ export function useTimescanSentence(options = {}) {
   function glyphRenderSize(entry, targetHeight) {
     const width = toNumber(entry?.width, 1)
     const height = Math.max(1, toNumber(entry?.height, 1))
-    const renderHeight = Math.max(16, Math.round(targetHeight))
-    const renderWidth = Math.max(12, Math.round((width / height) * renderHeight))
+    const renderHeight = Math.max(MIN_RENDER_HEIGHT_PX, Math.round(targetHeight))
+    const renderWidth = Math.max(
+      MIN_RENDER_WIDTH_PX,
+      Math.round((width / height) * renderHeight),
+    )
 
     return { renderWidth, renderHeight }
   }
 
   const baseSlotWidthsPx = computed(() =>
-    glyphTokens.value.map(
-      (entry) => glyphRenderSize(entry, config.glyphHeight).renderWidth,
+    sourceGlyphTokens.value.map(
+      (entry) => glyphRenderSize(entry, baseGlyphHeightPx.value).renderWidth,
     ),
   )
 
@@ -61,8 +93,7 @@ export function useTimescanSentence(options = {}) {
       return 0
     }
     const glyphWidths = baseSlotWidthsPx.value.reduce((sum, width) => sum + width, 0)
-    const gapWidths =
-      Math.max(0, baseSlotWidthsPx.value.length - 1) * config.glyphGapPx
+    const gapWidths = Math.max(0, baseSlotWidthsPx.value.length - 1) * baseGapPx.value
     return glyphWidths + gapWidths
   })
 
@@ -74,12 +105,131 @@ export function useTimescanSentence(options = {}) {
   })
 
   const effectiveGlyphHeight = computed(() =>
-    Math.max(12, config.glyphHeight * glyphScale.value),
+    Math.max(12, baseGlyphHeightPx.value * glyphScale.value),
   )
 
   const effectiveGapPx = computed(() =>
-    Math.max(1, config.glyphGapPx * glyphScale.value),
+    Math.max(MIN_EFFECTIVE_GAP_PX, baseGapPx.value * glyphScale.value),
   )
+
+  const glyphTokens = computed(() => {
+    const sourceEntries = sourceGlyphTokens.value
+    if (!sourceEntries.length) {
+      return []
+    }
+
+    const targetWidth = overlayTextWidth.value
+    if (!targetWidth) {
+      return sourceEntries
+    }
+
+    const gap = effectiveGapPx.value
+    const sourceWidths = sourceEntries.map(
+      (entry) => glyphRenderSize(entry, effectiveGlyphHeight.value).renderWidth,
+    )
+    let sourceWidth = 0
+    for (let index = 0; index < sourceWidths.length; index++) {
+      sourceWidth += sourceWidths[index]
+      if (index > 0) {
+        sourceWidth += gap
+      }
+    }
+
+    if (sourceWidth > targetWidth) {
+      const trimmedEntries = []
+      let trimmedWidth = 0
+
+      for (let index = 0; index < sourceEntries.length; index++) {
+        const entryWidth = sourceWidths[index]
+        const nextWidth =
+          trimmedWidth + (trimmedEntries.length > 0 ? gap : 0) + entryWidth
+        if (nextWidth > targetWidth && trimmedEntries.length > 0) {
+          break
+        }
+
+        trimmedEntries.push(sourceEntries[index])
+        trimmedWidth = nextWidth
+      }
+
+      return trimmedEntries.length ? trimmedEntries : [sourceEntries[0]]
+    }
+
+    if (sourceWidth >= targetWidth) {
+      return sourceEntries
+    }
+
+    const buildExtendedEntry = (entry, cycle, step) => {
+      if (!entry || cycle <= 0) {
+        return entry
+      }
+
+      const uniqueFiles = []
+      const baseFile = String(entry?.file || "")
+      if (baseFile) {
+        uniqueFiles.push(baseFile)
+      }
+
+      const variantFiles = Array.isArray(entry?.flickerVariants)
+        ? entry.flickerVariants.map((file) => String(file || "")).filter(Boolean)
+        : []
+      for (let index = 0; index < variantFiles.length; index++) {
+        const file = variantFiles[index]
+        if (!uniqueFiles.includes(file)) {
+          uniqueFiles.push(file)
+        }
+      }
+
+      if (uniqueFiles.length <= 1) {
+        return entry
+      }
+
+      let fileIndex = (cycle + step) % uniqueFiles.length
+      if (uniqueFiles[fileIndex] === baseFile) {
+        fileIndex = (fileIndex + 1) % uniqueFiles.length
+      }
+
+      return {
+        ...entry,
+        file: uniqueFiles[fileIndex],
+      }
+    }
+
+    const extendedEntries = []
+    let extendedWidth = 0
+    let cycle = 0
+
+    while (
+      extendedEntries.length < MAX_RENDER_GLYPHS &&
+      extendedWidth < targetWidth
+    ) {
+      const isReverse = cycle % 2 === 1
+      const cycleOffset = cycle % sourceEntries.length
+
+      for (let step = 0; step < sourceEntries.length; step++) {
+        if (
+          extendedEntries.length >= MAX_RENDER_GLYPHS ||
+          extendedWidth >= targetWidth
+        ) {
+          break
+        }
+
+        const sourceIndex = isReverse
+          ? (cycleOffset - step + sourceEntries.length) % sourceEntries.length
+          : (cycleOffset + step) % sourceEntries.length
+        const sourceEntry = sourceEntries[sourceIndex]
+
+        if (extendedEntries.length > 0) {
+          extendedWidth += gap
+        }
+        extendedEntries.push(buildExtendedEntry(sourceEntry, cycle, step))
+        extendedWidth += sourceWidths[sourceIndex]
+      }
+
+      cycle++
+    }
+
+    return extendedEntries.length ? extendedEntries : sourceEntries
+  })
 
   function sentenceGlyphStyle(entry) {
     const { renderWidth, renderHeight } = glyphRenderSize(
@@ -122,6 +272,11 @@ export function useTimescanSentence(options = {}) {
       Math.max(0, sentenceSlotWidthsPx.value.length - 1) * effectiveGapPx.value
     return glyphWidths + gapWidths
   })
+  const sentenceTotalWidthPx = computed(() =>
+    overlayTextWidth.value > 0
+      ? overlayTextWidth.value
+      : sentenceScanTotalWidthPx.value,
+  )
 
   const sentenceRevealWidthsByIndexPx = computed(() => {
     const revealWidths = []
@@ -136,13 +291,13 @@ export function useTimescanSentence(options = {}) {
   })
 
   const sentenceStageStyle = computed(() => ({
-    width: `${Math.max(1, sentenceScanTotalWidthPx.value)}px`,
+    width: `${Math.max(1, sentenceTotalWidthPx.value)}px`,
   }))
 
   const sentenceOverlayRevealStyle = computed(() => {
     const clippedWidth = Math.max(
       0,
-      Math.min(sentenceOverlayRevealPx.value, sentenceScanTotalWidthPx.value),
+      Math.min(sentenceOverlayRevealPx.value, sentenceTotalWidthPx.value),
     )
 
     return {
@@ -319,6 +474,7 @@ export function useTimescanSentence(options = {}) {
       }
 
       if (elapsedMs >= finalGlyphFinishMs) {
+        sentenceOverlayRevealPx.value = sentenceTotalWidthPx.value
         sentenceTimescanRafId = 0
         sentenceTimescanStartTimestamp = 0
         return

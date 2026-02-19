@@ -1,12 +1,59 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from "vue"
+import { computed } from "vue"
 import glyphPool from "@/glyphPool/pool.gen"
 import TimescanSentence from "./TimescanSentence.vue"
 
+const SERVICES_EYEBROW_TEXT = "Services"
 const SERVICES_HEADING_TEXT = "Select your choice"
-const SERVICES_TRIGGER_DELAY_MS = 1000
-const SERVICES_TRIGGER_THRESHOLD = 0.2
+const SERVICES_LEAD_TEXT = "Choose the lane that fits your session and goals."
+const SERVICES_VIEW_TRIGGER_THRESHOLD = 0.2
+const SERVICES_VIEW_TRIGGER_ROOT_MARGIN = "0px"
+const SERVICES_HEADER_VIEW_TRIGGER_DELAY_MS = 750
+const SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS = 120
 const SERVICES_MIN_GLYPHS = 8
+const SERVICES_TARGET_GLYPHS = 28
+const SERVICES_IMAGE_TARGET_GLYPHS = 14
+const SERVICES_TITLE_TARGET_GLYPHS = 18
+const SERVICES_BULLET_TARGET_GLYPHS = 18
+
+const SERVICES_CARD_DATA = [
+  {
+    id: "studio-rental",
+    title: "Studio Rental",
+    imageLabel: "Studio PNG",
+    imageAriaLabel: "Studio rental image placeholder",
+    bullets: [
+      "Hourly and half-day booking windows",
+      "Control room plus live room access",
+      "Add-on engineer support available",
+      "Late-night sessions by request",
+    ],
+  },
+  {
+    id: "music-teaching",
+    title: "Music Teaching",
+    imageLabel: "Teaching PNG",
+    imageAriaLabel: "Music teaching image placeholder",
+    bullets: [
+      "Private one-on-one lesson blocks",
+      "Beginner through advanced coaching",
+      "Technique, songwriting, and performance",
+      "Structured plans with weekly goals",
+    ],
+  },
+  {
+    id: "other-services",
+    title: "Other Services",
+    imageLabel: "Other PNG",
+    imageAriaLabel: "Other services image placeholder",
+    bullets: [
+      "Vocal tracking and comp preparation",
+      "Demo polish and arrangement feedback",
+      "Mix-ready stem export workflow",
+      "Custom project support by scope",
+    ],
+  },
+]
 
 function hashString32(input) {
   let hash = 2166136261
@@ -41,171 +88,192 @@ function pickPhrase(text, minGlyphs = 1) {
   return phrases[startIndex]
 }
 
-function viewportVisibilityRatio(el) {
-  const rect = el.getBoundingClientRect()
-  const viewportHeight =
-    window.innerHeight || document.documentElement?.clientHeight || 0
-  const viewportWidth =
-    window.innerWidth || document.documentElement?.clientWidth || 0
+function buildGlyphSequence(text, minGlyphs = 1, targetGlyphs = 24) {
+  const phrases = Array.isArray(glyphPool?.phrases) ? glyphPool.phrases : []
+  if (!phrases.length) return []
 
-  if (viewportHeight <= 0 || viewportWidth <= 0) return 0
+  const basePhrase = pickPhrase(text, minGlyphs)
+  const baseGlyphs = Array.isArray(basePhrase?.glyphs) ? basePhrase.glyphs : []
+  if (!baseGlyphs.length) return []
 
-  const visibleHeight =
-    Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
-  const visibleWidth =
-    Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)
+  const targetCount = Math.max(
+    1,
+    Math.floor(Number(targetGlyphs) || baseGlyphs.length),
+  )
+  const seed = hashString32(`${glyphPool?.seed ?? "seed"}:${text}`)
+  const startIndex = seed % phrases.length
 
-  if (visibleHeight <= 0 || visibleWidth <= 0) return 0
+  const collected = []
+  const seenFiles = new Set()
 
-  const elementArea = Math.max(1, rect.height * rect.width)
-  const visibleArea = visibleHeight * visibleWidth
-  return Math.max(0, Math.min(1, visibleArea / elementArea))
+  const pushUniqueGlyphs = (glyphs) => {
+    for (let index = 0; index < glyphs.length; index++) {
+      if (collected.length >= targetCount) return
+      const entry = glyphs[index]
+      const file = String(entry?.file || "")
+      if (!file || seenFiles.has(file)) continue
+      seenFiles.add(file)
+      collected.push(entry)
+    }
+  }
+
+  pushUniqueGlyphs(baseGlyphs)
+
+  for (let offset = 1; offset < phrases.length; offset++) {
+    if (collected.length >= targetCount) break
+    const phrase = phrases[(startIndex + offset * 7) % phrases.length]
+    const glyphs = Array.isArray(phrase?.glyphs) ? phrase.glyphs : []
+    if (!glyphs.length) continue
+    pushUniqueGlyphs(glyphs)
+  }
+
+  if (collected.length >= targetCount) {
+    return collected
+  }
+
+  // If uniqueness runs out, top up deterministically from the base phrase.
+  while (collected.length < targetCount) {
+    collected.push(baseGlyphs[collected.length % baseGlyphs.length])
+  }
+
+  return collected
 }
 
-const servicesHeadingRef = ref(null)
-const servicesHeadingTimescanRef = ref(null)
+const servicesEyebrowTokens = computed(() =>
+  buildGlyphSequence(SERVICES_EYEBROW_TEXT, 4, 10),
+)
 
 const servicesHeadingTokens = computed(() => {
-  const phrase = pickPhrase(SERVICES_HEADING_TEXT, SERVICES_MIN_GLYPHS)
-  return Array.isArray(phrase?.glyphs) ? phrase.glyphs : []
-})
-
-let servicesHeadingObserver = null
-let servicesHeadingDelayId = 0
-let servicesHeadingTriggered = false
-
-function clearServicesHeadingDelay() {
-  if (!servicesHeadingDelayId) return
-  window.clearTimeout(servicesHeadingDelayId)
-  servicesHeadingDelayId = 0
-}
-
-function runServicesHeadingTimescan() {
-  if (servicesHeadingTriggered) return
-  const trigger = servicesHeadingTimescanRef.value?.trigger
-  if (typeof trigger !== "function") return
-  servicesHeadingTriggered = true
-  trigger()
-}
-
-function scheduleServicesHeadingTimescan() {
-  if (servicesHeadingTriggered || servicesHeadingDelayId) return
-  servicesHeadingDelayId = window.setTimeout(() => {
-    servicesHeadingDelayId = 0
-    runServicesHeadingTimescan()
-  }, SERVICES_TRIGGER_DELAY_MS)
-}
-
-onMounted(() => {
-  const target = servicesHeadingRef.value
-  if (!target) return
-
-  servicesHeadingObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (servicesHeadingTriggered) return
-        if (entry.isIntersecting) {
-          scheduleServicesHeadingTimescan()
-          return
-        }
-        clearServicesHeadingDelay()
-      })
-    },
-    { threshold: SERVICES_TRIGGER_THRESHOLD },
+  return buildGlyphSequence(
+    SERVICES_HEADING_TEXT,
+    SERVICES_MIN_GLYPHS,
+    SERVICES_TARGET_GLYPHS,
   )
-
-  servicesHeadingObserver.observe(target)
-
-  requestAnimationFrame(() => {
-    if (servicesHeadingTriggered) return
-    if (viewportVisibilityRatio(target) < SERVICES_TRIGGER_THRESHOLD) return
-    scheduleServicesHeadingTimescan()
-  })
 })
 
-onBeforeUnmount(() => {
-  clearServicesHeadingDelay()
-  if (servicesHeadingObserver) {
-    servicesHeadingObserver.disconnect()
-    servicesHeadingObserver = null
-  }
+const servicesLeadTokens = computed(() =>
+  buildGlyphSequence(SERVICES_LEAD_TEXT, 6, 20),
+)
+
+const servicesCards = computed(() => {
+  return SERVICES_CARD_DATA.map((card) => ({
+    ...card,
+    titleTokens: buildGlyphSequence(
+      `${card.id}:title:${card.title}`,
+      6,
+      SERVICES_TITLE_TARGET_GLYPHS,
+    ),
+    imageTokens: buildGlyphSequence(
+      `${card.id}:image:${card.imageLabel}`,
+      4,
+      SERVICES_IMAGE_TARGET_GLYPHS,
+    ),
+    bulletItems: card.bullets.map((text, index) => ({
+      id: `${card.id}-bullet-${index}`,
+      text,
+      tokens: buildGlyphSequence(
+        `${card.id}:bullet:${index}:${text}`,
+        5,
+        SERVICES_BULLET_TARGET_GLYPHS,
+      ),
+    })),
+  }))
 })
 </script>
 
 <template>
   <section class="services-page">
     <header class="services-header">
-      <p class="eyebrow">Services</p>
-      <h1
-        ref="servicesHeadingRef"
-        class="services-timescan-heading"
-      >
+      <div class="eyebrow">
         <TimescanSentence
-          ref="servicesHeadingTimescanRef"
-          class="services-heading-timescan"
+          class="timescan-base timescan-h6 timescan-layout-center"
+          :overlay-text="SERVICES_EYEBROW_TEXT"
+          :glyph-tokens="servicesEyebrowTokens"
+          :auto-trigger-on-view="true"
+          :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+          :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
+          :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+          :show-button="false"
+        />
+      </div>
+      <h1 class="services-timescan-heading">
+        <TimescanSentence
+          class="timescan-base timescan-h1 timescan-layout-center"
           :overlay-text="SERVICES_HEADING_TEXT"
           :glyph-tokens="servicesHeadingTokens"
+          :glyph-scale="1.4"
+          :auto-trigger-on-view="true"
+          :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+          :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
+          :view-trigger-delay-ms="SERVICES_HEADER_VIEW_TRIGGER_DELAY_MS"
           :show-button="false"
         />
       </h1>
-      <p class="lead">Choose the lane that fits your session and goals.</p>
+      <div class="lead">
+        <TimescanSentence
+          class="timescan-base timescan-h2 timescan-layout-center"
+          :overlay-text="SERVICES_LEAD_TEXT"
+          :glyph-tokens="servicesLeadTokens"
+          :glyph-scale="0.6"
+          :auto-trigger-on-view="true"
+          :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+          :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
+          :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+          :show-button="false"
+        />
+      </div>
     </header>
 
     <section class="services-grid">
-      <article class="service-card">
+      <article
+        v-for="card in servicesCards"
+        :key="card.id"
+        class="service-card"
+      >
         <header class="service-card-head">
-          <div>Studio Rental</div>
+          <TimescanSentence
+            class="timescan-base timescan-h3 timescan-layout-center"
+            :overlay-text="card.title"
+            :glyph-tokens="card.titleTokens"
+            :auto-trigger-on-view="true"
+            :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+            :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
+            :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+            :show-button="false"
+          />
         </header>
         <div
           class="card-image-slot"
           role="img"
-          aria-label="Studio rental image placeholder"
+          :aria-label="card.imageAriaLabel"
         >
-          <span>Studio PNG</span>
+          <TimescanSentence
+            class="timescan-base timescan-caption timescan-layout-center"
+            :overlay-text="card.imageLabel"
+            :glyph-tokens="card.imageTokens"
+            :auto-trigger-on-view="true"
+            :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+            :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
+            :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+            :show-button="false"
+          />
         </div>
         <ul class="service-bullets">
-          <li>Hourly and half-day booking windows</li>
-          <li>Control room plus live room access</li>
-          <li>Add-on engineer support available</li>
-          <li>Late-night sessions by request</li>
-        </ul>
-      </article>
-
-      <article class="service-card">
-        <header class="service-card-head">
-          <div>Music Teaching</div>
-        </header>
-        <div
-          class="card-image-slot"
-          role="img"
-          aria-label="Music teaching image placeholder"
-        >
-          <span>Teaching PNG</span>
-        </div>
-        <ul class="service-bullets">
-          <li>Private one-on-one lesson blocks</li>
-          <li>Beginner through advanced coaching</li>
-          <li>Technique, songwriting, and performance</li>
-          <li>Structured plans with weekly goals</li>
-        </ul>
-      </article>
-
-      <article class="service-card">
-        <header class="service-card-head">
-          <div>Other Services</div>
-        </header>
-        <div
-          class="card-image-slot"
-          role="img"
-          aria-label="Other services image placeholder"
-        >
-          <span>Other PNG</span>
-        </div>
-        <ul class="service-bullets">
-          <li>Vocal tracking and comp preparation</li>
-          <li>Demo polish and arrangement feedback</li>
-          <li>Mix-ready stem export workflow</li>
-          <li>Custom project support by scope</li>
+          <li
+            v-for="bullet in card.bulletItems"
+            :key="bullet.id"
+          >
+            <TimescanSentence
+              class="timescan-base timescan-p timescan-layout-left"
+              :overlay-text="bullet.text"
+              :glyph-tokens="bullet.tokens"
+              :auto-trigger-on-view="true"
+              :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+              :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
+              :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+              :show-button="false"
+            />
+          </li>
         </ul>
       </article>
     </section>
@@ -227,26 +295,14 @@ onBeforeUnmount(() => {
   justify-items: center;
 }
 
+.services-header :deep(.timescan-sentence) {
+  width: 100%;
+}
+
 .services-timescan-heading {
   margin: 0;
   width: 100%;
   display: flex;
-  justify-content: center;
-}
-
-.services-heading-timescan {
-  --timescan-gap: 0;
-  --timescan-ink: rgba(255, 205, 145, 0.98);
-  --timescan-glow: rgba(255, 186, 109, 0.24);
-  --timescan-overlay-font-size: clamp(1.9rem, 4.8vw, 3rem);
-  --timescan-min-height: clamp(44px, 6.5vw, 62px);
-}
-
-.services-heading-timescan :deep(.sentence-stage) {
-  margin: 0 auto;
-}
-
-.services-heading-timescan :deep(.sentence-line) {
   justify-content: center;
 }
 
@@ -289,12 +345,9 @@ onBeforeUnmount(() => {
 }
 
 .service-card-head {
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   margin: 1.2rem 0 0;
   text-align: center;
-  font-size: 1.2rem;
-  color: rgba(255, 237, 214, 0.95);
+  text-transform: uppercase;
 }
 
 .service-card {
@@ -310,24 +363,33 @@ onBeforeUnmount(() => {
   display: grid;
   place-items: center;
   overflow: hidden;
+  text-transform: uppercase;
 }
 
-.card-image-slot span {
-  font-size: 0.83rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.card-image-slot :deep(.timescan-sentence) {
+  width: 100%;
 }
 
 .service-bullets {
   margin: 1.5rem;
   justify-self: center;
-  display: block;
   padding: 0 0 0 1rem;
   display: grid;
   gap: 0.5rem;
-  color: rgba(255, 220, 180, 0.8);
-  font-size: 0.93rem;
   list-style-type: none;
+}
+
+.service-bullets :deep(.timescan-sentence) {
+  width: 100%;
+}
+
+.service-bullets :deep(.sentence-stage) {
+  overflow: hidden;
+}
+
+.service-bullets li {
+  margin: 0;
+  overflow: hidden;
 }
 
 @media (max-width: 980px) {
@@ -356,3 +418,5 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
+
