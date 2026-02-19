@@ -6,9 +6,44 @@ const MIN_SCROLL_DISTANCE_PX = 4
 
 let smoothScrollRafId = 0
 
+function isInSection(path, sectionPath) {
+  if (typeof path !== "string") return false
+  return path === sectionPath || path.startsWith(`${sectionPath}/`)
+}
+
+function getRouteSectionPath(path) {
+  if (typeof path !== "string") return "/"
+  if (isInSection(path, "/services")) return "/services"
+  if (isInSection(path, "/portfolio")) return "/portfolio"
+  if (isInSection(path, "/contact")) return "/contact"
+  if (isInSection(path, "/projects")) return "/projects"
+  return "/"
+}
+
 const routes = [
   { path: "/", name: "Home", component: () => import("./components/1Home.vue") },
-  { path: "/services", name: "Services", component: () => import("./components/2Services.vue") },
+  {
+    path: "/services",
+    name: "Services",
+    component: () => import("./components/2Services.vue"),
+    children: [
+      {
+        path: "studio-rental",
+        name: "ServiceStudioRental",
+        component: () => import("./components/services/ServiceStudioRentalPanel.vue"),
+      },
+      {
+        path: "music-teaching",
+        name: "ServiceMusicTeaching",
+        component: () => import("./components/services/ServiceMusicTeachingPanel.vue"),
+      },
+      {
+        path: "other-services",
+        name: "ServiceOtherServices",
+        component: () => import("./components/services/ServiceOtherServicesPanel.vue"),
+      },
+    ],
+  },
   { path: "/portfolio", name: "Portfolio", component: () => import("./components/3Portfolio.vue") },
   { path: "/contact", name: "Contact", component: () => import("./components/4Contact.vue") },
   { path: "/projects", name: "Projects", component: () => import("./components/5Projects.vue") },
@@ -79,10 +114,19 @@ export default createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
+    const toSectionPath = getRouteSectionPath(to.path)
+    const fromSectionPath = getRouteSectionPath(from.path)
+
     if (savedPosition) return savedPosition
     const isInitialNavigation = from.matched.length === 0
     if (isInitialNavigation && isReloadNavigation()) return { left: 0, top: 0 }
     if (isInitialNavigation) return { left: 0, top: 0 }
+
+    // Keep scroll stable when opening/closing nested panels inside a section.
+    if (toSectionPath === fromSectionPath) {
+      stopSmoothScrollAnimation()
+      return false
+    }
 
     // Do not trigger smooth hero scroll when we're already at/below the hero nav anchor.
     if (isAtOrBelowNavAnchor()) {

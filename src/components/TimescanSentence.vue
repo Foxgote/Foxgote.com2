@@ -182,8 +182,7 @@ function maybeRunViewTrigger() {
   const rootEl = timescanRootRef.value
   if (!rootEl) return
   const threshold = clampViewTriggerThreshold()
-  const requiredVisibleRatio = threshold > 0 ? threshold : 0.001
-  if (viewportVisibilityRatio(rootEl) < requiredVisibleRatio) return
+  if (threshold > 0 && viewportVisibilityRatio(rootEl) < threshold) return
   scheduleViewTrigger()
 }
 
@@ -202,7 +201,6 @@ function setupViewTriggerObserver() {
   if (!rootEl) return
 
   const threshold = clampViewTriggerThreshold()
-  const requiredVisibleRatio = threshold > 0 ? threshold : 0.001
   const rootMargin =
     typeof props.viewTriggerRootMargin === "string"
       ? props.viewTriggerRootMargin
@@ -217,11 +215,13 @@ function setupViewTriggerObserver() {
         }
         if (!canRunViewTrigger()) return
 
-        const ratio = Number(entry?.intersectionRatio)
-        const visibleRatio = Number.isFinite(ratio)
-          ? ratio
-          : viewportVisibilityRatio(rootEl)
-        if (visibleRatio < requiredVisibleRatio) return
+        if (threshold > 0) {
+          const ratio = Number(entry?.intersectionRatio)
+          const visibleRatio = Number.isFinite(ratio)
+            ? ratio
+            : viewportVisibilityRatio(rootEl)
+          if (visibleRatio < threshold) return
+        }
         scheduleViewTrigger()
       })
     },

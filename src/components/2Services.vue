@@ -1,12 +1,14 @@
 <script setup>
-import { computed } from "vue"
+import { computed, onBeforeUnmount, ref, watch } from "vue"
+import { useRoute, useRouter } from "vue-router"
 import glyphPool from "@/glyphPool/pool.gen"
 import TimescanSentence from "./TimescanSentence.vue"
 
 const SERVICES_EYEBROW_TEXT = "Services"
 const SERVICES_HEADING_TEXT = "Select your choice"
 const SERVICES_LEAD_TEXT = "Choose the lane that fits your session and goals."
-const SERVICES_VIEW_TRIGGER_THRESHOLD = 0.2
+const SERVICES_HEADER_VIEW_TRIGGER_THRESHOLD = 0.2
+const SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD = 0
 const SERVICES_VIEW_TRIGGER_ROOT_MARGIN = "0px"
 const SERVICES_HEADER_VIEW_TRIGGER_DELAY_MS = 750
 const SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS = 120
@@ -15,6 +17,14 @@ const SERVICES_TARGET_GLYPHS = 28
 const SERVICES_IMAGE_TARGET_GLYPHS = 14
 const SERVICES_TITLE_TARGET_GLYPHS = 18
 const SERVICES_BULLET_TARGET_GLYPHS = 18
+const SERVICE_DETAIL_DRAG_CLOSE_THRESHOLD_PX = 120
+const SERVICE_DETAIL_DRAG_CLICK_DEADZONE_PX = 6
+
+const SERVICE_CARD_ROUTE_NAME_BY_ID = {
+  "studio-rental": "ServiceStudioRental",
+  "music-teaching": "ServiceMusicTeaching",
+  "other-services": "ServiceOtherServices",
+}
 
 const SERVICES_CARD_DATA = [
   {
@@ -54,6 +64,17 @@ const SERVICES_CARD_DATA = [
     ],
   },
 ]
+
+const router = useRouter()
+const route = useRoute()
+
+const isServiceDetailOpen = computed(() => route.path !== "/services")
+const serviceDetailDragOffsetPx = ref(0)
+const isServiceDetailDragging = ref(false)
+
+let serviceDetailDragStartY = 0
+let serviceDetailDragPointerId = null
+let serviceDetailDragMoved = false
 
 function hashString32(input) {
   let hash = 2166136261
@@ -158,6 +179,7 @@ const servicesLeadTokens = computed(() =>
 const servicesCards = computed(() => {
   return SERVICES_CARD_DATA.map((card) => ({
     ...card,
+    to: { name: SERVICE_CARD_ROUTE_NAME_BY_ID[card.id] },
     titleTokens: buildGlyphSequence(
       `${card.id}:title:${card.title}`,
       6,
@@ -179,6 +201,88 @@ const servicesCards = computed(() => {
     })),
   }))
 })
+
+function closeServiceDetail() {
+  if (!isServiceDetailOpen.value) return
+  router.replace({ name: "Services" })
+}
+
+function clearServiceDetailDragListeners() {
+  window.removeEventListener("pointermove", onServiceDetailHandlePointerMove)
+  window.removeEventListener("pointerup", onServiceDetailHandlePointerUp)
+  window.removeEventListener("pointercancel", onServiceDetailHandlePointerUp)
+}
+
+function resetServiceDetailDragState() {
+  isServiceDetailDragging.value = false
+  serviceDetailDragOffsetPx.value = 0
+  serviceDetailDragStartY = 0
+  serviceDetailDragPointerId = null
+  serviceDetailDragMoved = false
+}
+
+function onServiceDetailHandlePointerDown(event) {
+  if (event.button !== undefined && event.button !== 0) return
+  serviceDetailDragStartY = event.clientY
+  serviceDetailDragPointerId = event.pointerId ?? null
+  serviceDetailDragMoved = false
+  isServiceDetailDragging.value = true
+  serviceDetailDragOffsetPx.value = 0
+  clearServiceDetailDragListeners()
+  window.addEventListener("pointermove", onServiceDetailHandlePointerMove)
+  window.addEventListener("pointerup", onServiceDetailHandlePointerUp)
+  window.addEventListener("pointercancel", onServiceDetailHandlePointerUp)
+}
+
+function onServiceDetailHandlePointerMove(event) {
+  if (!isServiceDetailDragging.value) return
+  if (serviceDetailDragPointerId !== null && event.pointerId !== serviceDetailDragPointerId) return
+
+  const deltaY = Math.max(0, event.clientY - serviceDetailDragStartY)
+  serviceDetailDragOffsetPx.value = deltaY
+  if (deltaY > SERVICE_DETAIL_DRAG_CLICK_DEADZONE_PX) {
+    serviceDetailDragMoved = true
+  }
+}
+
+function onServiceDetailHandlePointerUp(event) {
+  if (!isServiceDetailDragging.value) return
+  if (serviceDetailDragPointerId !== null && event.pointerId !== serviceDetailDragPointerId) return
+
+  const shouldClose = serviceDetailDragOffsetPx.value >= SERVICE_DETAIL_DRAG_CLOSE_THRESHOLD_PX
+  clearServiceDetailDragListeners()
+  resetServiceDetailDragState()
+  if (shouldClose) {
+    closeServiceDetail()
+  }
+}
+
+function onServiceDetailHandleClick(event) {
+  if (serviceDetailDragMoved) {
+    event.preventDefault()
+    serviceDetailDragMoved = false
+    return
+  }
+  closeServiceDetail()
+}
+
+watch(
+  isServiceDetailOpen,
+  (isOpen) => {
+    document.body.style.overflow = isOpen ? "hidden" : ""
+    if (!isOpen) {
+      clearServiceDetailDragListeners()
+      resetServiceDetailDragState()
+    }
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  clearServiceDetailDragListeners()
+  resetServiceDetailDragState()
+  document.body.style.overflow = ""
+})
 </script>
 
 <template>
@@ -190,7 +294,7 @@ const servicesCards = computed(() => {
           :overlay-text="SERVICES_EYEBROW_TEXT"
           :glyph-tokens="servicesEyebrowTokens"
           :auto-trigger-on-view="true"
-          :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+          :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
           :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
           :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
           :show-button="false"
@@ -203,7 +307,7 @@ const servicesCards = computed(() => {
           :glyph-tokens="servicesHeadingTokens"
           :glyph-scale="1.4"
           :auto-trigger-on-view="true"
-          :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+          :view-trigger-threshold="SERVICES_HEADER_VIEW_TRIGGER_THRESHOLD"
           :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
           :view-trigger-delay-ms="SERVICES_HEADER_VIEW_TRIGGER_DELAY_MS"
           :show-button="false"
@@ -216,7 +320,7 @@ const servicesCards = computed(() => {
           :glyph-tokens="servicesLeadTokens"
           :glyph-scale="0.6"
           :auto-trigger-on-view="true"
-          :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+          :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
           :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
           :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
           :show-button="false"
@@ -225,58 +329,94 @@ const servicesCards = computed(() => {
     </header>
 
     <section class="services-grid">
-      <article
+      <RouterLink
         v-for="card in servicesCards"
         :key="card.id"
-        class="service-card"
+        class="service-card-link"
+        :to="card.to"
+        :aria-label="`Open ${card.title} details`"
       >
-        <header class="service-card-head">
-          <TimescanSentence
-            class="timescan-base timescan-h3 timescan-layout-center"
-            :overlay-text="card.title"
-            :glyph-tokens="card.titleTokens"
-            :auto-trigger-on-view="true"
-            :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
-            :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-            :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
-            :show-button="false"
-          />
-        </header>
-        <div
-          class="card-image-slot"
-          role="img"
-          :aria-label="card.imageAriaLabel"
-        >
-          <TimescanSentence
-            class="timescan-base timescan-caption timescan-layout-center"
-            :overlay-text="card.imageLabel"
-            :glyph-tokens="card.imageTokens"
-            :auto-trigger-on-view="true"
-            :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
-            :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-            :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
-            :show-button="false"
-          />
-        </div>
-        <ul class="service-bullets">
-          <li
-            v-for="bullet in card.bulletItems"
-            :key="bullet.id"
-          >
+        <article class="service-card">
+          <header class="service-card-head">
             <TimescanSentence
-              class="timescan-base timescan-p timescan-layout-left"
-              :overlay-text="bullet.text"
-              :glyph-tokens="bullet.tokens"
+              class="timescan-base timescan-h3 timescan-layout-center"
+              :overlay-text="card.title"
+              :glyph-tokens="card.titleTokens"
               :auto-trigger-on-view="true"
-              :view-trigger-threshold="SERVICES_VIEW_TRIGGER_THRESHOLD"
+              :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
               :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
               :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
               :show-button="false"
             />
-          </li>
-        </ul>
-      </article>
+          </header>
+          <div
+            class="card-image-slot"
+            role="img"
+            :aria-label="card.imageAriaLabel"
+          >
+            <TimescanSentence
+              class="timescan-base timescan-caption timescan-layout-center"
+              :overlay-text="card.imageLabel"
+              :glyph-tokens="card.imageTokens"
+              :auto-trigger-on-view="true"
+              :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
+              :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
+              :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+              :show-button="false"
+            />
+          </div>
+          <ul class="service-bullets">
+            <li
+              v-for="bullet in card.bulletItems"
+              :key="bullet.id"
+            >
+              <TimescanSentence
+                class="timescan-base timescan-p timescan-layout-left"
+                :overlay-text="bullet.text"
+                :glyph-tokens="bullet.tokens"
+                :auto-trigger-on-view="true"
+                :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
+                :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
+                :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+                :show-button="false"
+              />
+            </li>
+          </ul>
+        </article>
+      </RouterLink>
     </section>
+
+    <RouterView v-slot="{ Component, route: detailRoute }">
+      <Transition name="service-detail-backdrop" appear>
+        <div
+          v-if="Component"
+          :key="`${detailRoute.fullPath}-backdrop`"
+          class="service-detail-backdrop"
+          aria-hidden="true"
+        ></div>
+      </Transition>
+      <Transition name="service-detail-sheet" appear>
+        <div
+          v-if="Component"
+          :key="detailRoute.fullPath"
+          class="service-detail-overlay"
+          :class="{ 'is-dragging': isServiceDetailDragging }"
+          :style="{ '--service-detail-drag-y': `${serviceDetailDragOffsetPx}px` }"
+          @click.self="closeServiceDetail"
+        >
+          <div class="service-detail-frame">
+            <button
+              type="button"
+              class="service-detail-dismiss-handle"
+              aria-label="Close service detail"
+              @click="onServiceDetailHandleClick"
+              @pointerdown="onServiceDetailHandlePointerDown"
+            ></button>
+            <component :is="Component" />
+          </div>
+        </div>
+      </Transition>
+    </RouterView>
   </section>
 </template>
 
@@ -329,19 +469,39 @@ const servicesCards = computed(() => {
   justify-items: center;
 }
 
-.service-card {
+.service-card-link {
   width: min(100%, 340px);
+  display: block;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.service-card-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(212, 161, 94, 0.42);
+}
+
+.service-card {
+  width: 100%;
   height: min(100%, 520px);
+  margin: 0;
   display: grid;
   align-content: start;
   gap: 0.85rem;
   border-radius: 16px;
+  border: 1px solid rgba(212, 161, 94, 0.08);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: linear-gradient(rgba(10, 11, 13, 0.4));
+  background: linear-gradient(160deg, rgba(18, 14, 10, 0.52), rgba(8, 8, 10, 0.72));
   box-shadow:
-    10px 18px 26px rgba(0, 0, 0, 0.34),
-    inset 0 0 0 1px rgba(212, 161, 94, 0.06);
+    0 10px 18px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(212, 161, 94, 0.05);
+  font-size: 1.2rem;
+  color: rgba(255, 237, 214, 0.95);
+  letter-spacing: 0.01em;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
 }
 
 .service-card-head {
@@ -350,11 +510,14 @@ const servicesCards = computed(() => {
   text-transform: uppercase;
 }
 
-.service-card {
-  margin: 0;
-  font-size: 1.2rem;
-  color: rgba(255, 237, 214, 0.95);
-  letter-spacing: 0.01em;
+.service-card-link:hover .service-card,
+.service-card-link:focus-visible .service-card,
+.service-card-link.router-link-active .service-card {
+  transform: translate(-5px, -6px);
+  border-color: rgba(212, 161, 94, 0.22);
+  box-shadow:
+    0 18px 30px rgba(0, 0, 0, 0.42),
+    inset 0 0 0 1px rgba(212, 161, 94, 0.1);
 }
 
 .card-image-slot {
@@ -392,6 +555,102 @@ const servicesCards = computed(() => {
   overflow: hidden;
 }
 
+.service-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  padding: 0;
+  background: transparent;
+  transform: translateY(0);
+  will-change: transform;
+}
+
+.service-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 68;
+  pointer-events: none;
+  background: rgba(4, 6, 8, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.service-detail-overlay :deep(.service-detail-window) {
+  width: 100vw;
+  max-width: 100vw;
+  height: min(75vh, calc(100vh - 0.25rem));
+  min-height: 58vh;
+  max-height: calc(100vh - 0.25rem);
+  border-radius: 18px 18px 0 0;
+}
+
+.service-detail-frame {
+  width: 100vw;
+  position: relative;
+  transform: translateY(var(--service-detail-drag-y, 0px));
+  transition: transform 220ms ease;
+}
+
+.service-detail-overlay.is-dragging .service-detail-frame {
+  transition: none;
+}
+
+.service-detail-dismiss-handle {
+  position: absolute;
+  top: 0.15rem;
+  left: 50%;
+  width: 13.5rem;
+  height: 2.5rem;
+  transform: translateX(-50%) scaleX(2.25);
+  border: 0;
+  padding: 0;
+  background: rgba(255, 237, 214, 0.95);
+  -webkit-mask: url("../assets/img/arrow-down-3101.svg") center / contain no-repeat;
+  mask: url("../assets/img/arrow-down-3101.svg") center / contain no-repeat;
+  opacity: 0.6;
+  cursor: pointer;
+  touch-action: none;
+  z-index: 1;
+}
+
+.service-detail-sheet-enter-active,
+.service-detail-sheet-leave-active {
+  transition: transform 920ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.service-detail-sheet-enter-from,
+.service-detail-sheet-leave-to {
+  transform: translateY(110%);
+}
+
+.service-detail-backdrop-enter-active,
+.service-detail-backdrop-leave-active {
+  transition:
+    opacity 520ms ease,
+    backdrop-filter 520ms ease,
+    -webkit-backdrop-filter 520ms ease,
+    background-color 520ms ease;
+}
+
+.service-detail-backdrop-enter-from,
+.service-detail-backdrop-leave-to {
+  opacity: 0;
+  background-color: rgba(4, 6, 8, 0);
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+}
+
+.service-detail-backdrop-enter-to,
+.service-detail-backdrop-leave-from {
+  opacity: 1;
+  background-color: rgba(4, 6, 8, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 @media (max-width: 980px) {
   .services-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -408,9 +667,12 @@ const servicesCards = computed(() => {
     justify-items: stretch;
   }
 
+  .service-card-link {
+    max-width: none;
+  }
+
   .service-card {
     min-height: auto;
-    max-width: none;
   }
 
   .card-image-slot {

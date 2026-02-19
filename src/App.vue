@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from "vue"
+import { computed, ref, onMounted, onBeforeUnmount, watch } from "vue"
 import { RouterLink, RouterView, useRoute } from "vue-router"
 import heroHome from "./assets/img/barlite.png"
 import heroServices from "./assets/img/services.jpg"
@@ -17,6 +17,11 @@ const routeTransitionName = ref("route-slide-left")
 const NEON_FLICKER_DURATION_MS = 1800
 const ENABLE_NEON_FLICKER = false
 const HERO_FADE_DURATION_MS = 700
+const NAV_SCROLL_DURATION_MS = 2000
+const NAV_SCROLL_OFFSET_PX = -178
+const NAV_SCROLL_VIEWPORT_TOP_PAD_PX = 64
+const NAV_SCROLL_ANCHOR_EPSILON_PX = 2
+const NAV_SCROLL_MIN_DISTANCE_PX = 4
 const ROUTE_HERO_URLS = {
   "/": heroHome,
   "/services": heroServices,
@@ -38,8 +43,27 @@ let scrollEffectEnabled = false
 let anchorIsIntersecting = true
 let neonFlickerTimeoutId = 0
 let heroFadeTimeoutId = 0
+let navSmoothScrollRafId = 0
 
-const baseHeroUrl = ref(ROUTE_HERO_URLS[route.path] || heroHome)
+function isInSection(path, sectionPath) {
+  if (typeof path !== "string") return false
+  return path === sectionPath || path.startsWith(`${sectionPath}/`)
+}
+
+function normalizeRoutePath(path) {
+  if (typeof path !== "string") return "/"
+  if (isInSection(path, "/services")) return "/services"
+  if (isInSection(path, "/portfolio")) return "/portfolio"
+  if (isInSection(path, "/contact")) return "/contact"
+  if (isInSection(path, "/projects")) return "/projects"
+  return "/"
+}
+
+function routeViewKey(path) {
+  return normalizeRoutePath(path)
+}
+
+const baseHeroUrl = ref(ROUTE_HERO_URLS[normalizeRoutePath(route.path)] || heroHome)
 const overlayHeroUrl = ref("")
 const heroOverlayActive = ref(false)
 
@@ -55,14 +79,15 @@ const routeOrder = {
 watch(
   () => route.path,
   (toPath, fromPath) => {
-    const toIndex = routeOrder[toPath] ?? 0
-    const fromIndex = routeOrder[fromPath] ?? 0
+    const toIndex = routeOrder[normalizeRoutePath(toPath)] ?? 0
+    const fromIndex = routeOrder[normalizeRoutePath(fromPath)] ?? 0
+    if (toIndex === fromIndex) return
     routeTransitionName.value = toIndex < fromIndex ? "route-slide-right" : "route-slide-left"
   },
 )
 
 function heroUrlForPath(path) {
-  return ROUTE_HERO_URLS[path] || heroHome
+  return ROUTE_HERO_URLS[normalizeRoutePath(path)] || heroHome
 }
 
 function transitionHeroForPath(path) {
@@ -88,7 +113,7 @@ function transitionHeroForPath(path) {
 }
 
 function applyRouteTheme(path) {
-  const themeKey = ROUTE_THEME_KEYS[path] || "home"
+  const themeKey = ROUTE_THEME_KEYS[normalizeRoutePath(path)] || "home"
   document.documentElement.setAttribute("data-route-theme", themeKey)
 }
 
@@ -138,6 +163,73 @@ function onScroll() {
   rafId = requestAnimationFrame(updateScrollEffect)
 }
 
+function stopNavSmoothScrollAnimation() {
+  if (!navSmoothScrollRafId) return
+  cancelAnimationFrame(navSmoothScrollRafId)
+  navSmoothScrollRafId = 0
+}
+
+function isAtOrBelowNavAnchor(selector = ".nav-anchor") {
+  const anchor = document.querySelector(selector)
+  if (!anchor) return false
+
+  const anchorDocY = anchor.getBoundingClientRect().top + window.scrollY
+  const gateLineDocY = window.scrollY + NAV_SCROLL_VIEWPORT_TOP_PAD_PX
+  return gateLineDocY >= anchorDocY - NAV_SCROLL_ANCHOR_EPSILON_PX
+}
+
+function smoothScrollToElement(selector, duration = NAV_SCROLL_DURATION_MS, offset = 0) {
+  const el = document.querySelector(selector)
+  if (!el) return
+
+  stopNavSmoothScrollAnimation()
+
+  const start = window.scrollY
+  const rawEnd = el.getBoundingClientRect().top + window.scrollY - NAV_SCROLL_VIEWPORT_TOP_PAD_PX - offset
+  const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+  const end = Math.max(0, Math.min(rawEnd, maxTop))
+  if (end <= start) return
+
+  const distance = end - start
+  if (distance < NAV_SCROLL_MIN_DISTANCE_PX) return
+  let startTime = null
+
+  function easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+  }
+
+  function scroll(currentTime) {
+    if (startTime === null) startTime = currentTime
+    const elapsed = currentTime - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    const ease = easeInOutQuad(progress)
+    window.scrollTo(0, start + distance * ease)
+    if (progress < 1) {
+      navSmoothScrollRafId = requestAnimationFrame(scroll)
+      return
+    }
+    navSmoothScrollRafId = 0
+  }
+
+  navSmoothScrollRafId = requestAnimationFrame(scroll)
+}
+
+function pathFromNavLink(linkEl) {
+  try {
+    return new URL(linkEl.href, window.location.origin).pathname
+  } catch {
+    return ""
+  }
+}
+
+function triggerHeroScrollIfAboveAnchor() {
+  if (isAtOrBelowNavAnchor()) return
+  requestAnimationFrame(() => {
+    if (isAtOrBelowNavAnchor()) return
+    smoothScrollToElement(".welcome-sign", NAV_SCROLL_DURATION_MS, NAV_SCROLL_OFFSET_PX)
+  })
+}
+
 function applyStickyState() {
   const stickyActive = scrollEffectEnabled && !anchorIsIntersecting
   document.documentElement.style.setProperty("--sticky-on", stickyActive ? "1" : "0")
@@ -160,7 +252,16 @@ function resetReloadScrollPosition() {
 
 function onNavClick(event) {
   if (!(event.target instanceof Element)) return
-  if (!event.target.closest(".nav-link")) return
+  const navLink = event.target.closest(".nav-link")
+  if (!(navLink instanceof HTMLAnchorElement)) return
+
+  const targetPath = pathFromNavLink(navLink)
+  const isSameSectionSelection =
+    normalizeRoutePath(targetPath) === normalizeRoutePath(route.path)
+  if (isSameSectionSelection) {
+    triggerHeroScrollIfAboveAnchor()
+  }
+
   if (ENABLE_NEON_FLICKER) triggerNeonFlicker()
   if (scrollEffectEnabled) return
   scrollEffectEnabled = true
@@ -213,6 +314,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("scroll", onScroll)
   window.removeEventListener("resize", onScroll)
   cancelAnimationFrame(rafId)
+  stopNavSmoothScrollAnimation()
   window.clearTimeout(neonFlickerTimeoutId)
   window.clearTimeout(heroFadeTimeoutId)
   if (io) io.disconnect()
@@ -227,7 +329,9 @@ onBeforeUnmount(() => {
         <RouterLink to="/" class="nav-link">Home</RouterLink>
         <RouterLink to="/services" class="nav-link">Services</RouterLink>
         <RouterLink to="/portfolio" class="nav-link">Portfolio</RouterLink>
-        <RouterLink to="/contact" class="nav-link">Contact</RouterLink>
+        <RouterLink to="/contact" class="nav-link">
+          Contact
+        </RouterLink>
         <RouterLink to="/projects" class="nav-link">Projects</RouterLink>
       </div>
     </nav>
@@ -267,7 +371,9 @@ onBeforeUnmount(() => {
           <RouterLink to="/" class="nav-link">Home</RouterLink>
           <RouterLink to="/services" class="nav-link">Services</RouterLink>
           <RouterLink to="/portfolio" class="nav-link">Portfolio</RouterLink>
-          <RouterLink to="/contact" class="nav-link">Contact</RouterLink>
+          <RouterLink to="/contact" class="nav-link">
+            Contact
+          </RouterLink>
           <RouterLink to="/projects" class="nav-link">Projects</RouterLink>
         </div>
       </nav>
@@ -277,7 +383,7 @@ onBeforeUnmount(() => {
         <div id="content-top" aria-hidden="true"></div>
       <RouterView v-slot="{ Component, route: currentRoute }">
         <Transition :name="routeTransitionName" mode="out-in">
-          <component :is="Component" :key="currentRoute.fullPath" />
+          <component :is="Component" :key="routeViewKey(currentRoute.path)" />
         </Transition>
       </RouterView>
     </main>
