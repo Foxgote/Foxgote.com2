@@ -94,6 +94,14 @@ function getTextFromValue(binding) {
   return ""
 }
 
+function hasTextValue(binding) {
+  const value = binding?.value
+  if (typeof value === "string") {
+    return true
+  }
+  return typeof value?.text === "string"
+}
+
 function parseTrigger(binding) {
   if (binding?.modifiers?.hover) return "hover"
   if (binding?.modifiers?.intersect) return "intersect"
@@ -347,6 +355,12 @@ function attachTriggers(el, state) {
 
 function attachResizeObserver(el, state) {
   if (!state) return null
+  state.widthRef.value = Math.max(0, Math.round(el.getBoundingClientRect().width))
+
+  if (typeof ResizeObserver !== "function") {
+    return null
+  }
+
   const observer = new ResizeObserver((entries) => {
     const entry = entries[0]
     if (!entry) return
@@ -424,8 +438,12 @@ export default {
       return
     }
 
+    if (!hasTextValue(binding)) {
+      return
+    }
+
     const newText = getTextFromValue(binding)
-    if (newText && newText !== state.overlayRef.value) {
+    if (newText !== state.overlayRef.value) {
       state.overlayRef.value = newText
       state.resolveTokensForText?.(newText)
     }

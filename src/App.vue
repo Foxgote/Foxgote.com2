@@ -363,7 +363,12 @@ onBeforeUnmount(() => {
       ></figure>
 
       <!-- Invisible anchor zone (just a sensor) -->
-      <div ref="navAnchorRef" class="nav-anchor" aria-hidden="true"></div>
+      <div
+        id="scroll-effect-anchor"
+        ref="navAnchorRef"
+        class="nav-anchor"
+        aria-hidden="true"
+      ></div>
 
       <!-- Hero-bottom nav -->
       <nav class="nav nav-hero" @click.capture="onNavClick">

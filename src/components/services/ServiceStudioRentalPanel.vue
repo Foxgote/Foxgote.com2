@@ -22,7 +22,7 @@
 
     <footer class="service-detail-actions">
       <RouterLink
-        to="/contact"
+        to="/contact#scroll-effect-anchor"
         class="service-detail-action-link"
       >
         Contact Me

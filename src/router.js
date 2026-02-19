@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from "vue-router"
 const VIEWPORT_TOP_PAD_PX = 64
 const ANCHOR_GATE_EPSILON_PX = 2
 const MIN_SCROLL_DISTANCE_PX = 4
+const SCROLL_EFFECT_ANCHOR_HASH = "#scroll-effect-anchor"
+const SCROLL_EFFECT_ANCHOR_SELECTOR = ".nav-anchor"
 
 let smoothScrollRafId = 0
 
@@ -74,10 +76,9 @@ function smoothScrollToElement(selector, duration = 800, offset = 0) {
   const rawEnd = el.getBoundingClientRect().top + window.scrollY - VIEWPORT_TOP_PAD_PX - offset
   const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
   const end = Math.max(0, Math.min(rawEnd, maxTop))
-  if (end <= start) return
 
   const distance = end - start
-  if (distance < MIN_SCROLL_DISTANCE_PX) return
+  if (Math.abs(distance) < MIN_SCROLL_DISTANCE_PX) return
   let startTime = null
 
   function easeInOutQuad(t) {
@@ -121,6 +122,13 @@ export default createRouter({
     const isInitialNavigation = from.matched.length === 0
     if (isInitialNavigation && isReloadNavigation()) return { left: 0, top: 0 }
     if (isInitialNavigation) return { left: 0, top: 0 }
+
+    if (to.hash === SCROLL_EFFECT_ANCHOR_HASH) {
+      requestAnimationFrame(() => {
+        smoothScrollToElement(SCROLL_EFFECT_ANCHOR_SELECTOR, 600, 0)
+      })
+      return false
+    }
 
     // Keep scroll stable when opening/closing nested panels inside a section.
     if (toSectionPath === fromSectionPath) {

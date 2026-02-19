@@ -19,6 +19,7 @@ const SERVICES_TITLE_TARGET_GLYPHS = 18
 const SERVICES_BULLET_TARGET_GLYPHS = 18
 const SERVICE_DETAIL_DRAG_CLOSE_THRESHOLD_PX = 120
 const SERVICE_DETAIL_DRAG_CLICK_DEADZONE_PX = 6
+const SERVICES_ROUTE_PATH = "/services"
 
 const SERVICE_CARD_ROUTE_NAME_BY_ID = {
   "studio-rental": "ServiceStudioRental",
@@ -68,7 +69,12 @@ const SERVICES_CARD_DATA = [
 const router = useRouter()
 const route = useRoute()
 
-const isServiceDetailOpen = computed(() => route.path !== "/services")
+const isServiceDetailOpen = computed(() => {
+  if (route.name != null) {
+    return route.name !== "Services"
+  }
+  return route.path !== SERVICES_ROUTE_PATH
+})
 const serviceDetailDragOffsetPx = ref(0)
 const isServiceDetailDragging = ref(false)
 
