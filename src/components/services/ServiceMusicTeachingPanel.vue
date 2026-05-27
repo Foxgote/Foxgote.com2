@@ -1,23 +1,31 @@
+<script setup>
+import { getServiceById } from "@/content/siteContent"
+
+const service = getServiceById("music-teaching")
+</script>
+
 <template>
   <section
     class="service-detail-window"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="music-teaching-detail-title"
+    :aria-labelledby="`${service.id}-detail-title`"
   >
     <header class="service-detail-header">
-      <p class="service-detail-kicker">Service Detail</p>
-      <h2 id="music-teaching-detail-title">Music Teaching</h2>
+      <p class="service-detail-kicker">{{ service.detail.kicker }}</p>
+      <h2 :id="`${service.id}-detail-title`">{{ service.title }}</h2>
       <p class="service-detail-summary">
-        Personalized coaching blocks designed around your goals and pace.
+        {{ service.detail.summary }}
       </p>
     </header>
 
     <ul class="service-detail-list">
-      <li>One-on-one lesson formats for focused progress.</li>
-      <li>Beginner through advanced support.</li>
-      <li>Technique, songwriting, and live performance coaching.</li>
-      <li>Structured weekly plans with practical milestones.</li>
+      <li
+        v-for="item in service.detail.bullets"
+        :key="item"
+      >
+        {{ item }}
+      </li>
     </ul>
 
     <footer class="service-detail-actions">
@@ -25,7 +33,7 @@
         to="/contact#scroll-effect-anchor"
         class="service-detail-action-link"
       >
-        Contact Me
+        {{ service.detail.ctaLabel }}
       </RouterLink>
     </footer>
   </section>

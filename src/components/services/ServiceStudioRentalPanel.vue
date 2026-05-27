@@ -1,23 +1,31 @@
+<script setup>
+import { getServiceById } from "@/content/siteContent"
+
+const service = getServiceById("studio-rental")
+</script>
+
 <template>
   <section
     class="service-detail-window"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="studio-rental-detail-title"
+    :aria-labelledby="`${service.id}-detail-title`"
   >
     <header class="service-detail-header">
-      <p class="service-detail-kicker">Service Detail</p>
-      <h2 id="studio-rental-detail-title">Studio Rental</h2>
+      <p class="service-detail-kicker">{{ service.detail.kicker }}</p>
+      <h2 :id="`${service.id}-detail-title`">{{ service.title }}</h2>
       <p class="service-detail-summary">
-        Book the room, lock in your schedule, and keep session flow simple.
+        {{ service.detail.summary }}
       </p>
     </header>
 
     <ul class="service-detail-list">
-      <li>Hourly, half-day, and full-day booking options.</li>
-      <li>Control room plus live room access during booked windows.</li>
-      <li>Optional engineer add-on support for setup and tracking.</li>
-      <li>Late-night session availability by request.</li>
+      <li
+        v-for="item in service.detail.bullets"
+        :key="item"
+      >
+        {{ item }}
+      </li>
     </ul>
 
     <footer class="service-detail-actions">
@@ -25,7 +33,7 @@
         to="/contact#scroll-effect-anchor"
         class="service-detail-action-link"
       >
-        Contact Me
+        {{ service.detail.ctaLabel }}
       </RouterLink>
     </footer>
   </section>

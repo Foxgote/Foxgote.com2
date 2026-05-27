@@ -4,6 +4,30 @@
 const TIMESCAN_STRIP_BASE = `${String(import.meta.env?.BASE_URL || "/").replace(/\/?$/, "/")}timescan-glyph-strips/`
 
 const timescanGlyphStrips = {
+  "home.heading": {
+    width: 1387,
+    height: 52,
+    maxGlyphs: 64,
+    base: `${TIMESCAN_STRIP_BASE}home-heading/base.svg`,
+    flicker: [
+      `${TIMESCAN_STRIP_BASE}home-heading/flicker-1.svg`,
+      `${TIMESCAN_STRIP_BASE}home-heading/flicker-2.svg`,
+      `${TIMESCAN_STRIP_BASE}home-heading/flicker-3.svg`,
+      `${TIMESCAN_STRIP_BASE}home-heading/flicker-4.svg`,
+    ],
+  },
+  "home.lead": {
+    width: 1317,
+    height: 52,
+    maxGlyphs: 64,
+    base: `${TIMESCAN_STRIP_BASE}home-lead/base.svg`,
+    flicker: [
+      `${TIMESCAN_STRIP_BASE}home-lead/flicker-1.svg`,
+      `${TIMESCAN_STRIP_BASE}home-lead/flicker-2.svg`,
+      `${TIMESCAN_STRIP_BASE}home-lead/flicker-3.svg`,
+      `${TIMESCAN_STRIP_BASE}home-lead/flicker-4.svg`,
+    ],
+  },
   "services.eyebrow": {
     width: 1463,
     height: 52,
@@ -17,7 +41,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.heading": {
-    width: 1225,
+    width: 1243,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-heading/base.svg`,
@@ -29,7 +53,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.lead": {
-    width: 1452,
+    width: 1321,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-lead/base.svg`,
@@ -53,7 +77,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.image": {
-    width: 1422,
+    width: 1424,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-image/base.svg`,
@@ -65,7 +89,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.bullet.0": {
-    width: 1353,
+    width: 1285,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-0/base.svg`,
@@ -89,7 +113,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.bullet.2": {
-    width: 1294,
+    width: 1254,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-2/base.svg`,
@@ -101,7 +125,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.bullet.3": {
-    width: 1319,
+    width: 1315,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-3/base.svg`,
@@ -125,7 +149,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.image": {
-    width: 1218,
+    width: 1360,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-image/base.svg`,
@@ -137,7 +161,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.bullet.0": {
-    width: 1301,
+    width: 1313,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-0/base.svg`,
@@ -149,7 +173,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.bullet.1": {
-    width: 1303,
+    width: 1301,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-1/base.svg`,
@@ -161,7 +185,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.bullet.2": {
-    width: 1226,
+    width: 1364,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-2/base.svg`,
@@ -173,7 +197,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.bullet.3": {
-    width: 1275,
+    width: 1264,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-3/base.svg`,
@@ -185,7 +209,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.title": {
-    width: 1395,
+    width: 1214,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-other-services-title/base.svg`,
@@ -197,7 +221,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.image": {
-    width: 1086,
+    width: 1413,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-other-services-image/base.svg`,
@@ -209,7 +233,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.bullet.0": {
-    width: 1302,
+    width: 1170,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-other-services-bullet-0/base.svg`,
@@ -245,7 +269,7 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.bullet.3": {
-    width: 1133,
+    width: 1210,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}services-other-services-bullet-3/base.svg`,
@@ -269,7 +293,7 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.lead": {
-    width: 1258,
+    width: 1307,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}portfolio-lead/base.svg`,
@@ -278,6 +302,54 @@ const timescanGlyphStrips = {
       `${TIMESCAN_STRIP_BASE}portfolio-lead/flicker-2.svg`,
       `${TIMESCAN_STRIP_BASE}portfolio-lead/flicker-3.svg`,
       `${TIMESCAN_STRIP_BASE}portfolio-lead/flicker-4.svg`,
+    ],
+  },
+  "projects.heading": {
+    width: 1352,
+    height: 52,
+    maxGlyphs: 64,
+    base: `${TIMESCAN_STRIP_BASE}projects-heading/base.svg`,
+    flicker: [
+      `${TIMESCAN_STRIP_BASE}projects-heading/flicker-1.svg`,
+      `${TIMESCAN_STRIP_BASE}projects-heading/flicker-2.svg`,
+      `${TIMESCAN_STRIP_BASE}projects-heading/flicker-3.svg`,
+      `${TIMESCAN_STRIP_BASE}projects-heading/flicker-4.svg`,
+    ],
+  },
+  "projects.lead": {
+    width: 1364,
+    height: 52,
+    maxGlyphs: 64,
+    base: `${TIMESCAN_STRIP_BASE}projects-lead/base.svg`,
+    flicker: [
+      `${TIMESCAN_STRIP_BASE}projects-lead/flicker-1.svg`,
+      `${TIMESCAN_STRIP_BASE}projects-lead/flicker-2.svg`,
+      `${TIMESCAN_STRIP_BASE}projects-lead/flicker-3.svg`,
+      `${TIMESCAN_STRIP_BASE}projects-lead/flicker-4.svg`,
+    ],
+  },
+  "contact.heading": {
+    width: 1134,
+    height: 52,
+    maxGlyphs: 64,
+    base: `${TIMESCAN_STRIP_BASE}contact-heading/base.svg`,
+    flicker: [
+      `${TIMESCAN_STRIP_BASE}contact-heading/flicker-1.svg`,
+      `${TIMESCAN_STRIP_BASE}contact-heading/flicker-2.svg`,
+      `${TIMESCAN_STRIP_BASE}contact-heading/flicker-3.svg`,
+      `${TIMESCAN_STRIP_BASE}contact-heading/flicker-4.svg`,
+    ],
+  },
+  "contact.lead": {
+    width: 1254,
+    height: 52,
+    maxGlyphs: 64,
+    base: `${TIMESCAN_STRIP_BASE}contact-lead/base.svg`,
+    flicker: [
+      `${TIMESCAN_STRIP_BASE}contact-lead/flicker-1.svg`,
+      `${TIMESCAN_STRIP_BASE}contact-lead/flicker-2.svg`,
+      `${TIMESCAN_STRIP_BASE}contact-lead/flicker-3.svg`,
+      `${TIMESCAN_STRIP_BASE}contact-lead/flicker-4.svg`,
     ],
   },
 }

@@ -1,23 +1,21 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from "vue"
 import { RouterView, useRoute, useRouter } from "vue-router"
+import {
+  getTimescanGlyphOptions,
+  getTimescanText,
+  serviceBulletAssetKey,
+  serviceImageAssetKey,
+  serviceTitleAssetKey,
+  servicesContent,
+} from "@/content/siteContent"
 import { buildGlyphSequence } from "@/utils/glyphSequence"
 import TimescanSentence from "./TimescanSentence.vue"
 
-const SERVICES_EYEBROW_TEXT = "Services"
-const SERVICES_HEADING_TEXT = "Select your choice"
-const SERVICES_LEAD_TEXT = "Choose the lane that fits your session and goals."
 const SERVICES_HEADER_VIEW_TRIGGER_THRESHOLD = 0.2
 const SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD = 0.2
 const SERVICES_VIEW_TRIGGER_ROOT_MARGIN = "0px"
 const SERVICES_VIEW_TRIGGER_DELAY_MS = 1500
-const SERVICES_MIN_GLYPHS = 8
-const SERVICES_EYEBROW_TARGET_GLYPHS = 10
-const SERVICES_TARGET_GLYPHS = 28
-const SERVICES_LEAD_TARGET_GLYPHS = 20
-const SERVICES_IMAGE_TARGET_GLYPHS = 14
-const SERVICES_TITLE_TARGET_GLYPHS = 18
-const SERVICES_BULLET_TARGET_GLYPHS = 18
 const SERVICE_DETAIL_DRAG_CLOSE_THRESHOLD_PX = 120
 const SERVICE_DETAIL_DRAG_CLICK_DEADZONE_PX = 6
 const SERVICES_ROUTE_PATH = "/services"
@@ -27,45 +25,6 @@ const SERVICE_CARD_ROUTE_NAME_BY_ID = {
   "music-teaching": "ServiceMusicTeaching",
   "other-services": "ServiceOtherServices",
 }
-
-const SERVICES_CARD_DATA = [
-  {
-    id: "studio-rental",
-    title: "Studio Rental",
-    imageLabel: "Studio PNG",
-    imageAriaLabel: "Studio rental image placeholder",
-    bullets: [
-      "Hourly and half-day booking windows",
-      "Control room plus live room access",
-      "Add-on engineer support available",
-      "Late-night sessions by request",
-    ],
-  },
-  {
-    id: "music-teaching",
-    title: "Music Teaching",
-    imageLabel: "Teaching PNG",
-    imageAriaLabel: "Music teaching image placeholder",
-    bullets: [
-      "Private one-on-one lesson blocks",
-      "Beginner through advanced coaching",
-      "Technique, songwriting, and performance",
-      "Structured plans with weekly goals",
-    ],
-  },
-  {
-    id: "other-services",
-    title: "Other Services",
-    imageLabel: "Other PNG",
-    imageAriaLabel: "Other services image placeholder",
-    bullets: [
-      "Vocal tracking and comp preparation",
-      "Demo polish and arrangement feedback",
-      "Mix-ready stem export workflow",
-      "Custom project support by scope",
-    ],
-  },
-]
 
 const router = useRouter()
 const route = useRoute()
@@ -84,49 +43,42 @@ let serviceDetailDragStartY = 0
 let serviceDetailDragPointerId = null
 let serviceDetailDragMoved = false
 
-const servicesEyebrowTokens = computed(() =>
-  buildGlyphSequence(SERVICES_EYEBROW_TEXT, 4, SERVICES_EYEBROW_TARGET_GLYPHS),
-)
-
-const servicesHeadingTokens = computed(() => {
+function buildTimescanTokens(assetKey) {
   return buildGlyphSequence(
-    SERVICES_HEADING_TEXT,
-    SERVICES_MIN_GLYPHS,
-    SERVICES_TARGET_GLYPHS,
+    getTimescanText(assetKey),
+    getTimescanGlyphOptions(assetKey),
   )
-})
+}
 
-const servicesLeadTokens = computed(() =>
-  buildGlyphSequence(SERVICES_LEAD_TEXT, 6, SERVICES_LEAD_TARGET_GLYPHS),
-)
+const servicesEyebrowTokens = computed(() => buildTimescanTokens("services.eyebrow"))
+
+const servicesHeadingTokens = computed(() => buildTimescanTokens("services.heading"))
+
+const servicesLeadTokens = computed(() => buildTimescanTokens("services.lead"))
 
 const servicesCards = computed(() => {
-  return SERVICES_CARD_DATA.map((card) => ({
-    ...card,
-    to: { name: SERVICE_CARD_ROUTE_NAME_BY_ID[card.id] },
-    titleAssetKey: `services.${card.id}.title`,
-    imageAssetKey: `services.${card.id}.image`,
-    titleTokens: buildGlyphSequence(
-      `${card.id}:title:${card.title}`,
-      6,
-      SERVICES_TITLE_TARGET_GLYPHS,
-    ),
-    imageTokens: buildGlyphSequence(
-      `${card.id}:image:${card.imageLabel}`,
-      4,
-      SERVICES_IMAGE_TARGET_GLYPHS,
-    ),
-    bulletItems: card.bullets.map((text, index) => ({
-      id: `${card.id}-bullet-${index}`,
-      text,
-      assetKey: `services.${card.id}.bullet.${index}`,
-      tokens: buildGlyphSequence(
-        `${card.id}:bullet:${index}:${text}`,
-        5,
-        SERVICES_BULLET_TARGET_GLYPHS,
-      ),
-    })),
-  }))
+  return servicesContent.cards.map((card) => {
+    const titleAssetKey = serviceTitleAssetKey(card.id)
+    const imageAssetKey = serviceImageAssetKey(card.id)
+
+    return {
+      ...card,
+      to: { name: SERVICE_CARD_ROUTE_NAME_BY_ID[card.id] },
+      titleAssetKey,
+      imageAssetKey,
+      titleTokens: buildTimescanTokens(titleAssetKey),
+      imageTokens: buildTimescanTokens(imageAssetKey),
+      bulletItems: card.bullets.map((text, index) => {
+        const assetKey = serviceBulletAssetKey(card.id, index)
+        return {
+          id: `${card.id}-bullet-${index}`,
+          text,
+          assetKey,
+          tokens: buildTimescanTokens(assetKey),
+        }
+      }),
+    }
+  })
 })
 
 function closeServiceDetail() {
@@ -218,7 +170,7 @@ onBeforeUnmount(() => {
       <div class="eyebrow">
         <TimescanSentence
           class="timescan-base timescan-h6 timescan-layout-center"
-          :overlay-text="SERVICES_EYEBROW_TEXT"
+          :overlay-text="servicesContent.eyebrow"
           asset-key="services.eyebrow"
           :glyph-tokens="servicesEyebrowTokens"
           :auto-trigger-on-view="true"
@@ -231,7 +183,7 @@ onBeforeUnmount(() => {
       <h1 class="services-timescan-heading">
         <TimescanSentence
           class="timescan-base timescan-h1 timescan-layout-center"
-          :overlay-text="SERVICES_HEADING_TEXT"
+          :overlay-text="servicesContent.heading"
           asset-key="services.heading"
           :glyph-tokens="servicesHeadingTokens"
           :glyph-scale="1.4"
@@ -245,7 +197,7 @@ onBeforeUnmount(() => {
       <div class="lead">
         <TimescanSentence
           class="timescan-base timescan-h2 timescan-layout-center"
-          :overlay-text="SERVICES_LEAD_TEXT"
+          :overlay-text="servicesContent.lead"
           asset-key="services.lead"
           :glyph-tokens="servicesLeadTokens"
           :glyph-scale="0.6"
@@ -574,9 +526,9 @@ onBeforeUnmount(() => {
   position: absolute;
   top: 0.15rem;
   left: 50%;
-  width: 13.5rem;
+  width: min(13.5rem, 58vw);
   height: 2.5rem;
-  transform: translateX(-50%) scaleX(2.25);
+  transform: translateX(-50%);
   border: 0;
   padding: 0;
   background: rgba(255, 237, 214, 0.95);

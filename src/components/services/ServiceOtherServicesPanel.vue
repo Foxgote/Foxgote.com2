@@ -1,23 +1,31 @@
+<script setup>
+import { getServiceById } from "@/content/siteContent"
+
+const service = getServiceById("other-services")
+</script>
+
 <template>
   <section
     class="service-detail-window"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="other-services-detail-title"
+    :aria-labelledby="`${service.id}-detail-title`"
   >
     <header class="service-detail-header">
-      <p class="service-detail-kicker">Service Detail</p>
-      <h2 id="other-services-detail-title">Other Services</h2>
+      <p class="service-detail-kicker">{{ service.detail.kicker }}</p>
+      <h2 :id="`${service.id}-detail-title`">{{ service.title }}</h2>
       <p class="service-detail-summary">
-        Flexible support services for focused releases and polished delivery.
+        {{ service.detail.summary }}
       </p>
     </header>
 
     <ul class="service-detail-list">
-      <li>Vocal tracking support and comp preparation.</li>
-      <li>Demo polish with arrangement feedback.</li>
-      <li>Mix-ready stem export and prep workflows.</li>
-      <li>Custom scoped support for specific project needs.</li>
+      <li
+        v-for="item in service.detail.bullets"
+        :key="item"
+      >
+        {{ item }}
+      </li>
     </ul>
 
     <footer class="service-detail-actions">
@@ -25,7 +33,7 @@
         to="/contact#scroll-effect-anchor"
         class="service-detail-action-link"
       >
-        Contact Me
+        {{ service.detail.ctaLabel }}
       </RouterLink>
     </footer>
   </section>

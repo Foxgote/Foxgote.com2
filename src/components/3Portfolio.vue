@@ -1,58 +1,77 @@
 <script setup>
 import { computed } from "vue"
+import {
+  getTimescanGlyphOptions,
+  getTimescanText,
+  portfolioContent,
+} from "@/content/siteContent"
 import { buildGlyphSequence } from "@/utils/glyphSequence"
 import TimescanSentence from "./TimescanSentence.vue"
 
-const PORTFOLIO_HEADING_TEXT = "Portfolio"
-const PORTFOLIO_LEAD_TEXT = "Your gateway to all things Foxgote."
-const PORTFOLIO_HEADING_GLYPHS = 24
-const PORTFOLIO_LEAD_GLYPHS = 24
 const PORTFOLIO_VIEW_TRIGGER_DELAY_MS = 1500
 const PORTFOLIO_VIEW_TRIGGER_THRESHOLD = 0.2
 const PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN = "0px"
 
+function buildTimescanTokens(assetKey) {
+  return buildGlyphSequence(
+    getTimescanText(assetKey),
+    getTimescanGlyphOptions(assetKey),
+  )
+}
+
 const portfolioHeadingTokens = computed(() =>
-  buildGlyphSequence(PORTFOLIO_HEADING_TEXT, 4, PORTFOLIO_HEADING_GLYPHS),
+  buildTimescanTokens("portfolio.heading"),
 )
-const portfolioLeadTokens = computed(() =>
-  buildGlyphSequence(PORTFOLIO_LEAD_TEXT, 5, PORTFOLIO_LEAD_GLYPHS),
-)
+const portfolioLeadTokens = computed(() => buildTimescanTokens("portfolio.lead"))
 </script>
 
 <template>
-  <div class="home-container">
-    <h1 class="portfolio-timescan-heading">
+  <section class="content-page portfolio-page">
+    <header class="page-hero">
+      <h1 class="portfolio-timescan-heading">
+        <TimescanSentence
+          class="timescan-base timescan-h1 timescan-layout-center"
+          :overlay-text="portfolioContent.heading"
+          asset-key="portfolio.heading"
+          :glyph-tokens="portfolioHeadingTokens"
+          :glyph-scale="1.4"
+          :auto-trigger-on-view="true"
+          :view-trigger-threshold="PORTFOLIO_VIEW_TRIGGER_THRESHOLD"
+          :view-trigger-root-margin="PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN"
+          :view-trigger-delay-ms="PORTFOLIO_VIEW_TRIGGER_DELAY_MS"
+          :show-button="false"
+        />
+      </h1>
       <TimescanSentence
-        class="timescan-base timescan-h1 timescan-layout-center"
-        :overlay-text="PORTFOLIO_HEADING_TEXT"
-        asset-key="portfolio.heading"
-        :glyph-tokens="portfolioHeadingTokens"
-        :glyph-scale="1.4"
+        class="timescan-base timescan-h2 timescan-layout-center portfolio-timescan-lead"
+        :overlay-text="portfolioContent.lead"
+        asset-key="portfolio.lead"
+        :glyph-tokens="portfolioLeadTokens"
         :auto-trigger-on-view="true"
         :view-trigger-threshold="PORTFOLIO_VIEW_TRIGGER_THRESHOLD"
         :view-trigger-root-margin="PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN"
         :view-trigger-delay-ms="PORTFOLIO_VIEW_TRIGGER_DELAY_MS"
         :show-button="false"
       />
-    </h1>
-    <TimescanSentence
-      class="timescan-base timescan-h2 timescan-layout-center portfolio-timescan-lead"
-      :overlay-text="PORTFOLIO_LEAD_TEXT"
-      asset-key="portfolio.lead"
-      :glyph-tokens="portfolioLeadTokens"
-      :auto-trigger-on-view="true"
-      :view-trigger-threshold="PORTFOLIO_VIEW_TRIGGER_THRESHOLD"
-      :view-trigger-root-margin="PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN"
-      :view-trigger-delay-ms="PORTFOLIO_VIEW_TRIGGER_DELAY_MS"
-      :show-button="false"
-    />
-    <router-link
-      to="/about"
-      class="about-link"
-    >
-      Learn more about us
-    </router-link>
-  </div>
+      <p class="page-intro">
+        {{ portfolioContent.intro }}
+      </p>
+    </header>
+
+    <section class="content-card-grid">
+      <RouterLink
+        v-for="entry in portfolioContent.entries"
+        :key="entry.title"
+        class="content-card content-card-link"
+        :to="entry.to"
+      >
+        <span class="content-card-kicker">{{ entry.label }}</span>
+        <h2>{{ entry.title }}</h2>
+        <p>{{ entry.body }}</p>
+        <span class="content-card-action">{{ entry.action }}</span>
+      </RouterLink>
+    </section>
+  </section>
 </template>
 
 <style scoped>

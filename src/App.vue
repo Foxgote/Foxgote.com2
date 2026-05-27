@@ -376,6 +376,7 @@ onBeforeUnmount(() => {
   inset: 0;
   pointer-events: none;
   z-index: -2;
+  overflow: hidden;
 }
 
 .hero-bg {
@@ -383,9 +384,9 @@ onBeforeUnmount(() => {
   inset: 0;
   background-image: var(--hero-url);
   background-size: cover;
-  background-position: center;
+  background-position: center calc(50% + 50px - var(--barlite-y, 0px));
   filter: blur(var(--barlite-blur, 0px));
-  transform: translateY(calc(var(--barlite-y, 0px) * -1 + 50px)) scale(1.12);
+  will-change: filter, background-position;
 }
 
 .hero-bg-base {
@@ -701,23 +702,28 @@ onBeforeUnmount(() => {
   min-height: 100vh;
 }
 
+.content > :deep(*) {
+  opacity: 1;
+  transform: none;
+}
+
 .content :deep(.route-slide-left-enter-active),
 .content :deep(.route-slide-left-leave-active),
 .content :deep(.route-slide-right-enter-active),
 .content :deep(.route-slide-right-leave-active) {
-  transition: opacity 280ms ease, transform 280ms ease;
+  transition: none;
 }
 
 .content :deep(.route-slide-left-enter-from),
 .content :deep(.route-slide-right-leave-to) {
-  opacity: 0;
-  transform: translateX(30px);
+  opacity: 1;
+  transform: none;
 }
 
 .content :deep(.route-slide-left-leave-to),
 .content :deep(.route-slide-right-enter-from) {
-  opacity: 0;
-  transform: translateX(-30px);
+  opacity: 1;
+  transform: none;
 }
 
 </style>
