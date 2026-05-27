@@ -8,7 +8,7 @@ import {
 import { buildGlyphSequence } from "@/utils/glyphSequence"
 import TimescanSentence from "./TimescanSentence.vue"
 
-const PROJECTS_VIEW_TRIGGER_DELAY_MS = 1500
+const PROJECTS_VIEW_TRIGGER_DELAY_MS = 1100
 const PROJECTS_VIEW_TRIGGER_THRESHOLD = 0.2
 const PROJECTS_VIEW_TRIGGER_ROOT_MARGIN = "0px"
 
