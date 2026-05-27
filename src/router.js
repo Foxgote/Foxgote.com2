@@ -5,8 +5,11 @@ const ANCHOR_GATE_EPSILON_PX = 2
 const MIN_SCROLL_DISTANCE_PX = 4
 const SCROLL_EFFECT_ANCHOR_HASH = "#scroll-effect-anchor"
 const SCROLL_EFFECT_ANCHOR_SELECTOR = ".nav-anchor"
+const SMOOTH_SCROLL_CANCEL_EVENTS = ["wheel", "touchmove", "pointerdown", "keydown"]
+const PASSIVE_EVENT_LISTENER_OPTIONS = { passive: true }
 
 let smoothScrollRafId = 0
+let smoothScrollCancelListenersActive = false
 
 function isInSection(path, sectionPath) {
   if (typeof path !== "string") return false
@@ -52,9 +55,25 @@ const routes = [
 ]
 
 function stopSmoothScrollAnimation() {
-  if (!smoothScrollRafId) return
-  cancelAnimationFrame(smoothScrollRafId)
+  if (smoothScrollRafId) cancelAnimationFrame(smoothScrollRafId)
   smoothScrollRafId = 0
+  removeSmoothScrollCancelListeners()
+}
+
+function addSmoothScrollCancelListeners() {
+  if (smoothScrollCancelListenersActive) return
+  SMOOTH_SCROLL_CANCEL_EVENTS.forEach((eventName) => {
+    window.addEventListener(eventName, stopSmoothScrollAnimation, PASSIVE_EVENT_LISTENER_OPTIONS)
+  })
+  smoothScrollCancelListenersActive = true
+}
+
+function removeSmoothScrollCancelListeners() {
+  if (!smoothScrollCancelListenersActive) return
+  SMOOTH_SCROLL_CANCEL_EVENTS.forEach((eventName) => {
+    window.removeEventListener(eventName, stopSmoothScrollAnimation, PASSIVE_EVENT_LISTENER_OPTIONS)
+  })
+  smoothScrollCancelListenersActive = false
 }
 
 function isAtOrBelowNavAnchor(selector = ".nav-anchor") {
@@ -80,6 +99,7 @@ function smoothScrollToElement(selector, duration = 800, offset = 0) {
   const distance = end - start
   if (Math.abs(distance) < MIN_SCROLL_DISTANCE_PX) return
   let startTime = null
+  addSmoothScrollCancelListeners()
 
   function easeInOutQuad(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
@@ -96,6 +116,7 @@ function smoothScrollToElement(selector, duration = 800, offset = 0) {
       return
     }
     smoothScrollRafId = 0
+    removeSmoothScrollCancelListeners()
   }
 
   smoothScrollRafId = requestAnimationFrame(scroll)

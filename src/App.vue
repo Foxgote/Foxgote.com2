@@ -21,6 +21,8 @@ const NAV_SCROLL_DURATION_MS = 2000
 const NAV_SCROLL_VIEWPORT_TOP_PAD_PX = 64
 const NAV_SCROLL_ANCHOR_EPSILON_PX = 2
 const NAV_SCROLL_MIN_DISTANCE_PX = 4
+const NAV_SCROLL_CANCEL_EVENTS = ["wheel", "touchmove", "pointerdown", "keydown"]
+const PASSIVE_EVENT_LISTENER_OPTIONS = { passive: true }
 const ROUTE_HERO_URLS = {
   "/": heroHome,
   "/services": heroServices,
@@ -41,6 +43,7 @@ let scrollEffectEnabled = false
 let neonFlickerTimeoutId = 0
 let heroFadeTimeoutId = 0
 let navSmoothScrollRafId = 0
+let navSmoothScrollCancelListenersActive = false
 
 function isInSection(path, sectionPath) {
   if (typeof path !== "string") return false
@@ -160,9 +163,25 @@ function onScroll() {
 }
 
 function stopNavSmoothScrollAnimation() {
-  if (!navSmoothScrollRafId) return
-  cancelAnimationFrame(navSmoothScrollRafId)
+  if (navSmoothScrollRafId) cancelAnimationFrame(navSmoothScrollRafId)
   navSmoothScrollRafId = 0
+  removeNavSmoothScrollCancelListeners()
+}
+
+function addNavSmoothScrollCancelListeners() {
+  if (navSmoothScrollCancelListenersActive) return
+  NAV_SCROLL_CANCEL_EVENTS.forEach((eventName) => {
+    window.addEventListener(eventName, stopNavSmoothScrollAnimation, PASSIVE_EVENT_LISTENER_OPTIONS)
+  })
+  navSmoothScrollCancelListenersActive = true
+}
+
+function removeNavSmoothScrollCancelListeners() {
+  if (!navSmoothScrollCancelListenersActive) return
+  NAV_SCROLL_CANCEL_EVENTS.forEach((eventName) => {
+    window.removeEventListener(eventName, stopNavSmoothScrollAnimation, PASSIVE_EVENT_LISTENER_OPTIONS)
+  })
+  navSmoothScrollCancelListenersActive = false
 }
 
 function isAtOrBelowNavAnchor(selector = ".nav-anchor") {
@@ -189,6 +208,7 @@ function smoothScrollToElement(selector, duration = NAV_SCROLL_DURATION_MS, offs
   const distance = end - start
   if (distance < NAV_SCROLL_MIN_DISTANCE_PX) return
   let startTime = null
+  addNavSmoothScrollCancelListeners()
 
   function easeInOutQuad(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
@@ -205,6 +225,7 @@ function smoothScrollToElement(selector, duration = NAV_SCROLL_DURATION_MS, offs
       return
     }
     navSmoothScrollRafId = 0
+    removeNavSmoothScrollCancelListeners()
   }
 
   navSmoothScrollRafId = requestAnimationFrame(scroll)
