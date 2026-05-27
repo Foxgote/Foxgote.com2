@@ -1,19 +1,20 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import glyphPool from "@/glyphPool/pool.gen"
+import { RouterView, useRoute, useRouter } from "vue-router"
+import { buildGlyphSequence } from "@/utils/glyphSequence"
 import TimescanSentence from "./TimescanSentence.vue"
 
 const SERVICES_EYEBROW_TEXT = "Services"
 const SERVICES_HEADING_TEXT = "Select your choice"
 const SERVICES_LEAD_TEXT = "Choose the lane that fits your session and goals."
 const SERVICES_HEADER_VIEW_TRIGGER_THRESHOLD = 0.2
-const SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD = 0
+const SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD = 0.2
 const SERVICES_VIEW_TRIGGER_ROOT_MARGIN = "0px"
-const SERVICES_HEADER_VIEW_TRIGGER_DELAY_MS = 750
-const SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS = 120
+const SERVICES_VIEW_TRIGGER_DELAY_MS = 1500
 const SERVICES_MIN_GLYPHS = 8
+const SERVICES_EYEBROW_TARGET_GLYPHS = 10
 const SERVICES_TARGET_GLYPHS = 28
+const SERVICES_LEAD_TARGET_GLYPHS = 20
 const SERVICES_IMAGE_TARGET_GLYPHS = 14
 const SERVICES_TITLE_TARGET_GLYPHS = 18
 const SERVICES_BULLET_TARGET_GLYPHS = 18
@@ -69,11 +70,12 @@ const SERVICES_CARD_DATA = [
 const router = useRouter()
 const route = useRoute()
 
+const isWithinServicesRoute = computed(() => {
+  return route.path === SERVICES_ROUTE_PATH || route.path.startsWith(`${SERVICES_ROUTE_PATH}/`)
+})
+
 const isServiceDetailOpen = computed(() => {
-  if (route.name != null) {
-    return route.name !== "Services"
-  }
-  return route.path !== SERVICES_ROUTE_PATH
+  return isWithinServicesRoute.value && route.path !== SERVICES_ROUTE_PATH
 })
 const serviceDetailDragOffsetPx = ref(0)
 const isServiceDetailDragging = ref(false)
@@ -82,92 +84,8 @@ let serviceDetailDragStartY = 0
 let serviceDetailDragPointerId = null
 let serviceDetailDragMoved = false
 
-function hashString32(input) {
-  let hash = 2166136261
-  const str = String(input || "")
-  for (let i = 0; i < str.length; i++) {
-    hash ^= str.charCodeAt(i)
-    hash = Math.imul(hash, 16777619)
-  }
-  return hash >>> 0
-}
-
-function pickPhrase(text, minGlyphs = 1) {
-  const phrases = Array.isArray(glyphPool?.phrases) ? glyphPool.phrases : []
-  if (!phrases.length) return null
-
-  const seed = hashString32(`${glyphPool?.seed ?? "seed"}:${text}`)
-  const startIndex = seed % phrases.length
-  const minimumGlyphs = Math.max(1, Math.floor(Number(minGlyphs) || 1))
-
-  if (minimumGlyphs <= 1) {
-    return phrases[startIndex]
-  }
-
-  for (let offset = 0; offset < phrases.length; offset++) {
-    const candidate = phrases[(startIndex + offset) % phrases.length]
-    const glyphCount = Array.isArray(candidate?.glyphs) ? candidate.glyphs.length : 0
-    if (glyphCount >= minimumGlyphs) {
-      return candidate
-    }
-  }
-
-  return phrases[startIndex]
-}
-
-function buildGlyphSequence(text, minGlyphs = 1, targetGlyphs = 24) {
-  const phrases = Array.isArray(glyphPool?.phrases) ? glyphPool.phrases : []
-  if (!phrases.length) return []
-
-  const basePhrase = pickPhrase(text, minGlyphs)
-  const baseGlyphs = Array.isArray(basePhrase?.glyphs) ? basePhrase.glyphs : []
-  if (!baseGlyphs.length) return []
-
-  const targetCount = Math.max(
-    1,
-    Math.floor(Number(targetGlyphs) || baseGlyphs.length),
-  )
-  const seed = hashString32(`${glyphPool?.seed ?? "seed"}:${text}`)
-  const startIndex = seed % phrases.length
-
-  const collected = []
-  const seenFiles = new Set()
-
-  const pushUniqueGlyphs = (glyphs) => {
-    for (let index = 0; index < glyphs.length; index++) {
-      if (collected.length >= targetCount) return
-      const entry = glyphs[index]
-      const file = String(entry?.file || "")
-      if (!file || seenFiles.has(file)) continue
-      seenFiles.add(file)
-      collected.push(entry)
-    }
-  }
-
-  pushUniqueGlyphs(baseGlyphs)
-
-  for (let offset = 1; offset < phrases.length; offset++) {
-    if (collected.length >= targetCount) break
-    const phrase = phrases[(startIndex + offset * 7) % phrases.length]
-    const glyphs = Array.isArray(phrase?.glyphs) ? phrase.glyphs : []
-    if (!glyphs.length) continue
-    pushUniqueGlyphs(glyphs)
-  }
-
-  if (collected.length >= targetCount) {
-    return collected
-  }
-
-  // If uniqueness runs out, top up deterministically from the base phrase.
-  while (collected.length < targetCount) {
-    collected.push(baseGlyphs[collected.length % baseGlyphs.length])
-  }
-
-  return collected
-}
-
 const servicesEyebrowTokens = computed(() =>
-  buildGlyphSequence(SERVICES_EYEBROW_TEXT, 4, 10),
+  buildGlyphSequence(SERVICES_EYEBROW_TEXT, 4, SERVICES_EYEBROW_TARGET_GLYPHS),
 )
 
 const servicesHeadingTokens = computed(() => {
@@ -179,13 +97,15 @@ const servicesHeadingTokens = computed(() => {
 })
 
 const servicesLeadTokens = computed(() =>
-  buildGlyphSequence(SERVICES_LEAD_TEXT, 6, 20),
+  buildGlyphSequence(SERVICES_LEAD_TEXT, 6, SERVICES_LEAD_TARGET_GLYPHS),
 )
 
 const servicesCards = computed(() => {
   return SERVICES_CARD_DATA.map((card) => ({
     ...card,
     to: { name: SERVICE_CARD_ROUTE_NAME_BY_ID[card.id] },
+    titleAssetKey: `services.${card.id}.title`,
+    imageAssetKey: `services.${card.id}.image`,
     titleTokens: buildGlyphSequence(
       `${card.id}:title:${card.title}`,
       6,
@@ -199,6 +119,7 @@ const servicesCards = computed(() => {
     bulletItems: card.bullets.map((text, index) => ({
       id: `${card.id}-bullet-${index}`,
       text,
+      assetKey: `services.${card.id}.bullet.${index}`,
       tokens: buildGlyphSequence(
         `${card.id}:bullet:${index}:${text}`,
         5,
@@ -298,11 +219,12 @@ onBeforeUnmount(() => {
         <TimescanSentence
           class="timescan-base timescan-h6 timescan-layout-center"
           :overlay-text="SERVICES_EYEBROW_TEXT"
+          asset-key="services.eyebrow"
           :glyph-tokens="servicesEyebrowTokens"
           :auto-trigger-on-view="true"
           :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
           :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-          :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+          :view-trigger-delay-ms="SERVICES_VIEW_TRIGGER_DELAY_MS"
           :show-button="false"
         />
       </div>
@@ -310,12 +232,13 @@ onBeforeUnmount(() => {
         <TimescanSentence
           class="timescan-base timescan-h1 timescan-layout-center"
           :overlay-text="SERVICES_HEADING_TEXT"
+          asset-key="services.heading"
           :glyph-tokens="servicesHeadingTokens"
           :glyph-scale="1.4"
           :auto-trigger-on-view="true"
           :view-trigger-threshold="SERVICES_HEADER_VIEW_TRIGGER_THRESHOLD"
           :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-          :view-trigger-delay-ms="SERVICES_HEADER_VIEW_TRIGGER_DELAY_MS"
+          :view-trigger-delay-ms="SERVICES_VIEW_TRIGGER_DELAY_MS"
           :show-button="false"
         />
       </h1>
@@ -323,12 +246,13 @@ onBeforeUnmount(() => {
         <TimescanSentence
           class="timescan-base timescan-h2 timescan-layout-center"
           :overlay-text="SERVICES_LEAD_TEXT"
+          asset-key="services.lead"
           :glyph-tokens="servicesLeadTokens"
           :glyph-scale="0.6"
           :auto-trigger-on-view="true"
           :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
           :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-          :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+          :view-trigger-delay-ms="SERVICES_VIEW_TRIGGER_DELAY_MS"
           :show-button="false"
         />
       </div>
@@ -347,11 +271,12 @@ onBeforeUnmount(() => {
             <TimescanSentence
               class="timescan-base timescan-h3 timescan-layout-center"
               :overlay-text="card.title"
+              :asset-key="card.titleAssetKey"
               :glyph-tokens="card.titleTokens"
               :auto-trigger-on-view="true"
               :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
               :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-              :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+              :view-trigger-delay-ms="SERVICES_VIEW_TRIGGER_DELAY_MS"
               :show-button="false"
             />
           </header>
@@ -363,11 +288,12 @@ onBeforeUnmount(() => {
             <TimescanSentence
               class="timescan-base timescan-caption timescan-layout-center"
               :overlay-text="card.imageLabel"
+              :asset-key="card.imageAssetKey"
               :glyph-tokens="card.imageTokens"
               :auto-trigger-on-view="true"
               :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
               :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-              :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+              :view-trigger-delay-ms="SERVICES_VIEW_TRIGGER_DELAY_MS"
               :show-button="false"
             />
           </div>
@@ -379,11 +305,12 @@ onBeforeUnmount(() => {
               <TimescanSentence
                 class="timescan-base timescan-p timescan-layout-left"
                 :overlay-text="bullet.text"
+                :asset-key="bullet.assetKey"
                 :glyph-tokens="bullet.tokens"
                 :auto-trigger-on-view="true"
                 :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
                 :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-                :view-trigger-delay-ms="SERVICES_CONTENT_VIEW_TRIGGER_DELAY_MS"
+                :view-trigger-delay-ms="SERVICES_VIEW_TRIGGER_DELAY_MS"
                 :show-button="false"
               />
             </li>
@@ -430,7 +357,7 @@ onBeforeUnmount(() => {
 .services-page {
   width: 100%;
   margin: 0 auto;
-  padding: 2.25rem 10%;
+  padding: 2.25rem var(--page-inline-pad, 0);
   display: grid;
   gap: 1.6rem;
 }
@@ -478,10 +405,16 @@ onBeforeUnmount(() => {
 .service-card-link {
   width: min(100%, 340px);
   display: block;
+  position: relative;
   border-radius: 16px;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
+}
+
+.service-card-link:hover,
+.service-card-link:focus-visible {
+  z-index: 2;
 }
 
 .service-card-link:focus-visible {
@@ -507,7 +440,13 @@ onBeforeUnmount(() => {
   font-size: 1.2rem;
   color: rgba(255, 237, 214, 0.95);
   letter-spacing: 0.01em;
-  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  transform-origin: center;
+  transition:
+    transform 170ms ease,
+    box-shadow 170ms ease,
+    border-color 170ms ease,
+    background 170ms ease;
+  will-change: transform;
 }
 
 .service-card-head {
@@ -516,14 +455,41 @@ onBeforeUnmount(() => {
   text-transform: uppercase;
 }
 
-.service-card-link:hover .service-card,
-.service-card-link:focus-visible .service-card,
-.service-card-link.router-link-active .service-card {
-  transform: translate(-5px, -6px);
+.service-card-link:focus-visible .service-card {
+  transform: scale(1.035);
   border-color: rgba(212, 161, 94, 0.22);
   box-shadow:
     0 18px 30px rgba(0, 0, 0, 0.42),
     inset 0 0 0 1px rgba(212, 161, 94, 0.1);
+}
+
+.service-card-link:active .service-card {
+  transform: scale(0.97);
+  border-color: rgba(212, 161, 94, 0.12);
+  background: linear-gradient(160deg, rgba(13, 10, 8, 0.62), rgba(5, 5, 7, 0.78));
+  box-shadow:
+    0 7px 14px rgba(0, 0, 0, 0.34),
+    inset 0 0 0 1px rgba(212, 161, 94, 0.04);
+  color: rgba(205, 184, 164, 0.74);
+}
+
+.service-card-link:active .service-card :deep(.timescan-base) {
+  --timescan-ink: rgba(196, 174, 150, 0.72);
+  --timescan-glow: rgba(255, 186, 109, 0.1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .service-card-link:hover .service-card {
+    transform: scale(1.035);
+    border-color: rgba(212, 161, 94, 0.22);
+    box-shadow:
+      0 18px 30px rgba(0, 0, 0, 0.42),
+      inset 0 0 0 1px rgba(212, 161, 94, 0.1);
+  }
+
+  .service-card-link:active .service-card {
+    transform: scale(0.97);
+  }
 }
 
 .card-image-slot {
@@ -665,24 +631,58 @@ onBeforeUnmount(() => {
 
 @media (max-width: 700px) {
   .services-page {
-    padding: 1.35rem 0.8rem 2rem;
+    padding-top: 1.35rem;
+    padding-bottom: 2rem;
   }
 
   .services-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
     justify-items: stretch;
   }
 
   .service-card-link {
+    width: 100%;
     max-width: none;
   }
 
   .service-card {
     min-height: auto;
+    gap: 0.45rem;
+    border-radius: 12px;
+    font-size: 0.84rem;
+  }
+
+  .service-card-head {
+    margin: 0.75rem 0.25rem 0;
   }
 
   .card-image-slot {
-    min-height: 200px;
+    min-height: 112px;
+    border-radius: 9px;
+  }
+
+  .service-bullets {
+    margin: 0.55rem 0.45rem 0.75rem;
+    padding-left: 0;
+    gap: 0.32rem;
+  }
+
+  .service-card :deep(.timescan-h3) {
+    --timescan-overlay-font-size: 0.78rem;
+    --timescan-min-height: 20px;
+    --timescan-overlay-letter-spacing: 0.06em;
+  }
+
+  .service-card :deep(.timescan-caption) {
+    --timescan-overlay-font-size: 0.68rem;
+    --timescan-min-height: 16px;
+  }
+
+  .service-card :deep(.timescan-p) {
+    --timescan-overlay-font-size: 0.62rem;
+    --timescan-min-height: 15px;
+    --timescan-glyph-scale: 0.32;
   }
 }
 </style>

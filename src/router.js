@@ -119,9 +119,6 @@ export default createRouter({
     const fromSectionPath = getRouteSectionPath(from.path)
 
     if (savedPosition) return savedPosition
-    const isInitialNavigation = from.matched.length === 0
-    if (isInitialNavigation && isReloadNavigation()) return { left: 0, top: 0 }
-    if (isInitialNavigation) return { left: 0, top: 0 }
 
     if (to.hash === SCROLL_EFFECT_ANCHOR_HASH) {
       requestAnimationFrame(() => {
@@ -129,6 +126,10 @@ export default createRouter({
       })
       return false
     }
+
+    const isInitialNavigation = from.matched.length === 0
+    if (isInitialNavigation && isReloadNavigation()) return { left: 0, top: 0 }
+    if (isInitialNavigation) return { left: 0, top: 0 }
 
     // Keep scroll stable when opening/closing nested panels inside a section.
     if (toSectionPath === fromSectionPath) {
@@ -144,7 +145,7 @@ export default createRouter({
 
     requestAnimationFrame(() => {
       if (isAtOrBelowNavAnchor()) return
-      smoothScrollToElement(".welcome-sign", 2000, -178)
+      smoothScrollToElement(SCROLL_EFFECT_ANCHOR_SELECTOR, 2000, 0)
     })
     return false
   },

@@ -65,6 +65,9 @@ export function useTimescanSentence(options = {}) {
   const sentenceFlickerVisible = ref([])
   const sentenceConsumedHidden = ref([])
   const sentenceOverlayRevealPx = ref(0)
+  const sentenceStripFlickerActiveLayer = ref(-1)
+  const sentenceStripFlickerLeftPx = ref(0)
+  const sentenceStripFlickerRightPx = ref(0)
 
   let sentenceTimescanRunId = 0
   let sentenceTimescanRafId = 0
@@ -277,6 +280,13 @@ export function useTimescanSentence(options = {}) {
       ? overlayTextWidth.value
       : sentenceScanTotalWidthPx.value,
   )
+  const sentenceStripEdgePadPx = computed(() =>
+    Math.max(4, Math.min(12, effectiveGlyphHeight.value * 0.14)),
+  )
+  const sentenceStripWidthPx = computed(() =>
+    Math.max(sentenceTotalWidthPx.value, sentenceScanTotalWidthPx.value) +
+    sentenceStripEdgePadPx.value,
+  )
 
   const sentenceRevealWidthsByIndexPx = computed(() => {
     const revealWidths = []
@@ -293,6 +303,8 @@ export function useTimescanSentence(options = {}) {
   const sentenceStageStyle = computed(() => ({
     width: `${Math.max(1, sentenceTotalWidthPx.value)}px`,
   }))
+
+  const sentenceStripHeightPx = computed(() => effectiveGlyphHeight.value)
 
   const sentenceOverlayRevealStyle = computed(() => {
     const clippedWidth = Math.max(
@@ -317,6 +329,9 @@ export function useTimescanSentence(options = {}) {
       { length: glyphTokens.value.length },
       () => -1,
     )
+    sentenceStripFlickerActiveLayer.value = -1
+    sentenceStripFlickerLeftPx.value = 0
+    sentenceStripFlickerRightPx.value = 0
   }
 
   function getFlickerVariantsForEntry(entry) {
@@ -356,6 +371,11 @@ export function useTimescanSentence(options = {}) {
   function revealSentenceOverlayThroughIndex(index) {
     const revealWidth = sentenceRevealWidthsByIndexPx.value[index] || 0
     sentenceOverlayRevealPx.value = Math.max(sentenceOverlayRevealPx.value, revealWidth)
+  }
+
+  function glyphLeftEdgePx(index) {
+    if (index <= 0) return 0
+    return (sentenceRevealWidthsByIndexPx.value[index - 1] || 0) + effectiveGapPx.value
   }
 
   function clearSentenceTimescanAnimation() {
@@ -405,6 +425,9 @@ export function useTimescanSentence(options = {}) {
 
       const elapsedMs = timestamp - sentenceTimescanStartTimestamp
       let furthestCompletedIndex = -1
+      let firstActiveIndex = -1
+      let lastActiveIndex = -1
+      let stripActiveLayer = -1
 
       for (let index = 0; index < glyphCount; index++) {
         const startMs = index * scanStepMs
@@ -457,6 +480,11 @@ export function useTimescanSentence(options = {}) {
           Math.floor((elapsedMs - startMs) / stepDurationMs),
         )
         const activeLayer = stepIndex % variants.length
+        if (firstActiveIndex === -1) {
+          firstActiveIndex = index
+        }
+        lastActiveIndex = index
+        stripActiveLayer = activeLayer
 
         if (!sentenceFlickerVisible.value[index]) {
           sentenceFlickerVisible.value[index] = true
@@ -473,8 +501,23 @@ export function useTimescanSentence(options = {}) {
         revealSentenceOverlayThroughIndex(furthestCompletedIndex)
       }
 
+      if (firstActiveIndex >= 0 && lastActiveIndex >= firstActiveIndex) {
+        sentenceStripFlickerActiveLayer.value = stripActiveLayer
+        sentenceStripFlickerLeftPx.value = glyphLeftEdgePx(firstActiveIndex)
+        sentenceStripFlickerRightPx.value =
+          sentenceRevealWidthsByIndexPx.value[lastActiveIndex] ||
+          sentenceStripFlickerLeftPx.value
+      } else {
+        sentenceStripFlickerActiveLayer.value = -1
+        sentenceStripFlickerLeftPx.value = 0
+        sentenceStripFlickerRightPx.value = 0
+      }
+
       if (elapsedMs >= finalGlyphFinishMs) {
-        sentenceOverlayRevealPx.value = sentenceTotalWidthPx.value
+        sentenceOverlayRevealPx.value = sentenceStripWidthPx.value
+        sentenceStripFlickerActiveLayer.value = -1
+        sentenceStripFlickerLeftPx.value = 0
+        sentenceStripFlickerRightPx.value = 0
         sentenceTimescanRafId = 0
         sentenceTimescanStartTimestamp = 0
         return
@@ -507,11 +550,17 @@ export function useTimescanSentence(options = {}) {
     sentenceGlyphMaskStyle,
     sentenceOverlayRevealStyle,
     sentenceStageStyle,
+    sentenceStripHeightPx,
     sentenceFlickerVisible,
     sentenceFlickerVariants,
     sentenceFlickerActiveLayer,
     sentenceConsumedHidden,
     sentenceOverlayRevealPx,
+    sentenceStripFlickerActiveLayer,
+    sentenceStripFlickerLeftPx,
+    sentenceStripFlickerRightPx,
+    sentenceTotalWidthPx,
+    sentenceStripWidthPx,
     runSentenceTimescan,
     stopSentenceTimescan,
     canTriggerSentenceTimescan,

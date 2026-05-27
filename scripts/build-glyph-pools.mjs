@@ -7,12 +7,15 @@ const PRECOMPUTED_FRAMES = Number(process.env.GLYPH_POOL_FRAMES ?? 4)
 const rootDir = process.cwd()
 const sourceRoot = path.join(rootDir, "public", "ithkuil-glyph-phrases")
 const manifestPath = path.join(sourceRoot, "manifest.json")
-const assetRoot = path.join(rootDir, "src", "assets", "ithkuil-glyph-phrases")
 const outputPath = path.join(rootDir, "src", "glyphPool", "pool.gen.js")
 
 function toNumber(value, fallback = 0) {
   const n = Number(value)
   return Number.isFinite(n) ? n : fallback
+}
+
+function metric(value, fallback = 0) {
+  return Number(toNumber(value, fallback).toFixed(3))
 }
 
 function hashString32(input) {
@@ -67,25 +70,25 @@ function normalizeRelPath(relPath) {
     .replace(/^\/+/, "")
 }
 
+function parseGlyphFileParts(relPath) {
+  const normalized = normalizeRelPath(relPath)
+  const match = normalized.match(/^phrases\/phrase-(\d+)\/glyph-(\d+)\.svg$/)
+  if (!match) {
+    throw new Error(`Unexpected glyph file path: ${normalized}`)
+  }
+
+  return [Number(match[1]), Number(match[2])]
+}
+
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true })
 }
 
-function copyAsset(relPath) {
+function assertPublicAsset(relPath) {
   const sourcePath = path.join(sourceRoot, relPath)
-  const destPath = path.join(assetRoot, relPath)
   if (!fs.existsSync(sourcePath)) {
     throw new Error(`Missing glyph asset: ${sourcePath}`)
   }
-  ensureDir(path.dirname(destPath))
-  fs.copyFileSync(sourcePath, destPath)
-}
-
-function urlExpr(relPath) {
-  const normalized = normalizeRelPath(relPath)
-  return `new URL(${JSON.stringify(
-    `../assets/ithkuil-glyph-phrases/${normalized}`,
-  )}, import.meta.url).href`
 }
 
 function main() {
@@ -106,18 +109,16 @@ function main() {
   const rand = mulberry32(seed)
   const sampledItems = sampleItems(items, SAMPLE_SIZE, rand)
 
-  const baseGlyphFiles = new Set()
+  const referencedGlyphFiles = new Set()
   for (const item of sampledItems) {
     const glyphs = Array.isArray(item?.glyphs) ? item.glyphs : []
     for (const glyph of glyphs) {
       const file = normalizeRelPath(glyph?.file)
       if (file) {
-        baseGlyphFiles.add(file)
+        referencedGlyphFiles.add(file)
       }
     }
   }
-
-  const baseGlyphFileSet = new Set(baseGlyphFiles)
 
   const phrases = sampledItems.map((item) => {
     const glyphs = Array.isArray(item?.glyphs) ? item.glyphs : []
@@ -126,17 +127,17 @@ function main() {
       const providedVariants = Array.isArray(glyph?.flickerVariants)
         ? glyph.flickerVariants.map(normalizeRelPath).filter(Boolean)
         : []
-      const filteredVariants = providedVariants.filter((file) => baseGlyphFileSet.has(file))
 
-      const variants = filteredVariants.slice(0, PRECOMPUTED_FRAMES)
+      const variants = providedVariants.slice(0, PRECOMPUTED_FRAMES)
       while (variants.length < PRECOMPUTED_FRAMES) {
         variants.push(baseFile)
       }
+      variants.forEach((file) => referencedGlyphFiles.add(file))
 
       return {
         glyphIndex: toNumber(glyph?.index, 0),
-        width: toNumber(glyph?.width, 1),
-        height: toNumber(glyph?.height, 1),
+        width: metric(glyph?.width, 1),
+        height: metric(glyph?.height, 1),
         file: baseFile,
         flickerVariants: variants,
       }
@@ -149,17 +150,19 @@ function main() {
     }
   })
 
-  ensureDir(assetRoot)
   ensureDir(path.dirname(outputPath))
 
-  for (const file of baseGlyphFileSet) {
-    copyAsset(file)
+  for (const file of referencedGlyphFiles) {
+    assertPublicAsset(file)
   }
 
   let glyphCount = 0
+  const glyphHeights = new Set()
   for (const phrase of phrases) {
     glyphCount += phrase.glyphs.length
+    phrase.glyphs.forEach((glyph) => glyphHeights.add(glyph.height))
   }
+  const sharedGlyphHeight = glyphHeights.size === 1 ? [...glyphHeights][0] : null
 
   const lines = []
   lines.push("// GENERATED FILE. DO NOT EDIT BY HAND.")
@@ -168,36 +171,64 @@ function main() {
     `// Sample size: ${SAMPLE_SIZE} (seed=${seed}, frames=${PRECOMPUTED_FRAMES})`,
   )
   lines.push("")
+  lines.push(
+    'const GLYPH_ASSET_BASE = `${String(import.meta.env.BASE_URL || "/").replace(/\\/?$/, "/")}ithkuil-glyph-phrases/`',
+  )
+  lines.push(
+    'const glyphAsset = (phrase, glyph) => `${GLYPH_ASSET_BASE}phrases/phrase-${String(phrase).padStart(3, "0")}/glyph-${String(glyph).padStart(2, "0")}.svg`',
+  )
+  if (sharedGlyphHeight != null) {
+    lines.push(`const GLYPH_HEIGHT = ${sharedGlyphHeight}`)
+  }
+  lines.push("")
+  lines.push("const rawPhrases = [")
+
+  for (const phrase of phrases) {
+    lines.push(`  [${JSON.stringify(phrase.id)}, ${JSON.stringify(phrase.text)}, [`)
+    for (const glyph of phrase.glyphs) {
+      const [filePhrase, fileGlyph] = parseGlyphFileParts(glyph.file)
+      const variants = glyph.flickerVariants
+        .map((variant) => `[${parseGlyphFileParts(variant).join(", ")}]`)
+        .join(", ")
+      if (sharedGlyphHeight != null) {
+        lines.push(
+          `    [${glyph.glyphIndex}, ${glyph.width}, ${filePhrase}, ${fileGlyph}, [${variants}]],`,
+        )
+      } else {
+        lines.push(
+          `    [${glyph.glyphIndex}, ${glyph.width}, ${glyph.height}, ${filePhrase}, ${fileGlyph}, [${variants}]],`,
+        )
+      }
+    }
+    lines.push("  ]],")
+  }
+
+  lines.push("]")
+  lines.push("")
+  lines.push(
+    sharedGlyphHeight != null
+      ? "const normalizeGlyph = ([glyphIndex, width, filePhrase, fileGlyph, flickerVariants]) => ({"
+      : "const normalizeGlyph = ([glyphIndex, width, height, filePhrase, fileGlyph, flickerVariants]) => ({",
+  )
+  lines.push("  glyphIndex,")
+  lines.push("  width,")
+  lines.push(sharedGlyphHeight != null ? "  height: GLYPH_HEIGHT," : "  height,")
+  lines.push("  file: glyphAsset(filePhrase, fileGlyph),")
+  lines.push("  flickerVariants: flickerVariants.map(([phrase, glyph]) => glyphAsset(phrase, glyph)),")
+  lines.push("})")
+  lines.push("")
+  lines.push("const normalizePhrase = ([id, text, glyphs]) => ({")
+  lines.push("  id,")
+  lines.push("  text,")
+  lines.push("  glyphs: glyphs.map(normalizeGlyph),")
+  lines.push("})")
+  lines.push("")
   lines.push("export const glyphPool = {")
   lines.push(`  seed: ${seed},`)
   lines.push(`  sampledCount: ${phrases.length},`)
   lines.push(`  totalCount: ${items.length},`)
   lines.push(`  glyphCount: ${glyphCount},`)
-  lines.push("  phrases: [")
-
-  for (const phrase of phrases) {
-    lines.push("    {")
-    lines.push(`      id: ${JSON.stringify(phrase.id)},`)
-    lines.push(`      text: ${JSON.stringify(phrase.text)},`)
-    lines.push("      glyphs: [")
-    for (const glyph of phrase.glyphs) {
-      lines.push("        {")
-      lines.push(`          glyphIndex: ${glyph.glyphIndex},`)
-      lines.push(`          width: ${glyph.width},`)
-      lines.push(`          height: ${glyph.height},`)
-      lines.push(`          file: ${urlExpr(glyph.file)},`)
-      lines.push("          flickerVariants: [")
-      for (const variant of glyph.flickerVariants) {
-        lines.push(`            ${urlExpr(variant)},`)
-      }
-      lines.push("          ],")
-      lines.push("        },")
-    }
-    lines.push("      ],")
-    lines.push("    },")
-  }
-
-  lines.push("  ],")
+  lines.push("  phrases: rawPhrases.map(normalizePhrase),")
   lines.push("}")
   lines.push("")
   lines.push("export const glyphTokens = glyphPool.phrases.flatMap((phrase) => phrase.glyphs)")
@@ -210,10 +241,7 @@ function main() {
     `[build:glyph-pools] wrote ${path.relative(rootDir, outputPath)} with ${phrases.length} phrases and ${glyphCount} glyphs.`,
   )
   console.log(
-    `[build:glyph-pools] copied ${baseGlyphFileSet.size} glyph assets into ${path.relative(
-      rootDir,
-      assetRoot,
-    )}.`,
+    `[build:glyph-pools] referenced ${referencedGlyphFiles.size} public glyph assets.`,
   )
 }
 

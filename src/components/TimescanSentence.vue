@@ -9,6 +9,7 @@ import {
   watch,
 } from "vue"
 import { useTimescanSentence } from "@/composables/useTimescanSentence"
+import timescanGlyphStrips from "@/timescanAssets/manifest.gen"
 
 const props = defineProps({
   overlayText: {
@@ -18,6 +19,10 @@ const props = defineProps({
   glyphTokens: {
     type: Array,
     required: true,
+  },
+  assetKey: {
+    type: String,
+    default: "",
   },
   containerWidth: {
     type: Number,
@@ -86,8 +91,31 @@ const glyphScale = computed(() => {
 let overlayResizeObserver = null
 let viewTriggerObserver = null
 let viewTriggerDelayId = 0
+let viewTriggerFallbackCheckIds = []
+let viewTriggerFallbackListenersActive = false
 let viewTriggerHasRun = false
+const missingStripAssetWarnings = new Set()
 const pendingViewTrigger = ref(false)
+const stripAsset = computed(() => {
+  const key = String(props.assetKey || "")
+  return key ? timescanGlyphStrips?.[key] || null : null
+})
+const usesStripAsset = computed(() => Boolean(stripAsset.value?.base))
+
+watch(
+  () => [props.assetKey, usesStripAsset.value],
+  ([assetKey, hasAsset]) => {
+    if (!import.meta.env.DEV) return
+    const key = String(assetKey || "")
+    if (!key || hasAsset || missingStripAssetWarnings.has(key)) return
+    missingStripAssetWarnings.add(key)
+    console.warn(
+      `[TimescanSentence] Missing generated strip asset for asset-key "${key}". ` +
+        "Add it to src/timescanAssets/registry.js and run npm run build:timescan-strips.",
+    )
+  },
+  { immediate: true },
+)
 
 function viewportVisibilityRatio(el) {
   const rect = el.getBoundingClientRect()
@@ -146,6 +174,18 @@ function clearViewTriggerDelay() {
   viewTriggerDelayId = 0
 }
 
+function clearViewTriggerFallbackChecks() {
+  viewTriggerFallbackCheckIds.forEach((id) => window.clearTimeout(id))
+  viewTriggerFallbackCheckIds = []
+}
+
+function teardownViewTriggerFallbackListeners() {
+  if (!viewTriggerFallbackListenersActive) return
+  window.removeEventListener("scroll", maybeRunViewTrigger)
+  window.removeEventListener("resize", maybeRunViewTrigger)
+  viewTriggerFallbackListenersActive = false
+}
+
 function canRunViewTrigger() {
   return !props.viewTriggerOnce || !viewTriggerHasRun
 }
@@ -158,6 +198,11 @@ function runViewTriggerNow() {
   }
   pendingViewTrigger.value = false
   viewTriggerHasRun = true
+  if (props.viewTriggerOnce) {
+    teardownViewTriggerObserver()
+    teardownViewTriggerFallbackListeners()
+    clearViewTriggerFallbackChecks()
+  }
   runSentenceTimescan()
 }
 
@@ -182,7 +227,9 @@ function maybeRunViewTrigger() {
   const rootEl = timescanRootRef.value
   if (!rootEl) return
   const threshold = clampViewTriggerThreshold()
-  if (threshold > 0 && viewportVisibilityRatio(rootEl) < threshold) return
+  const visibleRatio = viewportVisibilityRatio(rootEl)
+  if (visibleRatio <= 0) return
+  if (threshold > 0 && visibleRatio < threshold) return
   scheduleViewTrigger()
 }
 
@@ -234,16 +281,45 @@ function setupViewTriggerObserver() {
   })
 }
 
+function setupViewTriggerFallback() {
+  if (!props.autoTriggerOnView || typeof window === "undefined") return
+
+  clearViewTriggerFallbackChecks()
+  viewTriggerFallbackCheckIds = [120, 500, 1200, 2400].map((delayMs) => {
+    const timeoutId = window.setTimeout(() => {
+      viewTriggerFallbackCheckIds = viewTriggerFallbackCheckIds.filter(
+        (id) => id !== timeoutId,
+      )
+      maybeRunViewTrigger()
+    }, delayMs)
+    return timeoutId
+  })
+
+  if (viewTriggerFallbackListenersActive) {
+    return
+  }
+
+  window.addEventListener("scroll", maybeRunViewTrigger, { passive: true })
+  window.addEventListener("resize", maybeRunViewTrigger)
+  viewTriggerFallbackListenersActive = true
+}
+
 const {
   sentenceGlyphEntries,
   sentenceGlyphMaskStyle,
   sentenceOverlayRevealStyle,
   sentenceOverlayRevealPx,
   sentenceStageStyle,
+  sentenceStripHeightPx,
   sentenceFlickerVisible,
   sentenceFlickerVariants,
   sentenceFlickerActiveLayer,
   sentenceConsumedHidden,
+  sentenceStripFlickerActiveLayer,
+  sentenceStripFlickerLeftPx,
+  sentenceStripFlickerRightPx,
+  sentenceTotalWidthPx,
+  sentenceStripWidthPx,
   runSentenceTimescan,
   canTriggerSentenceTimescan,
 } = useTimescanSentence({
@@ -254,6 +330,60 @@ const {
 })
 
 const hasTokens = computed(() => sentenceGlyphEntries.value.length > 0)
+const sentenceStripLayers = computed(() =>
+  Array.isArray(stripAsset.value?.flicker) ? stripAsset.value.flicker : [],
+)
+const sentenceStripLineStyle = computed(() => ({
+  width: `${Math.max(1, sentenceStripWidthPx.value)}px`,
+  height: `${Math.max(1, sentenceStripHeightPx.value)}px`,
+}))
+
+function maskUrl(src) {
+  return `url("${String(src || "")}")`
+}
+
+function stripClipStyle(
+  leftPx,
+  rightPx = sentenceStripWidthPx.value,
+  totalPx = sentenceStripWidthPx.value,
+) {
+  const totalWidth = Math.max(1, totalPx)
+  const left = Math.max(0, Math.min(totalWidth, leftPx))
+  const right = Math.max(left, Math.min(totalWidth, rightPx))
+  const rightInset = Math.max(0, totalWidth - right)
+  return `inset(0 ${rightInset}px 0 ${left}px)`
+}
+
+const sentenceStripBaseStyle = computed(() => {
+  const src = stripAsset.value?.base
+  const revealPx = Math.max(0, sentenceOverlayRevealPx.value)
+  const flickerLeftPx = sentenceStripFlickerLeftPx.value
+  const flickerRightPx = sentenceStripFlickerRightPx.value
+  const hasActiveFlicker =
+    sentenceStripFlickerActiveLayer.value >= 0 && flickerRightPx > flickerLeftPx
+  const stripStartPx = hasActiveFlicker
+    ? Math.max(revealPx, flickerRightPx)
+    : revealPx
+  return {
+    maskImage: maskUrl(src),
+    WebkitMaskImage: maskUrl(src),
+    clipPath: stripClipStyle(stripStartPx),
+  }
+})
+
+const sentenceStripFlickerLayerStyles = computed(() => {
+  const leftPx = sentenceStripFlickerLeftPx.value
+  const rightPx = sentenceStripFlickerRightPx.value
+  const activeLayer = sentenceStripFlickerActiveLayer.value
+  const isVisible = rightPx > leftPx && activeLayer >= 0
+
+  return sentenceStripLayers.value.map((src, index) => ({
+    maskImage: maskUrl(src),
+    WebkitMaskImage: maskUrl(src),
+    clipPath: stripClipStyle(leftPx, rightPx),
+    opacity: isVisible && activeLayer === index ? 1 : 0,
+  }))
+})
 
 watch(
   () => props.triggerKey,
@@ -305,6 +435,7 @@ onMounted(() => {
     syncOverlayTextWidth()
     syncClassGlyphScale()
     setupViewTriggerObserver()
+    setupViewTriggerFallback()
     maybeRunViewTrigger()
   })
 
@@ -327,6 +458,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   clearViewTriggerDelay()
+  clearViewTriggerFallbackChecks()
+  teardownViewTriggerFallbackListeners()
   teardownViewTriggerObserver()
   if (!overlayResizeObserver) {
     return
@@ -390,7 +523,27 @@ defineExpose({
             {{ overlayText }}
           </span>
         </p>
-        <p class="sentence-line">
+        <p
+          v-if="usesStripAsset"
+          class="sentence-strip-line"
+          :style="sentenceStripLineStyle"
+          aria-hidden="true"
+        >
+          <span
+            class="sentence-glyph-strip sentence-glyph-strip-base"
+            :style="sentenceStripBaseStyle"
+          ></span>
+          <span
+            v-for="(layerStyle, layerIndex) in sentenceStripFlickerLayerStyles"
+            :key="`strip-flicker-${layerIndex}`"
+            class="sentence-glyph-strip sentence-glyph-strip-flicker"
+            :style="layerStyle"
+          ></span>
+        </p>
+        <p
+          v-else
+          class="sentence-line"
+        >
           <span
             v-for="(entry, index) in sentenceGlyphEntries"
             :key="`sentence-${entry.glyphIndex}-${index}`"
@@ -489,6 +642,26 @@ defineExpose({
   align-items: flex-end;
 }
 
+.sentence-strip-line {
+  margin: 0;
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  contain: paint;
+  isolation: isolate;
+}
+
+.timescan-layout-center .sentence-strip-line {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.timescan-layout-left .sentence-strip-line {
+  left: 0;
+  transform: none;
+}
+
 .sentence-stage {
   --sentence-ink: var(--timescan-ink, rgba(187, 223, 255, 0.95));
   --sentence-glow: var(--timescan-glow, rgba(109, 196, 255, 0.35));
@@ -547,6 +720,27 @@ defineExpose({
 
 .sentence-glyph-mask {
   background-color: var(--sentence-ink);
+}
+
+.sentence-glyph-strip {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: var(--sentence-ink);
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: left bottom;
+  -webkit-mask-position: left bottom;
+  mask-size: auto 100%;
+  -webkit-mask-size: auto 100%;
+  will-change: opacity, clip-path;
+}
+
+.sentence-glyph-strip-flicker {
+  opacity: 0;
 }
 
 .sentence-glyph-hidden {

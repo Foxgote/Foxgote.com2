@@ -51,6 +51,16 @@ function uniqueByFirstSeen(values) {
   return output
 }
 
+function cloneWithoutGeneratedAt(manifest) {
+  const clone = JSON.parse(JSON.stringify(manifest))
+  delete clone.flickerVariantsGeneratedAt
+  return clone
+}
+
+function normalizeLineEndings(value) {
+  return String(value).replace(/\r\n/g, "\n")
+}
+
 function pickVariants({
   glyph,
   glyphFilePool,
@@ -113,7 +123,9 @@ function main() {
     throw new Error(`Manifest not found: ${manifestPath}`)
   }
 
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"))
+  const originalManifestContent = fs.readFileSync(manifestPath, "utf8")
+  const manifest = JSON.parse(originalManifestContent)
+  const originalManifest = JSON.parse(originalManifestContent)
   if (!Array.isArray(manifest?.items)) {
     throw new Error("Invalid manifest: missing items[]")
   }
@@ -166,12 +178,27 @@ function main() {
 
   manifest.flickerVariantFrames = FRAMES_PER_GLYPH
   manifest.flickerVariantBucketScale = BUCKET_SCALE
-  manifest.flickerVariantsGeneratedAt = new Date().toISOString()
+  const previousGeneratedAt = originalManifest.flickerVariantsGeneratedAt
+  const stableBefore = JSON.stringify(cloneWithoutGeneratedAt(originalManifest))
+  const stableAfter = JSON.stringify(cloneWithoutGeneratedAt(manifest))
+  if (stableBefore !== stableAfter) {
+    manifest.flickerVariantsGeneratedAt = new Date().toISOString()
+  } else if (previousGeneratedAt) {
+    manifest.flickerVariantsGeneratedAt = previousGeneratedAt
+  } else {
+    delete manifest.flickerVariantsGeneratedAt
+  }
 
-  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8")
+  const nextManifestContent = `${JSON.stringify(manifest, null, 2)}\n`
+  const shouldWrite =
+    normalizeLineEndings(nextManifestContent) !==
+    normalizeLineEndings(originalManifestContent)
+  if (shouldWrite) {
+    fs.writeFileSync(manifestPath, nextManifestContent, "utf8")
+  }
 
   console.log(
-    `[precompute:flicker] Updated ${glyphRecords.length} glyphs with ${FRAMES_PER_GLYPH} variants each.`,
+    `[precompute:flicker] ${shouldWrite ? "Updated" : "Checked"} ${glyphRecords.length} glyphs with ${FRAMES_PER_GLYPH} variants each.`,
   )
 }
 

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount, watch } from "vue"
+import { ref, onMounted, onBeforeUnmount, watch } from "vue"
 import { RouterLink, RouterView, useRoute } from "vue-router"
 import heroHome from "./assets/img/barlite.png"
 import heroServices from "./assets/img/services.jpg"
@@ -18,7 +18,6 @@ const NEON_FLICKER_DURATION_MS = 1800
 const ENABLE_NEON_FLICKER = false
 const HERO_FADE_DURATION_MS = 700
 const NAV_SCROLL_DURATION_MS = 2000
-const NAV_SCROLL_OFFSET_PX = -178
 const NAV_SCROLL_VIEWPORT_TOP_PAD_PX = 64
 const NAV_SCROLL_ANCHOR_EPSILON_PX = 2
 const NAV_SCROLL_MIN_DISTANCE_PX = 4
@@ -38,9 +37,7 @@ const ROUTE_THEME_KEYS = {
 }
 
 let rafId = 0
-let io = null
 let scrollEffectEnabled = false
-let anchorIsIntersecting = true
 let neonFlickerTimeoutId = 0
 let heroFadeTimeoutId = 0
 let navSmoothScrollRafId = 0
@@ -57,10 +54,6 @@ function normalizeRoutePath(path) {
   if (isInSection(path, "/contact")) return "/contact"
   if (isInSection(path, "/projects")) return "/projects"
   return "/"
-}
-
-function routeViewKey(path) {
-  return normalizeRoutePath(path)
 }
 
 const baseHeroUrl = ref(ROUTE_HERO_URLS[normalizeRoutePath(route.path)] || heroHome)
@@ -126,6 +119,10 @@ watch(
   { immediate: true },
 )
 
+function routeViewKey(path) {
+  return normalizeRoutePath(path)
+}
+
 function updateScrollEffect() {
   const el = barliteRef.value
   if (!el) return
@@ -157,7 +154,6 @@ function onScroll() {
   if (!scrollEffectEnabled) {
     if ((window.scrollY || 0) <= 0) return
     scrollEffectEnabled = true
-    applyStickyState()
   }
   cancelAnimationFrame(rafId)
   rafId = requestAnimationFrame(updateScrollEffect)
@@ -226,14 +222,8 @@ function triggerHeroScrollIfAboveAnchor() {
   if (isAtOrBelowNavAnchor()) return
   requestAnimationFrame(() => {
     if (isAtOrBelowNavAnchor()) return
-    smoothScrollToElement(".welcome-sign", NAV_SCROLL_DURATION_MS, NAV_SCROLL_OFFSET_PX)
+    smoothScrollToElement(".nav-anchor", NAV_SCROLL_DURATION_MS, 0)
   })
-}
-
-function applyStickyState() {
-  const stickyActive = scrollEffectEnabled && !anchorIsIntersecting
-  document.documentElement.style.setProperty("--sticky-on", stickyActive ? "1" : "0")
-  document.documentElement.style.setProperty("--sticky-pe", stickyActive ? "auto" : "none")
 }
 
 function resetReloadScrollPosition() {
@@ -265,7 +255,6 @@ function onNavClick(event) {
   if (ENABLE_NEON_FLICKER) triggerNeonFlicker()
   if (scrollEffectEnabled) return
   scrollEffectEnabled = true
-  applyStickyState()
   onScroll()
 }
 
@@ -287,27 +276,10 @@ function triggerNeonFlicker() {
 
 onMounted(() => {
   scrollEffectEnabled = false
-  anchorIsIntersecting = true
   welcomeSignRef.value?.classList.remove("is-flickering")
-  applyStickyState()
   resetReloadScrollPosition()
   window.addEventListener("scroll", onScroll, { passive: true })
   window.addEventListener("resize", onScroll)
-
-  // Toggle sticky nav when the hero-bottom nav leaves the top area.
-  const anchor = navAnchorRef.value
-  if (anchor) {
-
-    const NAV_H = 64
-io = new IntersectionObserver(([entry]) => {
-  anchorIsIntersecting = entry.isIntersecting
-  applyStickyState()
-}, {
-  threshold: 0,
-  rootMargin: `-${NAV_H}px 0px 0px 0px`
-})
-    io.observe(anchor)
-  }
 })
 
 onBeforeUnmount(() => {
@@ -317,25 +289,11 @@ onBeforeUnmount(() => {
   stopNavSmoothScrollAnimation()
   window.clearTimeout(neonFlickerTimeoutId)
   window.clearTimeout(heroFadeTimeoutId)
-  if (io) io.disconnect()
 })
 </script>
 
 <template>
   <div class="app">
-    <!-- Sticky nav (hidden until hero nav scrolls away) -->
-    <nav id="site-nav" class="nav nav-sticky" @click.capture="onNavClick">
-      <div class="nav-inner">
-        <RouterLink to="/" class="nav-link">Home</RouterLink>
-        <RouterLink to="/services" class="nav-link">Services</RouterLink>
-        <RouterLink to="/portfolio" class="nav-link">Portfolio</RouterLink>
-        <RouterLink to="/contact" class="nav-link">
-          Contact
-        </RouterLink>
-        <RouterLink to="/projects" class="nav-link">Projects</RouterLink>
-      </div>
-    </nav>
-
     <header
       ref="barliteRef"
       class="barlite"
@@ -362,30 +320,29 @@ onBeforeUnmount(() => {
         v-html="welcomeSignMarkup"
       ></figure>
 
-      <!-- Invisible anchor zone (just a sensor) -->
-      <div
-        id="scroll-effect-anchor"
-        ref="navAnchorRef"
-        class="nav-anchor"
-        aria-hidden="true"
-      ></div>
-
-      <!-- Hero-bottom nav -->
-      <nav class="nav nav-hero" @click.capture="onNavClick">
-        <div class="nav-inner">
-          <RouterLink to="/" class="nav-link">Home</RouterLink>
-          <RouterLink to="/services" class="nav-link">Services</RouterLink>
-          <RouterLink to="/portfolio" class="nav-link">Portfolio</RouterLink>
-          <RouterLink to="/contact" class="nav-link">
-            Contact
-          </RouterLink>
-          <RouterLink to="/projects" class="nav-link">Projects</RouterLink>
-        </div>
-      </nav>
     </header>
 
+    <nav id="site-nav" class="nav nav-hero" @click.capture="onNavClick">
+      <div class="nav-inner">
+        <RouterLink to="/" class="nav-link">Home</RouterLink>
+        <RouterLink to="/services" class="nav-link">Services</RouterLink>
+        <RouterLink to="/portfolio" class="nav-link">Portfolio</RouterLink>
+        <RouterLink to="/contact" class="nav-link">
+          Contact
+        </RouterLink>
+        <RouterLink to="/projects" class="nav-link">Projects</RouterLink>
+      </div>
+    </nav>
+
+    <div
+      id="scroll-effect-anchor"
+      ref="navAnchorRef"
+      class="nav-anchor"
+      aria-hidden="true"
+    ></div>
+
     <main class="content">
-        <div id="content-top" aria-hidden="true"></div>
+      <div id="content-top" aria-hidden="true"></div>
       <RouterView v-slot="{ Component, route: currentRoute }">
         <Transition :name="routeTransitionName" mode="out-in">
           <component :is="Component" :key="routeViewKey(currentRoute.path)" />
@@ -399,13 +356,14 @@ onBeforeUnmount(() => {
 #content-top {
   height: 0;
 }
+
 .barlite{
-  height: calc(100vh-var(--nav-h));
+  height: calc(100vh - var(--nav-h));
   min-height: 620px;
   position: relative;
   overflow: visible;
   display: grid;
-  grid-template-rows: 1fr auto; /* content then nav */
+  grid-template-rows: 1fr;
 }
 @supports (height: 100dvh) {
   .barlite {
@@ -633,20 +591,23 @@ onBeforeUnmount(() => {
   border-top: 1px solid rgba(255, 200, 140, 0.10);
 }
 .nav-inner{
+  --nav-gap: clamp(0.65rem, 4vw, 2.6rem);
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 1.75rem;
+  padding: 0 var(--nav-inner-pad, 1.75rem);
   display: flex;
-  gap: 2.6rem;
+  gap: var(--nav-gap);
   justify-content: center;
   align-items: center;    
 }
 .nav-link {
+  flex: 0 0 auto;
   position: relative;
   opacity: 0.7;
   padding-bottom: 0.2rem;
   text-decoration: none;
+  white-space: nowrap;
   transition: opacity 150ms ease, color 150ms ease;
 }
 
@@ -683,33 +644,16 @@ onBeforeUnmount(() => {
   color: var(--accent, #d4a15e);
 }
 
-/* Bottom-of-hero nav */
+/* Bottom-of-hero nav, then sticky in normal document flow */
 .nav-hero{
-  grid-row: 2;
-  position: relative;   /* stop using absolute */
-  left: auto;
-  right: auto;
-  bottom: auto;
-  margin: 0;
-}
-
-/* Sticky nav that takes over */
-.nav-sticky {
   position: sticky;
   top: 0;
-  width: 100%;
   margin: 0;
   z-index: 40;
-
-  opacity: var(--sticky-on, 0);
-  pointer-events: var(--sticky-pe, none);
-  transition: none;
 }
 
-/* When sticky is active, allow clicks */
 :global(:root) {
-  --sticky-on: 0;
-  --sticky-pe: none;
+  --nav-inner-pad: 1.75rem;
   --nav-h: 64px;
 
   --home-colour: #d4a15e;
@@ -735,18 +679,20 @@ onBeforeUnmount(() => {
 :global(:root[data-route-theme="projects"]) {
   --route-colour: var(--projects-colour);
 }
-.nav-sticky {
-  pointer-events: var(--sticky-pe, none);
-}
 
-/* The anchor sits just below the hero nav line */
+/* Scroll target sits below the sticky nav, so content starts clear of it. */
 .nav-anchor {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
   height: 1px;
   pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .nav-inner {
+    --nav-inner-pad: 0.65rem;
+    --nav-gap: clamp(0.84rem, 4.62vw, 1.28rem);
+    justify-content: center;
+    font-size: clamp(0.72rem, 2.8vw, 0.94rem);
+  }
 }
 
 .content {
