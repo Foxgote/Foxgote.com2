@@ -4,9 +4,6 @@ import { RouterView, useRoute, useRouter } from "vue-router"
 import {
   getTimescanGlyphOptions,
   getTimescanText,
-  serviceBulletAssetKey,
-  serviceImageAssetKey,
-  serviceTitleAssetKey,
   servicesContent,
 } from "@/content/siteContent"
 import { buildGlyphSequence } from "@/utils/glyphSequence"
@@ -57,28 +54,12 @@ const servicesHeadingTokens = computed(() => buildTimescanTokens("services.headi
 const servicesLeadTokens = computed(() => buildTimescanTokens("services.lead"))
 
 const servicesCards = computed(() => {
-  return servicesContent.cards.map((card) => {
-    const titleAssetKey = serviceTitleAssetKey(card.id)
-    const imageAssetKey = serviceImageAssetKey(card.id)
-
-    return {
-      ...card,
-      to: { name: SERVICE_CARD_ROUTE_NAME_BY_ID[card.id] },
-      titleAssetKey,
-      imageAssetKey,
-      titleTokens: buildTimescanTokens(titleAssetKey),
-      imageTokens: buildTimescanTokens(imageAssetKey),
-      bulletItems: card.bullets.map((text, index) => {
-        const assetKey = serviceBulletAssetKey(card.id, index)
-        return {
-          id: `${card.id}-bullet-${index}`,
-          text,
-          assetKey,
-          tokens: buildTimescanTokens(assetKey),
-        }
-      }),
-    }
-  })
+  return servicesContent.cards.map((card) => ({
+    ...card,
+    action: card.detail?.ctaLabel || "View Details",
+    contactTo: { name: "Contact", query: { service: card.id } },
+    to: { name: SERVICE_CARD_ROUTE_NAME_BY_ID[card.id] },
+  }))
 })
 
 function closeServiceDetail() {
@@ -210,65 +191,30 @@ onBeforeUnmount(() => {
       </div>
     </header>
 
-    <section class="services-grid">
-      <RouterLink
+    <section class="content-card-grid services-grid">
+      <article
         v-for="card in servicesCards"
         :key="card.id"
-        class="service-card-link"
-        :to="card.to"
-        :aria-label="`Open ${card.title} details`"
+        class="content-card service-card-link"
+        :class="{ 'is-detail-active': route.name === SERVICE_CARD_ROUTE_NAME_BY_ID[card.id] }"
       >
-        <article class="service-card">
-          <header class="service-card-head">
-            <TimescanSentence
-              class="timescan-base timescan-h3 timescan-layout-center"
-              :overlay-text="card.title"
-              :asset-key="card.titleAssetKey"
-              :glyph-tokens="card.titleTokens"
-              :auto-trigger-on-view="true"
-              :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
-              :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-              :view-trigger-delay-ms="SERVICES_VIEW_TRIGGER_DELAY_MS"
-              :show-button="false"
-            />
-          </header>
-          <div
-            class="card-image-slot"
-            role="img"
-            :aria-label="card.imageAriaLabel"
-          >
-            <TimescanSentence
-              class="timescan-base timescan-caption timescan-layout-center"
-              :overlay-text="card.imageLabel"
-              :asset-key="card.imageAssetKey"
-              :glyph-tokens="card.imageTokens"
-              :auto-trigger-on-view="true"
-              :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
-              :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-              :view-trigger-delay-ms="SERVICES_VIEW_TRIGGER_DELAY_MS"
-              :show-button="false"
-            />
-          </div>
-          <ul class="service-bullets">
-            <li
-              v-for="bullet in card.bulletItems"
-              :key="bullet.id"
-            >
-              <TimescanSentence
-                class="timescan-base timescan-p timescan-layout-left"
-                :overlay-text="bullet.text"
-                :asset-key="bullet.assetKey"
-                :glyph-tokens="bullet.tokens"
-                :auto-trigger-on-view="true"
-                :view-trigger-threshold="SERVICES_CONTENT_VIEW_TRIGGER_THRESHOLD"
-                :view-trigger-root-margin="SERVICES_VIEW_TRIGGER_ROOT_MARGIN"
-                :view-trigger-delay-ms="SERVICES_VIEW_TRIGGER_DELAY_MS"
-                :show-button="false"
-              />
-            </li>
-          </ul>
-        </article>
-      </RouterLink>
+        <RouterLink
+          class="service-card-main"
+          :to="card.to"
+          :aria-label="`Open ${card.title} details`"
+        >
+          <span class="content-card-kicker">{{ card.imageLabel }}</span>
+          <h2>{{ card.title }}</h2>
+          <p>{{ card.summary }}</p>
+        </RouterLink>
+        <RouterLink
+          class="content-card-action service-card-action"
+          :to="card.contactTo"
+          :aria-label="`${card.action} on the contact page`"
+        >
+          {{ card.action }}
+        </RouterLink>
+      </article>
     </section>
 
     <RouterView v-slot="{ Component, route: detailRoute }">
@@ -346,137 +292,93 @@ onBeforeUnmount(() => {
 }
 
 .services-grid {
-  display: grid;
   width: 100%;
   margin: 0;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.75rem, 2vw, 2rem);
-  justify-items: center;
 }
 
 .service-card-link {
-  width: min(100%, 340px);
-  display: block;
   position: relative;
-  border-radius: 16px;
-  text-decoration: none;
+  min-height: 14rem;
+  align-content: start;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform-origin: center;
+  will-change: transform;
+  transition:
+    transform 170ms ease,
+    border-color 170ms ease,
+    background 170ms ease;
+}
+
+.service-card-main {
+  min-width: 0;
+  display: grid;
+  gap: 0.55rem;
   color: inherit;
-  cursor: pointer;
+  text-decoration: none;
+}
+
+.service-card-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.service-card-main > *,
+.service-card-action {
+  position: relative;
+  z-index: 1;
+}
+
+.service-card-main:focus-visible {
+  outline: none;
+}
+
+.service-card-link p {
+  min-height: 4.65em;
+}
+
+.service-card-action {
+  align-self: end;
+  justify-self: start;
+  margin-top: auto;
 }
 
 .service-card-link:hover,
-.service-card-link:focus-visible {
-  z-index: 2;
+.service-card-link:focus-within,
+.service-card-link.is-detail-active {
+  border-color: rgba(255, 220, 180, 0.26);
+  background: linear-gradient(160deg, rgba(22, 17, 12, 0.62), rgba(9, 9, 11, 0.78));
 }
 
-.service-card-link:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(212, 161, 94, 0.42);
+.service-card-link:focus-within {
+  outline: 2px solid rgba(255, 220, 180, 0.36);
+  outline-offset: 3px;
 }
 
-.service-card {
-  width: 100%;
-  height: min(100%, 520px);
-  margin: 0;
-  display: grid;
-  align-content: start;
-  gap: 0.85rem;
-  border-radius: 16px;
-  border: 1px solid rgba(212, 161, 94, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  background: linear-gradient(160deg, rgba(18, 14, 10, 0.52), rgba(8, 8, 10, 0.72));
+.service-card-link.is-detail-active {
+  border-color: rgba(255, 220, 180, 0.32);
+  background: linear-gradient(160deg, rgba(24, 18, 12, 0.68), rgba(9, 9, 11, 0.82));
+}
+
+.service-card-main:hover ~ .service-card-action,
+.service-card-main:focus-visible ~ .service-card-action {
+  border-color: rgba(255, 235, 208, 0.84);
+  color: rgba(255, 247, 232, 1);
   box-shadow:
-    0 10px 18px rgba(0, 0, 0, 0.3),
-    inset 0 0 0 1px rgba(212, 161, 94, 0.05);
-  font-size: 1.2rem;
-  color: rgba(255, 237, 214, 0.95);
-  letter-spacing: 0.01em;
-  transform-origin: center;
-  transition:
-    transform 170ms ease,
-    box-shadow 170ms ease,
-    border-color 170ms ease,
-    background 170ms ease;
-  will-change: transform;
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 220, 180, 0.24),
+    0 8px 14px rgba(0, 0, 0, 0.32);
 }
 
-.service-card-head {
-  margin: 1.2rem 0 0;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.service-card-link:focus-visible .service-card {
-  transform: scale(1.035);
-  border-color: rgba(212, 161, 94, 0.22);
-  box-shadow:
-    0 18px 30px rgba(0, 0, 0, 0.42),
-    inset 0 0 0 1px rgba(212, 161, 94, 0.1);
-}
-
-.service-card-link:active .service-card {
-  transform: scale(0.97);
-  border-color: rgba(212, 161, 94, 0.12);
-  background: linear-gradient(160deg, rgba(13, 10, 8, 0.62), rgba(5, 5, 7, 0.78));
-  box-shadow:
-    0 7px 14px rgba(0, 0, 0, 0.34),
-    inset 0 0 0 1px rgba(212, 161, 94, 0.04);
-  color: rgba(205, 184, 164, 0.74);
-}
-
-.service-card-link:active .service-card :deep(.timescan-base) {
-  --timescan-ink: rgba(196, 174, 150, 0.72);
-  --timescan-glow: rgba(255, 186, 109, 0.1);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .service-card-link:hover .service-card {
-    transform: scale(1.035);
-    border-color: rgba(212, 161, 94, 0.22);
-    box-shadow:
-      0 18px 30px rgba(0, 0, 0, 0.42),
-      inset 0 0 0 1px rgba(212, 161, 94, 0.1);
-  }
-
-  .service-card-link:active .service-card {
-    transform: scale(0.97);
-  }
-}
-
-.card-image-slot {
-  min-height: 220px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  text-transform: uppercase;
-}
-
-.card-image-slot :deep(.timescan-sentence) {
-  width: 100%;
-}
-
-.service-bullets {
-  margin: 1.5rem;
-  justify-self: center;
-  padding: 0 0 0 1rem;
-  display: grid;
-  gap: 0.5rem;
-  list-style-type: none;
-}
-
-.service-bullets :deep(.timescan-sentence) {
-  width: 100%;
-}
-
-.service-bullets :deep(.sentence-stage) {
-  overflow: hidden;
-}
-
-.service-bullets li {
-  margin: 0;
-  overflow: hidden;
+.service-card-action:active {
+  transform: scale(0.94);
+  border-color: rgba(255, 220, 180, 0.18);
+  background: rgba(5, 5, 7, 0.42);
+  color: rgba(205, 184, 164, 0.78);
+  box-shadow: none;
 }
 
 .service-detail-overlay {
@@ -577,7 +479,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 980px) {
   .services-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
   }
 }
 
@@ -588,53 +490,15 @@ onBeforeUnmount(() => {
   }
 
   .services-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.7rem;
-    justify-items: stretch;
+    gap: 0.75rem;
   }
 
   .service-card-link {
-    width: 100%;
-    max-width: none;
-  }
-
-  .service-card {
     min-height: auto;
-    gap: 0.45rem;
-    border-radius: 12px;
-    font-size: 0.84rem;
   }
 
-  .service-card-head {
-    margin: 0.75rem 0.25rem 0;
-  }
-
-  .card-image-slot {
-    min-height: 112px;
-    border-radius: 9px;
-  }
-
-  .service-bullets {
-    margin: 0.55rem 0.45rem 0.75rem;
-    padding-left: 0;
-    gap: 0.32rem;
-  }
-
-  .service-card :deep(.timescan-h3) {
-    --timescan-overlay-font-size: 0.78rem;
-    --timescan-min-height: 20px;
-    --timescan-overlay-letter-spacing: 0.06em;
-  }
-
-  .service-card :deep(.timescan-caption) {
-    --timescan-overlay-font-size: 0.68rem;
-    --timescan-min-height: 16px;
-  }
-
-  .service-card :deep(.timescan-p) {
-    --timescan-overlay-font-size: 0.62rem;
-    --timescan-min-height: 15px;
-    --timescan-glyph-scale: 0.32;
+  .service-card-link p {
+    min-height: 0;
   }
 }
 </style>

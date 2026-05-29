@@ -84,6 +84,7 @@ p {
 }
 
 .content-page {
+  box-sizing: border-box;
   width: 100%;
   margin: 0 auto;
   padding: 2.4rem var(--page-inline-pad, 0) 3rem;

@@ -1,4 +1,5 @@
 const CONTACT_EMAIL = "hello@foxgote.com"
+export const TIMESCAN_TEXT_LINE_MAX_CHARS = 34
 
 export const homeContent = {
   heading: "Foxgote",
@@ -119,6 +120,95 @@ export const portfolioContent = {
   lead: "A living map of Foxgote work.",
   intro:
     "This page collects the practical paths through the site while finished releases, session samples, and project notes are gathered into a sharper showcase.",
+  showcases: [
+    {
+      id: "artworks",
+      label: "Visual Work",
+      title: "Artwork Archive",
+      body:
+        "A gallery lane for covers, stills, posters, and visual studies as finished image sets are gathered.",
+      action: "Open Artwork",
+      artworks: [
+        {
+          title: "City Render Study",
+          year: "2026",
+          imageKey: "portfolio",
+          alt: "Cinematic city render placeholder for a future artwork entry",
+        },
+        {
+          title: "Room Light Study",
+          year: "2026",
+          imageKey: "services",
+          alt: "Studio room placeholder for a future artwork entry",
+        },
+        {
+          title: "Project Frame",
+          year: "2026",
+          imageKey: "projects",
+          alt: "Architectural frame placeholder for a future artwork entry",
+        },
+      ],
+    },
+    {
+      id: "videos",
+      label: "Video Work",
+      title: "Video Reel",
+      body:
+        "A place for embedded performance videos, session clips, walkthroughs, or release visuals when the channel links are ready.",
+      action: "Open Videos",
+      videos: [
+        {
+          title: "Session Reel",
+          meta: "YouTube embed pending",
+          imageKey: "portfolio",
+          embedUrl: "",
+        },
+        {
+          title: "Performance Clip",
+          meta: "YouTube embed pending",
+          imageKey: "projects",
+          embedUrl: "",
+        },
+      ],
+    },
+    {
+      id: "audio",
+      label: "Audio Work",
+      title: "Recording Samples",
+      body:
+        "A compact player lane for mixes, lesson examples, stems, and songs once MP3 exports are ready.",
+      action: "Open Audio",
+      audioSamples: [
+        {
+          title: "Midnight Demo",
+          artist: "Foxgote",
+          meta: "Recording sample",
+          duration: "02:42",
+          durationSeconds: 162,
+          imageKey: "services",
+          src: "",
+        },
+        {
+          title: "Lesson Motif",
+          artist: "Foxgote",
+          meta: "Teaching example",
+          duration: "01:36",
+          durationSeconds: 96,
+          imageKey: "portfolio",
+          src: "",
+        },
+        {
+          title: "Stem Rough",
+          artist: "Foxgote",
+          meta: "Production sample",
+          duration: "03:18",
+          durationSeconds: 198,
+          imageKey: "projects",
+          src: "",
+        },
+      ],
+    },
+  ],
   entries: [
     {
       title: "Services",
@@ -186,25 +276,40 @@ export const contactContent = {
   intro:
     "Send a concise note with your preferred dates, the service you are considering, and any links or references that explain the sound, lesson goal, or project shape.",
   email: CONTACT_EMAIL,
-  emailHref: `mailto:${CONTACT_EMAIL}?subject=Foxgote%20booking%20inquiry`,
-  actionLabel: "Email Foxgote",
-  notes: [
+  channels: [
     {
-      title: "For studio time",
-      body:
-        "Include preferred dates, rough session length, number of people, and what you want recorded or rehearsed.",
+      id: "whatsapp",
+      label: "WhatsApp",
+      value: "84849390",
     },
     {
-      title: "For lessons",
-      body:
-        "Mention your instrument, current level, goals, and whether you want a single coaching block or recurring sessions.",
+      id: "telegram",
+      label: "Telegram",
+      value: "@for3staiteall",
     },
     {
-      title: "For projects",
-      body:
-        "Share links, references, rough mixes, or file notes so the project can be scoped before time is booked.",
+      id: "discord",
+      label: "Discord",
+      value: "Add Discord",
+    },
+    {
+      id: "x",
+      label: "X",
+      value: "Add X",
+    },
+    {
+      id: "instagram",
+      label: "Instagram",
+      value: "Add IG",
     },
   ],
+  draft: {
+    heading: "Email",
+    description: "Send the note through the site.",
+    subjectFallback: "Booking inquiry",
+    emailPlaceholder: "Your email",
+    ccPlaceholder: "Optional",
+  },
 }
 
 export function getServiceById(serviceId) {
@@ -244,6 +349,63 @@ function definition(key, text, minGlyphs, targetGlyphs) {
   }
 }
 
+export function chunkTimescanText(text, maxChars = TIMESCAN_TEXT_LINE_MAX_CHARS) {
+  const normalized = String(text || "").replace(/\s+/g, " ").trim()
+  const limit = Math.max(12, Math.floor(Number(maxChars) || TIMESCAN_TEXT_LINE_MAX_CHARS))
+  if (!normalized) return []
+
+  const words = normalized.split(" ")
+  const lines = []
+  let currentLine = ""
+
+  words.forEach((word) => {
+    const nextLine = currentLine ? `${currentLine} ${word}` : word
+    if (nextLine.length <= limit || !currentLine) {
+      currentLine = nextLine
+      return
+    }
+
+    lines.push(currentLine)
+    currentLine = word
+  })
+
+  if (currentLine) {
+    lines.push(currentLine)
+  }
+
+  return lines
+}
+
+export function timescanLineAssetKey(assetKey, index) {
+  return `${assetKey}.line.${index}`
+}
+
+function lineDefinitions(assetKey, text, minGlyphs, targetGlyphs, maxChars) {
+  return chunkTimescanText(text, maxChars).map((line, index) =>
+    definition(timescanLineAssetKey(assetKey, index), line, minGlyphs, targetGlyphs),
+  )
+}
+
+export function portfolioTextAssetKey(field) {
+  return `portfolio.${field}`
+}
+
+export function portfolioShowcaseTextAssetKey(panelId, field) {
+  return `portfolio.showcase.${panelId}.${field}`
+}
+
+export function portfolioArtworkTextAssetKey(panelId, index, field) {
+  return `portfolio.showcase.${panelId}.artwork.${index}.${field}`
+}
+
+export function portfolioVideoTextAssetKey(panelId, index, field) {
+  return `portfolio.showcase.${panelId}.video.${index}.${field}`
+}
+
+export function portfolioAudioTextAssetKey(index, field) {
+  return `portfolio.showcase.audio.track.${index}.${field}`
+}
+
 export const timescanAssetDefinitions = [
   definition("home.heading", homeContent.heading, 4, 22),
   definition("home.lead", homeContent.lead, 5, 24),
@@ -264,6 +426,50 @@ export const timescanAssetDefinitions = [
   ]),
   definition("portfolio.heading", portfolioContent.heading, 4, 24),
   definition("portfolio.lead", portfolioContent.lead, 5, 24),
+  ...lineDefinitions(portfolioTextAssetKey("intro"), portfolioContent.intro, 5, 24, 34),
+  ...portfolioContent.showcases.flatMap((panel) => [
+    ...lineDefinitions(portfolioShowcaseTextAssetKey(panel.id, "label"), panel.label, 3, 8, 26),
+    ...lineDefinitions(portfolioShowcaseTextAssetKey(panel.id, "title"), panel.title, 4, 14, 28),
+    ...lineDefinitions(portfolioShowcaseTextAssetKey(panel.id, "body"), panel.body, 5, 18, 34),
+    ...(panel.artworks || []).flatMap((artwork, index) => [
+      ...lineDefinitions(
+        portfolioArtworkTextAssetKey(panel.id, index, "title"),
+        artwork.title,
+        4,
+        12,
+        24,
+      ),
+      ...lineDefinitions(
+        portfolioArtworkTextAssetKey(panel.id, index, "year"),
+        artwork.year,
+        3,
+        6,
+        12,
+      ),
+    ]),
+    ...(panel.videos || []).flatMap((video, index) => [
+      ...lineDefinitions(
+        portfolioVideoTextAssetKey(panel.id, index, "title"),
+        video.title,
+        4,
+        12,
+        24,
+      ),
+      ...lineDefinitions(
+        portfolioVideoTextAssetKey(panel.id, index, "meta"),
+        video.meta,
+        4,
+        14,
+        26,
+      ),
+    ]),
+    ...(panel.audioSamples || []).flatMap((track, index) => [
+      ...lineDefinitions(portfolioAudioTextAssetKey(index, "meta"), track.meta, 4, 12, 24),
+      ...lineDefinitions(portfolioAudioTextAssetKey(index, "title"), track.title, 4, 12, 24),
+      ...lineDefinitions(portfolioAudioTextAssetKey(index, "artist"), track.artist, 3, 8, 20),
+      ...lineDefinitions(portfolioAudioTextAssetKey(index, "duration"), track.duration, 3, 6, 12),
+    ]),
+  ]),
   definition("projects.heading", projectsContent.heading, 4, 24),
   definition("projects.lead", projectsContent.lead, 5, 24),
   definition("contact.heading", contactContent.heading, 4, 24),

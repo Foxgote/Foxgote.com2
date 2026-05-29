@@ -680,7 +680,7 @@ onBeforeUnmount(() => {
   --home-colour: #d4a15e;
   --services-colour: #73d4ff;
   --portfolio-colour: #ff9a63;
-  --contact-colour: #74e8cf;
+  --contact-colour: #d4a15e;
   --projects-colour: #b6a2ff;
 
   --route-colour: var(--home-colour);
