@@ -6,6 +6,9 @@ import {
   getTimescanText,
   servicesContent,
 } from "@/content/siteContent"
+import heroPortfolio from "@/assets/img/toni-pykalaniemi-kb3d-cyberpunkcity-cmp-v019-0020.jpg"
+import heroProjects from "@/assets/img/luis-carrasco-hotel-04.jpg"
+import heroServices from "@/assets/img/services.jpg"
 import { buildGlyphSequence } from "@/utils/glyphSequence"
 import TimescanSentence from "./TimescanSentence.vue"
 
@@ -21,6 +24,11 @@ const SERVICE_CARD_ROUTE_NAME_BY_ID = {
   "studio-rental": "ServiceStudioRental",
   "music-teaching": "ServiceMusicTeaching",
   "other-services": "ServiceOtherServices",
+}
+const SERVICE_CARD_THUMBNAIL_BY_ID = {
+  "studio-rental": heroServices,
+  "music-teaching": heroPortfolio,
+  "other-services": heroProjects,
 }
 
 const router = useRouter()
@@ -58,6 +66,7 @@ const servicesCards = computed(() => {
     ...card,
     action: card.detail?.ctaLabel || "View Details",
     contactTo: { name: "Contact", query: { service: card.id } },
+    thumbnailSrc: SERVICE_CARD_THUMBNAIL_BY_ID[card.id] || heroServices,
     to: { name: SERVICE_CARD_ROUTE_NAME_BY_ID[card.id] },
   }))
 })
@@ -205,6 +214,15 @@ onBeforeUnmount(() => {
         >
           <span class="content-card-kicker">{{ card.imageLabel }}</span>
           <h2>{{ card.title }}</h2>
+          <span
+            class="service-card-thumbnail"
+            aria-hidden="true"
+          >
+            <img
+              :src="card.thumbnailSrc"
+              alt=""
+            />
+          </span>
           <p>{{ card.summary }}</p>
         </RouterLink>
         <RouterLink
@@ -298,7 +316,7 @@ onBeforeUnmount(() => {
 
 .service-card-link {
   position: relative;
-  min-height: 14rem;
+  min-height: 17.25rem;
   align-content: start;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -313,7 +331,7 @@ onBeforeUnmount(() => {
 .service-card-main {
   min-width: 0;
   display: grid;
-  gap: 0.55rem;
+  gap: 0.62rem;
   color: inherit;
   text-decoration: none;
 }
@@ -340,10 +358,31 @@ onBeforeUnmount(() => {
   min-height: 4.65em;
 }
 
+.service-card-thumbnail {
+  width: 100%;
+  min-height: 4.6rem;
+  aspect-ratio: 16 / 7;
+  display: block;
+  overflow: hidden;
+  border: 1px solid rgba(255, 220, 180, 0.14);
+  border-radius: 4px;
+  background:
+    linear-gradient(135deg, rgba(255, 220, 180, 0.08), transparent 48%),
+    rgba(8, 8, 10, 0.42);
+}
+
+.service-card-thumbnail img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.04) brightness(0.74);
+}
+
 .service-card-action {
   align-self: end;
   justify-self: start;
-  margin-top: auto;
+  margin-top: 1.1rem;
 }
 
 .service-card-link:hover,

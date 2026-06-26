@@ -32,11 +32,12 @@ const portfolioHeadingTokens = computed(() =>
   buildTimescanTokens("portfolio.heading"),
 )
 const portfolioLeadTokens = computed(() => buildTimescanTokens("portfolio.lead"))
-const activeAudioIndex = ref(0)
+const activeAudioIndex = ref(null)
 const audioRef = ref(null)
 const audioProgress = ref(0)
 const audioDuration = ref(0)
 const isAudioPlaying = ref(false)
+let suppressNextAudioTrackClick = false
 
 const showcaseImages = {
   portfolio: heroPortfolio,
@@ -47,7 +48,10 @@ const showcaseImages = {
 const audioSamples = computed(() =>
   portfolioContent.showcases.find((panel) => panel.id === "audio")?.audioSamples || [],
 )
-const activeAudioTrack = computed(() => audioSamples.value[activeAudioIndex.value] || null)
+const activeAudioTrack = computed(() => {
+  const index = activeAudioIndex.value
+  return Number.isInteger(index) ? audioSamples.value[index] || null : null
+})
 const activeAudioDuration = computed(() =>
   audioDuration.value || activeAudioTrack.value?.durationSeconds || 1,
 )
@@ -56,28 +60,69 @@ function imageForKey(imageKey) {
   return showcaseImages[imageKey] || heroPortfolio
 }
 
+function getAudioPlayer() {
+  const player = Array.isArray(audioRef.value) ? audioRef.value[0] : audioRef.value
+  return player && typeof player === "object" ? player : null
+}
+
+function pauseAudioPlayer() {
+  const player = getAudioPlayer()
+  if (typeof player?.pause === "function") {
+    player.pause()
+  }
+}
+
 function selectAudioTrack(index) {
   if (index < 0 || index >= audioSamples.value.length) return
-  audioRef.value?.pause()
+  if (activeAudioIndex.value === index) return
+  pauseAudioPlayer()
   activeAudioIndex.value = index
   audioProgress.value = 0
   audioDuration.value = 0
   isAudioPlaying.value = false
 }
 
+function selectAudioTrackByTitle(title) {
+  const index = audioSamples.value.findIndex((track) => track.title === title)
+  selectAudioTrack(index)
+}
+
+function selectAudioTrackFromEvent(event) {
+  const row = event.target?.closest?.("[data-audio-title]")
+  const title = row?.getAttribute?.("data-audio-title")
+  if (!title) return
+  selectAudioTrackByTitle(title)
+}
+
+function selectAudioTrackFromPointer(event) {
+  suppressNextAudioTrackClick = true
+  selectAudioTrackFromEvent(event)
+}
+
+function selectAudioTrackFromClick(event) {
+  if (suppressNextAudioTrackClick) {
+    suppressNextAudioTrackClick = false
+    return
+  }
+  selectAudioTrackFromEvent(event)
+}
+
 function skipAudioTrack(direction) {
   const count = audioSamples.value.length
   if (!count) return
-  const nextIndex = (activeAudioIndex.value + direction + count) % count
+  const currentIndex = Number.isInteger(activeAudioIndex.value)
+    ? activeAudioIndex.value
+    : 0
+  const nextIndex = (currentIndex + direction + count) % count
   selectAudioTrack(nextIndex)
 }
 
 async function toggleAudioPlayback() {
   if (!activeAudioTrack.value) return
-  const player = audioRef.value
-  if (activeAudioTrack.value.src && player) {
+  const player = getAudioPlayer()
+  if (activeAudioTrack.value.src && player && typeof player.play === "function") {
     if (isAudioPlaying.value) {
-      player.pause()
+      pauseAudioPlayer()
       isAudioPlaying.value = false
       return
     }
@@ -97,20 +142,21 @@ function updateAudioProgress(event) {
   audioProgress.value = Number.isFinite(nextValue)
     ? Math.max(0, Math.min(activeAudioDuration.value, nextValue))
     : 0
-  if (audioRef.value && activeAudioTrack.value?.src) {
-    audioRef.value.currentTime = audioProgress.value
+  const player = getAudioPlayer()
+  if (player && activeAudioTrack.value?.src) {
+    player.currentTime = audioProgress.value
   }
 }
 
 function syncAudioMetadata() {
-  const player = audioRef.value
+  const player = getAudioPlayer()
   audioDuration.value = Number.isFinite(player?.duration) && player.duration > 0
     ? player.duration
     : 0
 }
 
 function syncAudioProgress() {
-  const player = audioRef.value
+  const player = getAudioPlayer()
   audioProgress.value = Number.isFinite(player?.currentTime)
     ? player.currentTime
     : 0
@@ -267,10 +313,49 @@ function formatAudioTime(seconds) {
           <div
             v-else-if="panel.id === 'audio'"
             class="audio-showcase"
+            :class="{ 'has-active-track': activeAudioTrack }"
           >
             <div
+              class="audio-track-list"
+              @pointerdown.capture="selectAudioTrackFromPointer"
+              @click.capture="selectAudioTrackFromClick"
+            >
+              <div
+                v-for="(track, index) in panel.audioSamples"
+                :key="track.title"
+                class="audio-track-shell"
+                :class="{ 'is-active': index === activeAudioIndex }"
+              >
+                <div
+                  class="audio-track"
+                  :class="{ 'is-active': index === activeAudioIndex }"
+                  role="button"
+                  tabindex="0"
+                  :data-audio-title="track.title"
+                  :aria-expanded="index === activeAudioIndex"
+                  :aria-controls="index === activeAudioIndex ? 'portfolio-audio-player' : undefined"
+                  @pointerdown="selectAudioTrackByTitle(track.title)"
+                  @mousedown="selectAudioTrackByTitle(track.title)"
+                  @keydown.enter.prevent="selectAudioTrackByTitle(track.title)"
+                  @keydown.space.prevent="selectAudioTrackByTitle(track.title)"
+                >
+                  <img
+                    :src="imageForKey(track.imageKey)"
+                    :alt="`${track.title} thumbnail`"
+                  />
+                  <span>
+                    <strong>{{ track.title }}</strong>
+                    <em>{{ track.artist }}</em>
+                  </span>
+                  <small>{{ track.duration }}</small>
+                </div>
+              </div>
+            </div>
+            <div
               v-if="activeAudioTrack"
+              id="portfolio-audio-player"
               class="audio-player"
+              :key="activeAudioTrack.title"
             >
               <audio
                 ref="audioRef"
@@ -291,18 +376,21 @@ function formatAudioTime(seconds) {
                     :text="activeAudioTrack.meta"
                     :asset-key="portfolioAudioTextAssetKey(activeAudioIndex, 'meta')"
                     sentence-class="timescan-base timescan-h6 timescan-layout-left portfolio-audio-meta-line"
+                    :glyph-scale="0.5"
                     :max-chars="24"
                   />
                   <TimescanText
                     :text="activeAudioTrack.title"
                     :asset-key="portfolioAudioTextAssetKey(activeAudioIndex, 'title')"
                     sentence-class="timescan-base timescan-h3 timescan-layout-left portfolio-audio-title-line"
+                    :glyph-scale="0.62"
                     :max-chars="24"
                   />
                   <TimescanText
                     :text="activeAudioTrack.artist"
                     :asset-key="portfolioAudioTextAssetKey(activeAudioIndex, 'artist')"
                     sentence-class="timescan-base timescan-p timescan-layout-left portfolio-audio-artist-line"
+                    :glyph-scale="0.5"
                     :max-chars="20"
                   />
                 </div>
@@ -342,49 +430,12 @@ function formatAudioTime(seconds) {
                       :text="activeAudioTrack.duration"
                       :asset-key="portfolioAudioTextAssetKey(activeAudioIndex, 'duration')"
                       sentence-class="timescan-base timescan-caption timescan-layout-left portfolio-track-duration-line"
+                      :glyph-scale="0.5"
                       :max-chars="12"
                     />
                   </span>
                 </div>
               </div>
-            </div>
-
-            <div class="audio-track-list">
-              <button
-                v-for="(track, index) in panel.audioSamples"
-                :key="track.title"
-                class="audio-track"
-                :class="{ 'is-active': index === activeAudioIndex }"
-                type="button"
-                @click="selectAudioTrack(index)"
-              >
-                <img
-                  :src="imageForKey(track.imageKey)"
-                  :alt="`${track.title} thumbnail`"
-                />
-                <span>
-                  <TimescanText
-                    :text="track.title"
-                    :asset-key="portfolioAudioTextAssetKey(index, 'title')"
-                    sentence-class="timescan-base timescan-caption timescan-layout-left portfolio-track-title-line"
-                    :max-chars="24"
-                  />
-                  <TimescanText
-                    :text="track.artist"
-                    :asset-key="portfolioAudioTextAssetKey(index, 'artist')"
-                    sentence-class="timescan-base timescan-caption timescan-layout-left portfolio-track-artist-line"
-                    :max-chars="20"
-                  />
-                </span>
-                <small>
-                  <TimescanText
-                    :text="track.duration"
-                    :asset-key="portfolioAudioTextAssetKey(index, 'duration')"
-                    sentence-class="timescan-base timescan-caption timescan-layout-left portfolio-track-duration-line"
-                    :max-chars="12"
-                  />
-                </small>
-              </button>
             </div>
           </div>
         </div>
@@ -487,7 +538,7 @@ function formatAudioTime(seconds) {
   box-sizing: border-box;
   min-height: 0;
   overflow-y: auto;
-  overscroll-behavior-block: contain;
+  overscroll-behavior-block: auto;
   padding: clamp(0.85rem, 2vw, 1.25rem) var(--page-inline-pad, 0);
   scrollbar-width: thin;
 }
@@ -516,6 +567,14 @@ function formatAudioTime(seconds) {
 .artwork-frame img {
   aspect-ratio: 4 / 3;
   border: 1px solid rgba(255, 220, 180, 0.12);
+}
+
+.artwork-frame img,
+.video-embed-slot iframe,
+.video-embed-placeholder,
+.audio-cover,
+.audio-track img {
+  pointer-events: none;
 }
 
 .artwork-frame figcaption,
@@ -626,6 +685,11 @@ function formatAudioTime(seconds) {
 .audio-showcase {
   display: grid;
   gap: 0.85rem;
+}
+
+.audio-showcase.has-active-track {
+  grid-template-columns: minmax(16rem, 0.9fr) minmax(18rem, 1.1fr);
+  align-items: start;
 }
 
 .audio-player {
@@ -781,6 +845,12 @@ function formatAudioTime(seconds) {
 
 .audio-track-list {
   display: grid;
+  gap: 0.65rem;
+}
+
+.audio-track-shell {
+  min-width: 0;
+  display: grid;
   gap: 0.5rem;
 }
 
@@ -803,6 +873,16 @@ function formatAudioTime(seconds) {
   background: rgba(212, 161, 94, 0.08);
 }
 
+.audio-track:hover,
+.audio-track:focus-visible {
+  border-color: rgba(255, 220, 180, 0.26);
+}
+
+.audio-track:focus-visible {
+  outline: 2px solid rgba(255, 220, 180, 0.3);
+  outline-offset: 2px;
+}
+
 .audio-track img {
   aspect-ratio: 1;
 }
@@ -811,6 +891,31 @@ function formatAudioTime(seconds) {
   min-width: 0;
   display: grid;
   gap: 0.08rem;
+}
+
+.audio-track strong {
+  overflow: hidden;
+  color: rgba(255, 238, 220, 0.92);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audio-track em {
+  overflow: hidden;
+  color: rgba(255, 224, 190, 0.64);
+  font-size: 0.78rem;
+  font-style: normal;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audio-track > span,
+.audio-track small {
+  pointer-events: none;
 }
 
 .portfolio-track-title-line {
@@ -867,6 +972,10 @@ function formatAudioTime(seconds) {
   .audio-player {
     grid-template-columns: 4.6rem minmax(0, 1fr);
     gap: 0.7rem;
+  }
+
+  .audio-showcase.has-active-track {
+    grid-template-columns: 1fr;
   }
 
   .audio-controls {
