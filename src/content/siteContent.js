@@ -118,8 +118,7 @@ export const servicesContent = {
 export const portfolioContent = {
   heading: "Portfolio",
   lead: "A living map of Foxgote work.",
-  intro:
-    "This page collects the practical paths through the site while finished releases, session samples, and project notes are gathered into a sharper showcase.",
+  intro: "Browse selected work and samples.",
   showcases: [
     {
       id: "artworks",
