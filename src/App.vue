@@ -555,6 +555,8 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 1;
   min-height: 100vh;
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .content :deep(.route-slide-left-enter-active),
@@ -567,27 +569,13 @@ onBeforeUnmount(() => {
 .content :deep(.route-slide-left-enter-from),
 .content :deep(.route-slide-right-leave-to) {
   opacity: 0;
-  transform: translateX(30px);
+  transform: none;
 }
 
 .content :deep(.route-slide-left-leave-to),
 .content :deep(.route-slide-right-enter-from) {
   opacity: 0;
-  transform: translateX(-30px);
-}
-
-@media (max-width: 620px) {
-  .content {
-    overflow-x: hidden;
-    overflow-x: clip;
-  }
-
-  .content :deep(.route-slide-left-enter-from),
-  .content :deep(.route-slide-right-leave-to),
-  .content :deep(.route-slide-left-leave-to),
-  .content :deep(.route-slide-right-enter-from) {
-    transform: none;
-  }
+  transform: none;
 }
 
 </style>

@@ -32,7 +32,6 @@ const portfolioHeadingTokens = computed(() =>
   buildTimescanTokens("portfolio.heading"),
 )
 const portfolioLeadTokens = computed(() => buildTimescanTokens("portfolio.lead"))
-const expandedPanelIds = ref(new Set())
 const activeAudioIndex = ref(0)
 const audioRef = ref(null)
 const audioProgress = ref(0)
@@ -52,16 +51,6 @@ const activeAudioTrack = computed(() => audioSamples.value[activeAudioIndex.valu
 const activeAudioDuration = computed(() =>
   audioDuration.value || activeAudioTrack.value?.durationSeconds || 1,
 )
-
-function isPanelExpanded(panelId) {
-  return expandedPanelIds.value.has(panelId)
-}
-
-function togglePanel(panelId) {
-  expandedPanelIds.value = expandedPanelIds.value.has(panelId)
-    ? new Set()
-    : new Set([panelId])
-}
 
 function imageForKey(imageKey) {
   return showcaseImages[imageKey] || heroPortfolio
@@ -183,14 +172,10 @@ function formatAudioTime(seconds) {
         v-for="panel in portfolioContent.showcases"
         :key="panel.id"
         class="portfolio-panel"
-        :class="{ 'is-expanded': isPanelExpanded(panel.id) }"
       >
-        <button
-          class="portfolio-panel-trigger"
-          type="button"
-          :aria-expanded="isPanelExpanded(panel.id)"
-          :aria-controls="`portfolio-panel-${panel.id}`"
-          @click="togglePanel(panel.id)"
+        <header
+          class="portfolio-panel-header"
+          :id="`portfolio-panel-${panel.id}-label`"
         >
           <span class="portfolio-panel-copy">
             <TimescanText
@@ -200,31 +185,13 @@ function formatAudioTime(seconds) {
               sentence-class="timescan-base timescan-h6 timescan-layout-left portfolio-kicker-line"
               :max-chars="26"
             />
-            <TimescanText
-              class="portfolio-panel-title"
-              :text="panel.title"
-              :asset-key="portfolioShowcaseTextAssetKey(panel.id, 'title')"
-              sentence-class="timescan-base timescan-h3 timescan-layout-left portfolio-panel-title-line"
-              :max-chars="28"
-            />
-            <TimescanText
-              class="portfolio-panel-body"
-              :text="panel.body"
-              :asset-key="portfolioShowcaseTextAssetKey(panel.id, 'body')"
-              sentence-class="timescan-base timescan-p timescan-layout-left portfolio-panel-body-line"
-              :max-chars="34"
-            />
           </span>
-          <span
-            class="portfolio-panel-icon"
-            aria-hidden="true"
-          ></span>
-        </button>
+        </header>
 
         <div
-          v-show="isPanelExpanded(panel.id)"
           :id="`portfolio-panel-${panel.id}`"
           class="portfolio-panel-content"
+          :aria-labelledby="`portfolio-panel-${panel.id}-label`"
         >
           <div
             v-if="panel.id === 'artworks'"
@@ -475,7 +442,11 @@ function formatAudioTime(seconds) {
 .portfolio-panel {
   width: 100%;
   min-width: 0;
-  overflow: visible;
+  height: clamp(22rem, 56vh, 38rem);
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
   border: 0;
   border-bottom: 1px solid rgba(255, 220, 180, 0.16);
   border-radius: 0;
@@ -490,84 +461,35 @@ function formatAudioTime(seconds) {
   border-top: 1px solid rgba(255, 220, 180, 0.16);
 }
 
-.portfolio-panel-trigger {
+.portfolio-panel-header {
   box-sizing: border-box;
   width: 100%;
-  min-height: clamp(8.75rem, 16vw, 12rem);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 2.6rem;
-  gap: clamp(1rem, 2.8vw, 2.8rem);
+  min-height: 3.45rem;
+  display: flex;
   align-items: center;
-  border: 0;
-  padding: clamp(1.25rem, 3vw, 2.2rem) var(--page-inline-pad, 0);
+  border-bottom: 1px solid rgba(255, 220, 180, 0.12);
+  padding: 0.9rem var(--page-inline-pad, 0);
   background: transparent;
   color: inherit;
   text-align: left;
-  cursor: pointer;
-}
-
-.portfolio-panel-trigger:focus-visible {
-  outline: 2px solid rgba(255, 220, 180, 0.36);
-  outline-offset: -4px;
 }
 
 .portfolio-panel-copy {
   display: grid;
-  gap: 0.46rem;
+  gap: 0;
 }
 
 .portfolio-panel-kicker {
   --timescan-text-gap: 0.08rem;
 }
 
-.portfolio-panel-title {
-  color: rgba(255, 238, 220, 0.96);
-  font-weight: 700;
-}
-
-.portfolio-panel-title-line {
-  --timescan-overlay-font-size: clamp(1.05rem, 2vw, 1.32rem);
-  --timescan-overlay-line-height: 1.18;
-  --timescan-overlay-letter-spacing: 0;
-  --timescan-min-height: 40px;
-  --timescan-ink: rgba(255, 238, 220, 0.96);
-  font-weight: 700;
-}
-
-.portfolio-panel-body {
-  color: rgba(255, 224, 190, 0.76);
-  --timescan-text-gap: 0.1rem;
-}
-
-.portfolio-panel-body-line {
-  --timescan-glyph-scale: 0.38;
-  --timescan-overlay-font-size: 0.95rem;
-  --timescan-overlay-line-height: 1.35;
-  --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 28px;
-  --timescan-ink: rgba(255, 224, 190, 0.76);
-}
-
-.portfolio-panel-icon {
-  justify-self: end;
-  width: 2rem;
-  height: 2rem;
-  background: rgba(255, 237, 214, 0.9);
-  opacity: 0.72;
-  -webkit-mask: url("../assets/img/arrow-down-3101.svg") center / contain no-repeat;
-  mask: url("../assets/img/arrow-down-3101.svg") center / contain no-repeat;
-  transform: rotate(-90deg);
-  transition: transform 170ms ease, opacity 170ms ease;
-}
-
-.portfolio-panel.is-expanded .portfolio-panel-icon {
-  opacity: 0.95;
-  transform: rotate(0deg);
-}
-
 .portfolio-panel-content {
   box-sizing: border-box;
-  padding: 0 var(--page-inline-pad, 0) clamp(1rem, 2vw, 1.25rem);
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-block: contain;
+  padding: clamp(0.85rem, 2vw, 1.25rem) var(--page-inline-pad, 0);
+  scrollbar-width: thin;
 }
 
 .artwork-strip {
@@ -919,16 +841,15 @@ function formatAudioTime(seconds) {
     grid-template-columns: 1fr;
     align-items: start;
   }
-
-  .portfolio-panel.is-expanded {
-    grid-column: auto;
-  }
 }
 
 @media (max-width: 900px) {
-  .portfolio-panel-trigger {
-    min-height: 7.8rem;
-    grid-template-columns: minmax(0, 1fr) 2.2rem;
+  .portfolio-panel {
+    height: clamp(20rem, 58vh, 34rem);
+  }
+
+  .portfolio-panel-header {
+    min-height: 3.2rem;
   }
 }
 
@@ -955,14 +876,22 @@ function formatAudioTime(seconds) {
 
 @media (max-width: 620px) {
   .portfolio-panel {
+    height: auto;
+    display: block;
     overflow-x: auto;
+    overflow-y: visible;
     overscroll-behavior-inline: contain;
     scrollbar-width: thin;
   }
 
-  .portfolio-panel-trigger,
+  .portfolio-panel-header,
   .portfolio-panel-content {
     min-width: 620px;
+  }
+
+  .portfolio-panel-content {
+    overflow-y: visible;
+    overscroll-behavior-block: auto;
   }
 
   .artwork-strip {
@@ -975,12 +904,8 @@ function formatAudioTime(seconds) {
 }
 
 @media (max-width: 460px) {
-  .portfolio-panel-trigger {
-    min-height: 6.8rem;
-  }
-
-  .portfolio-panel-body {
-    font-size: 0.88rem;
+  .portfolio-panel-header {
+    min-height: 3rem;
   }
 
   .audio-player {
