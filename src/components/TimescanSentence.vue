@@ -587,6 +587,7 @@ defineExpose({
   flex-direction: column;
   gap: var(--timescan-gap, 10px);
   color: var(--timescan-ink, #b9d2ef);
+  overflow: visible;
 }
 
 .timescan-sentence-framed .sentence-box {
@@ -601,6 +602,12 @@ defineExpose({
   padding: 0;
   border: none;
   background: transparent;
+  overflow: visible;
+}
+
+.sentence-box,
+.sentence-stage {
+  min-width: 0;
   overflow: visible;
 }
 
@@ -667,6 +674,8 @@ defineExpose({
   --sentence-glow: var(--timescan-glow, rgba(109, 196, 255, 0.35));
   position: relative;
   min-height: var(--timescan-min-height, 52px);
+  padding-block: var(--timescan-vertical-pad, 0.16em);
+  overflow: visible;
 }
 
 .sentence-overlay {
@@ -677,7 +686,7 @@ defineExpose({
   height: 100%;
   display: flex;
   align-items: center;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
   z-index: 1;
 }
@@ -690,6 +699,8 @@ defineExpose({
   font-size: var(--timescan-overlay-font-size, 1.3rem);
   line-height: var(--timescan-overlay-line-height, 1);
   letter-spacing: var(--timescan-overlay-letter-spacing, 0.03em);
+  padding-block: var(--timescan-reveal-bleed-block, 0.16em 0.24em);
+  margin-block: var(--timescan-reveal-bleed-margin-block, -0.16em -0.24em);
   text-shadow: 0 0 12px var(--sentence-glow);
   transition: opacity 60ms steps(1, end);
 }

@@ -6,16 +6,12 @@ import heroServices from "./assets/img/services.jpg"
 import heroPortfolio from "./assets/img/toni-pykalaniemi-kb3d-cyberpunkcity-cmp-v019-0020.jpg"
 import heroContact from "./assets/img/neil-ross-west-kayro-mezzotint.jpg"
 import heroProjects from "./assets/img/luis-carrasco-hotel-04.jpg"
-import welcomeSignMarkup from "./assets/img/welcomesign2.svg?raw"
 
 const barliteRef = ref(null)
 const navAnchorRef = ref(null)
-const welcomeSignRef = ref(null)
 const route = useRoute()
 const routeTransitionName = ref("route-slide-left")
 
-const NEON_FLICKER_DURATION_MS = 1800
-const ENABLE_NEON_FLICKER = false
 const HERO_FADE_DURATION_MS = 700
 const NAV_SCROLL_DURATION_MS = 2000
 const NAV_SCROLL_VIEWPORT_TOP_PAD_PX = 64
@@ -23,6 +19,21 @@ const NAV_SCROLL_ANCHOR_EPSILON_PX = 2
 const NAV_SCROLL_MIN_DISTANCE_PX = 4
 const NAV_SCROLL_CANCEL_EVENTS = ["wheel", "touchmove", "pointerdown", "keydown"]
 const PASSIVE_EVENT_LISTENER_OPTIONS = { passive: true }
+const ROUTE_TRANSITION_CLASS_CLEANUP_MS = 420
+const ROUTE_TRANSITION_CLASSES = [
+  "route-slide-left-enter-active",
+  "route-slide-left-enter-from",
+  "route-slide-left-enter-to",
+  "route-slide-left-leave-active",
+  "route-slide-left-leave-from",
+  "route-slide-left-leave-to",
+  "route-slide-right-enter-active",
+  "route-slide-right-enter-from",
+  "route-slide-right-enter-to",
+  "route-slide-right-leave-active",
+  "route-slide-right-leave-from",
+  "route-slide-right-leave-to",
+]
 const ROUTE_HERO_URLS = {
   "/": heroHome,
   "/services": heroServices,
@@ -40,10 +51,10 @@ const ROUTE_THEME_KEYS = {
 
 let rafId = 0
 let scrollEffectEnabled = false
-let neonFlickerTimeoutId = 0
 let heroFadeTimeoutId = 0
 let navSmoothScrollRafId = 0
 let navSmoothScrollCancelListenersActive = false
+let routeTransitionCleanupIds = []
 
 function isInSection(path, sectionPath) {
   if (typeof path !== "string") return false
@@ -124,6 +135,19 @@ watch(
 
 function routeViewKey(path) {
   return normalizeRoutePath(path)
+}
+
+function cleanupRouteTransitionClasses(el) {
+  if (!(el instanceof Element)) return
+  el.classList.remove(...ROUTE_TRANSITION_CLASSES)
+}
+
+function scheduleRouteTransitionClassCleanup(el) {
+  const cleanupId = window.setTimeout(() => {
+    routeTransitionCleanupIds = routeTransitionCleanupIds.filter((id) => id !== cleanupId)
+    cleanupRouteTransitionClasses(el)
+  }, ROUTE_TRANSITION_CLASS_CLEANUP_MS)
+  routeTransitionCleanupIds.push(cleanupId)
 }
 
 function updateScrollEffect() {
@@ -273,31 +297,13 @@ function onNavClick(event) {
     triggerHeroScrollIfAboveAnchor()
   }
 
-  if (ENABLE_NEON_FLICKER) triggerNeonFlicker()
   if (scrollEffectEnabled) return
   scrollEffectEnabled = true
   onScroll()
 }
 
-function triggerNeonFlicker() {
-  const sign = welcomeSignRef.value
-  if (!sign) return
-
-  sign.classList.remove("is-flickering")
-  // Force reflow so the CSS animation restarts on repeated clicks.
-  void sign.offsetWidth
-  sign.classList.add("is-flickering")
-
-  window.clearTimeout(neonFlickerTimeoutId)
-  neonFlickerTimeoutId = window.setTimeout(() => {
-    sign.classList.remove("is-flickering")
-    neonFlickerTimeoutId = 0
-  }, NEON_FLICKER_DURATION_MS)
-}
-
 onMounted(() => {
   scrollEffectEnabled = false
-  welcomeSignRef.value?.classList.remove("is-flickering")
   resetReloadScrollPosition()
   window.addEventListener("scroll", onScroll, { passive: true })
   window.addEventListener("resize", onScroll)
@@ -308,7 +314,8 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", onScroll)
   cancelAnimationFrame(rafId)
   stopNavSmoothScrollAnimation()
-  window.clearTimeout(neonFlickerTimeoutId)
+  routeTransitionCleanupIds.forEach((id) => window.clearTimeout(id))
+  routeTransitionCleanupIds = []
   window.clearTimeout(heroFadeTimeoutId)
 })
 </script>
@@ -332,14 +339,6 @@ onBeforeUnmount(() => {
         ></div>
         <div class="hero-dim"></div>
       </div>
-
-      <figure
-        ref="welcomeSignRef"
-        class="welcome-sign"
-        role="img"
-        aria-label="Welcome neon sign"
-        v-html="welcomeSignMarkup"
-      ></figure>
 
     </header>
 
@@ -365,7 +364,15 @@ onBeforeUnmount(() => {
     <main class="content">
       <div id="content-top" aria-hidden="true"></div>
       <RouterView v-slot="{ Component, route: currentRoute }">
-        <Transition :name="routeTransitionName" mode="out-in">
+        <Transition
+          :name="routeTransitionName"
+          mode="out-in"
+          @before-enter="scheduleRouteTransitionClassCleanup"
+          @after-enter="cleanupRouteTransitionClasses"
+          @enter-cancelled="cleanupRouteTransitionClasses"
+          @after-leave="cleanupRouteTransitionClasses"
+          @leave-cancelled="cleanupRouteTransitionClasses"
+        >
           <component :is="Component" :key="routeViewKey(currentRoute.path)" />
         </Transition>
       </RouterView>
@@ -428,178 +435,6 @@ onBeforeUnmount(() => {
   inset: 0;
   background: rgba(0, 0, 0, var(--barlite-dim, 0.2));
   z-index: 3;
-}
-.welcome-sign {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  grid-row: 1;
-  justify-self: start;
-  align-self: end;
-  width: clamp(280px, 45vw, 600px);
-  margin: 0 0rem 0rem;
-  padding: 0.75rem 1rem;
-  padding-left: clamp(0.45rem, 1.4vw, 1rem);
-  position: relative;
-  pointer-events: none;
-  isolation: isolate;
-}
-
-.welcome-sign::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.6);
-  transform: translate(-5%,0) scale(1.6,1.6);
-
-  filter:blur(40px);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0;
-  animation: slab-fade-in 1500ms ease-out 250ms both;
-}
-
-.welcome-sign :deep(svg) {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  height: auto;
-  transform: translate(-5%,23%) scale(1.1,1.1);
-  opacity: 0;
-  animation: sign-fade-in 2000ms ease-out 1700ms both;
-}
-.welcome-sign :deep(#yellow-solid1),
-.welcome-sign :deep(#blue-solid1) {
-  filter: blur(36px);
-  opacity: 0.3;
-}
-.welcome-sign :deep(#yellow-solid2),
-.welcome-sign :deep(#blue-solid2) {
-  filter: blur(10.5px);
-    opacity: 0.7;
-}
-.welcome-sign :deep(#yellow-tube),
-.welcome-sign :deep(#blue-tube){
-  filter: brightness(90%);
-}
-.welcome-sign :deep(#blue-solid2),
-.welcome-sign :deep(#blue-solid1),
-.welcome-sign :deep(#blue-tube){
-    transform: translate(-6.7%,-15%);
-}
-
-.welcome-sign.is-flickering :deep(#blue-tube) {
-  animation: neon-flicker-high 1800ms linear both;
-}
-
-.welcome-sign.is-flickering :deep(#blue-solid2),
-.welcome-sign.is-flickering :deep(#blue-medium-glow) {
-  animation: neon-flicker-mid 1800ms linear both;
-}
-
-.welcome-sign.is-flickering :deep(#blue-solid1),
-.welcome-sign.is-flickering :deep(#blue-soft-glow) {
-  animation: neon-flicker-low 1800ms linear both;
-}
-
-.welcome-sign.is-flickering :deep(#yellow-flicker-a),
-.welcome-sign.is-flickering :deep(#yellow-flicker-b) {
-  animation: neon-flicker-high 1800ms linear both;
-}
-
-.welcome-sign.is-flickering :deep(#yellow-flicker-c) {
-  animation: neon-flicker-mid 1800ms linear both;
-}
-
-.welcome-sign.is-flickering :deep(#yellow-flicker-d) {
-  animation: neon-flicker-low 1800ms linear both;
-}
-
-@keyframes slab-fade-in {
-  from {
-    opacity: 0;
-    transform: translate(-5%, 6%) scale(1.45, 1.45);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-5%, 0) scale(1.6, 1.6);
-  }
-}
-
-@keyframes sign-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes neon-flicker-high {
-  0% { opacity: 1; }
-  8% { opacity: 0.9; }
-  16% { opacity: 0.45; }
-  22% { opacity: 0; }
-  29% { opacity: 0.82; }
-  37% { opacity: 0.28; }
-  43% { opacity: 0; }
-  54% { opacity: 0.92; }
-  66% { opacity: 0.33; }
-  74% { opacity: 0; }
-  85% { opacity: 0.88; }
-  92% { opacity: 0.55; }
-  100% { opacity: 1; }
-}
-
-@keyframes neon-flicker-mid {
-  0% { opacity: 0.7; }
-  10% { opacity: 0.6; }
-  18% { opacity: 0.24; }
-  24% { opacity: 0; }
-  32% { opacity: 0.62; }
-  42% { opacity: 0.18; }
-  48% { opacity: 0; }
-  59% { opacity: 0.65; }
-  70% { opacity: 0.2; }
-  78% { opacity: 0; }
-  89% { opacity: 0.62; }
-  94% { opacity: 0.38; }
-  100% { opacity: 0.7; }
-}
-
-@keyframes neon-flicker-low {
-  0% { opacity: 0.3; }
-  10% { opacity: 0.22; }
-  19% { opacity: 0.1; }
-  26% { opacity: 0; }
-  35% { opacity: 0.27; }
-  46% { opacity: 0.09; }
-  53% { opacity: 0; }
-  64% { opacity: 0.29; }
-  75% { opacity: 0.11; }
-  82% { opacity: 0; }
-  92% { opacity: 0.26; }
-  100% { opacity: 0.3; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .welcome-sign::before,
-  .welcome-sign :deep(svg),
-  .welcome-sign.is-flickering :deep(#blue-tube),
-  .welcome-sign.is-flickering :deep(#blue-solid2),
-  .welcome-sign.is-flickering :deep(#blue-medium-glow),
-  .welcome-sign.is-flickering :deep(#blue-solid1),
-  .welcome-sign.is-flickering :deep(#blue-soft-glow),
-  .welcome-sign.is-flickering :deep(#yellow-flicker-a),
-  .welcome-sign.is-flickering :deep(#yellow-flicker-b),
-  .welcome-sign.is-flickering :deep(#yellow-flicker-c),
-  .welcome-sign.is-flickering :deep(#yellow-flicker-d) {
-    animation: none !important;
-    opacity: 1;
-  }
 }
 /* Shared nav look */
 .nav {
@@ -739,6 +574,20 @@ onBeforeUnmount(() => {
 .content :deep(.route-slide-right-enter-from) {
   opacity: 0;
   transform: translateX(-30px);
+}
+
+@media (max-width: 620px) {
+  .content {
+    overflow-x: hidden;
+    overflow-x: clip;
+  }
+
+  .content :deep(.route-slide-left-enter-from),
+  .content :deep(.route-slide-right-leave-to),
+  .content :deep(.route-slide-left-leave-to),
+  .content :deep(.route-slide-right-enter-from) {
+    transform: none;
+  }
 }
 
 </style>

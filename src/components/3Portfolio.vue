@@ -427,6 +427,19 @@ function formatAudioTime(seconds) {
 </template>
 
 <style scoped>
+.portfolio-page {
+  --page-inline-pad: clamp(0.85rem, 3vw, 1.25rem);
+  width: calc(100% + (var(--app-inline-pad, 0rem) * 2));
+  margin-inline: calc(var(--app-inline-pad, 0rem) * -1);
+  gap: 0;
+  padding-inline: 0;
+}
+
+.portfolio-page .page-hero {
+  padding: 2.4rem var(--page-inline-pad, 0) 2rem;
+  border-bottom: 1px solid rgba(255, 220, 180, 0.18);
+}
+
 .portfolio-timescan-heading {
   margin: 0;
   width: 100%;
@@ -447,37 +460,46 @@ function formatAudioTime(seconds) {
 .portfolio-intro-line {
   --timescan-glyph-scale: 0.48;
   --timescan-overlay-font-size: clamp(0.95rem, 2vw, 1.08rem);
-  --timescan-overlay-line-height: 1.28;
+  --timescan-overlay-line-height: 1.35;
   --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 24px;
+  --timescan-min-height: 28px;
   --timescan-ink: rgba(255, 228, 196, 0.78);
 }
 
 .portfolio-showcase-list {
+  width: 100%;
   display: grid;
-  gap: 0.85rem;
+  gap: 0;
 }
 
 .portfolio-panel {
-  overflow: hidden;
-  border: 1px solid rgba(255, 220, 180, 0.12);
-  border-radius: 8px;
-  background: linear-gradient(160deg, rgba(18, 14, 10, 0.52), rgba(8, 8, 10, 0.7));
-  box-shadow:
-    0 10px 20px rgba(0, 0, 0, 0.28),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 220, 180, 0.16);
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 154, 99, 0.08), transparent 34%),
+    rgba(10, 11, 13, 0.52);
+  box-shadow: none;
   color: rgba(255, 237, 214, 0.92);
 }
 
+.portfolio-panel:first-child {
+  border-top: 1px solid rgba(255, 220, 180, 0.16);
+}
+
 .portfolio-panel-trigger {
+  box-sizing: border-box;
   width: 100%;
-  min-height: 8rem;
+  min-height: clamp(8.75rem, 16vw, 12rem);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 2.6rem;
-  gap: 1rem;
+  gap: clamp(1rem, 2.8vw, 2.8rem);
   align-items: center;
   border: 0;
-  padding: clamp(1rem, 2vw, 1.25rem);
+  padding: clamp(1.25rem, 3vw, 2.2rem) var(--page-inline-pad, 0);
   background: transparent;
   color: inherit;
   text-align: left;
@@ -505,9 +527,9 @@ function formatAudioTime(seconds) {
 
 .portfolio-panel-title-line {
   --timescan-overlay-font-size: clamp(1.05rem, 2vw, 1.32rem);
-  --timescan-overlay-line-height: 1.12;
+  --timescan-overlay-line-height: 1.18;
   --timescan-overlay-letter-spacing: 0;
-  --timescan-min-height: 30px;
+  --timescan-min-height: 40px;
   --timescan-ink: rgba(255, 238, 220, 0.96);
   font-weight: 700;
 }
@@ -520,9 +542,9 @@ function formatAudioTime(seconds) {
 .portfolio-panel-body-line {
   --timescan-glyph-scale: 0.38;
   --timescan-overlay-font-size: 0.95rem;
-  --timescan-overlay-line-height: 1.24;
+  --timescan-overlay-line-height: 1.35;
   --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 21px;
+  --timescan-min-height: 28px;
   --timescan-ink: rgba(255, 224, 190, 0.76);
 }
 
@@ -544,7 +566,8 @@ function formatAudioTime(seconds) {
 }
 
 .portfolio-panel-content {
-  padding: 0 clamp(1rem, 2vw, 1.25rem) clamp(1rem, 2vw, 1.25rem);
+  box-sizing: border-box;
+  padding: 0 var(--page-inline-pad, 0) clamp(1rem, 2vw, 1.25rem);
 }
 
 .artwork-strip {
@@ -593,9 +616,9 @@ function formatAudioTime(seconds) {
 .portfolio-caption-title-line {
   --timescan-glyph-scale: 0.34;
   --timescan-overlay-font-size: 0.78rem;
-  --timescan-overlay-line-height: 1.15;
+  --timescan-overlay-line-height: 1.25;
   --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 18px;
+  --timescan-min-height: 22px;
   --timescan-ink: rgba(255, 238, 220, 0.92);
   font-weight: 700;
 }
@@ -603,9 +626,9 @@ function formatAudioTime(seconds) {
 .portfolio-caption-meta-line {
   --timescan-glyph-scale: 0.34;
   --timescan-overlay-font-size: 0.78rem;
-  --timescan-overlay-line-height: 1.15;
+  --timescan-overlay-line-height: 1.25;
   --timescan-overlay-letter-spacing: 0.02em;
-  --timescan-min-height: 18px;
+  --timescan-min-height: 22px;
   --timescan-ink: rgba(212, 161, 94, 0.84);
 }
 
@@ -711,9 +734,9 @@ function formatAudioTime(seconds) {
 .portfolio-audio-meta-line {
   --timescan-glyph-scale: 0.4;
   --timescan-overlay-font-size: 0.68rem;
-  --timescan-overlay-line-height: 1.1;
+  --timescan-overlay-line-height: 1.2;
   --timescan-overlay-letter-spacing: 0.13em;
-  --timescan-min-height: 14px;
+  --timescan-min-height: 20px;
   --timescan-ink: rgba(212, 161, 94, 0.88);
   text-transform: uppercase;
 }
@@ -721,9 +744,9 @@ function formatAudioTime(seconds) {
 .portfolio-audio-title-line {
   --timescan-glyph-scale: 0.46;
   --timescan-overlay-font-size: 1.05rem;
-  --timescan-overlay-line-height: 1.1;
+  --timescan-overlay-line-height: 1.18;
   --timescan-overlay-letter-spacing: 0;
-  --timescan-min-height: 24px;
+  --timescan-min-height: 34px;
   --timescan-ink: rgba(255, 238, 220, 0.96);
   font-weight: 700;
 }
@@ -732,9 +755,9 @@ function formatAudioTime(seconds) {
 .portfolio-track-artist-line {
   --timescan-glyph-scale: 0.34;
   --timescan-overlay-font-size: 0.78rem;
-  --timescan-overlay-line-height: 1.12;
+  --timescan-overlay-line-height: 1.24;
   --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 17px;
+  --timescan-min-height: 22px;
   --timescan-ink: rgba(255, 224, 190, 0.64);
   font-style: normal;
 }
@@ -871,9 +894,9 @@ function formatAudioTime(seconds) {
 .portfolio-track-title-line {
   --timescan-glyph-scale: 0.36;
   --timescan-overlay-font-size: 0.88rem;
-  --timescan-overlay-line-height: 1.15;
+  --timescan-overlay-line-height: 1.24;
   --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 19px;
+  --timescan-min-height: 24px;
   --timescan-ink: rgba(255, 238, 220, 0.92);
   font-weight: 700;
 }
@@ -885,27 +908,34 @@ function formatAudioTime(seconds) {
 .portfolio-track-duration-line {
   --timescan-glyph-scale: 0.32;
   --timescan-overlay-font-size: 0.78rem;
-  --timescan-overlay-line-height: 1.1;
+  --timescan-overlay-line-height: 1.24;
   --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 17px;
+  --timescan-min-height: 22px;
   --timescan-ink: rgba(212, 161, 94, 0.78);
 }
 
 @media (min-width: 960px) {
   .portfolio-showcase-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     align-items: start;
   }
 
   .portfolio-panel.is-expanded {
-    grid-column: span 3;
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .portfolio-panel-trigger {
+    min-height: 7.8rem;
+    grid-template-columns: minmax(0, 1fr) 2.2rem;
   }
 }
 
 @media (max-width: 720px) {
-  .portfolio-panel-trigger {
-    min-height: 7.2rem;
-    grid-template-columns: minmax(0, 1fr) 2.2rem;
+  .portfolio-page .page-hero {
+    padding-top: 1.45rem;
+    padding-bottom: 1.45rem;
   }
 
   .artwork-strip,
@@ -923,10 +953,30 @@ function formatAudioTime(seconds) {
   }
 }
 
+@media (max-width: 620px) {
+  .portfolio-panel {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+
+  .portfolio-panel-trigger,
+  .portfolio-panel-content {
+    min-width: 620px;
+  }
+
+  .artwork-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .video-embed-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 460px) {
   .portfolio-panel-trigger {
-    min-height: 6.6rem;
-    padding: 0.9rem;
+    min-height: 6.8rem;
   }
 
   .portfolio-panel-body {
@@ -934,11 +984,11 @@ function formatAudioTime(seconds) {
   }
 
   .audio-player {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(5.5rem, 7rem) minmax(0, 1fr);
   }
 
   .audio-cover {
-    width: min(8rem, 100%);
+    width: 100%;
   }
 
   .audio-track {
