@@ -4,7 +4,6 @@ import {
   getTimescanGlyphOptions,
   getTimescanText,
   portfolioArtworkTextAssetKey,
-  portfolioAudioTextAssetKey,
   portfolioContent,
   portfolioShowcaseTextAssetKey,
   portfolioTextAssetKey,
@@ -341,76 +340,38 @@ function formatAudioTime(seconds) {
                         @timeupdate="syncAudioProgress"
                         @ended="finishAudioSample"
                       ></audio>
-                      <img
-                        class="audio-cover"
-                        :src="imageForKey(activeAudioTrack.imageKey)"
-                        :alt="`${activeAudioTrack.title} cover`"
-                      />
-                      <div class="audio-main">
-                        <div class="audio-now-playing">
-                          <TimescanText
-                            :text="activeAudioTrack.meta"
-                            :asset-key="portfolioAudioTextAssetKey(activeAudioIndex, 'meta')"
-                            sentence-class="timescan-base timescan-h6 timescan-layout-left portfolio-audio-meta-line"
-                            :glyph-scale="0.5"
-                            :max-chars="24"
-                          />
-                          <TimescanText
-                            :text="activeAudioTrack.title"
-                            :asset-key="portfolioAudioTextAssetKey(activeAudioIndex, 'title')"
-                            sentence-class="timescan-base timescan-h3 timescan-layout-left portfolio-audio-title-line"
-                            :glyph-scale="0.62"
-                            :max-chars="24"
-                          />
-                          <TimescanText
-                            :text="activeAudioTrack.artist"
-                            :asset-key="portfolioAudioTextAssetKey(activeAudioIndex, 'artist')"
-                            sentence-class="timescan-base timescan-p timescan-layout-left portfolio-audio-artist-line"
-                            :glyph-scale="0.5"
-                            :max-chars="20"
-                          />
-                        </div>
-                        <div class="audio-controls">
-                          <button
-                            class="audio-icon-button previous"
-                            type="button"
-                            aria-label="Previous sample"
-                            @click="skipAudioTrack(-1)"
-                          ></button>
-                          <button
-                            class="audio-icon-button play"
-                            :class="{ 'is-playing': isAudioPlaying }"
-                            type="button"
-                            :aria-label="isAudioPlaying ? 'Pause sample' : 'Play sample'"
-                            @click="toggleAudioPlayback"
-                          ></button>
-                          <button
-                            class="audio-icon-button next"
-                            type="button"
-                            aria-label="Next sample"
-                            @click="skipAudioTrack(1)"
-                          ></button>
-                        </div>
-                        <div class="audio-timeline">
-                          <span>{{ formatAudioTime(audioProgress) }}</span>
-                          <input
-                            type="range"
-                            min="0"
-                            :max="activeAudioDuration"
-                            :value="audioProgress"
-                            aria-label="Sample position"
-                            @input="updateAudioProgress"
-                          />
-                          <span>
-                            <TimescanText
-                              :text="activeAudioTrack.duration"
-                              :asset-key="portfolioAudioTextAssetKey(activeAudioIndex, 'duration')"
-                              sentence-class="timescan-base timescan-caption timescan-layout-left portfolio-track-duration-line"
-                              :glyph-scale="0.5"
-                              :max-chars="12"
-                            />
-                          </span>
-                        </div>
+                      <div class="audio-controls">
+                        <button
+                          class="audio-icon-button previous"
+                          type="button"
+                          aria-label="Previous sample"
+                          @click="skipAudioTrack(-1)"
+                        ></button>
+                        <button
+                          class="audio-icon-button play"
+                          :class="{ 'is-playing': isAudioPlaying }"
+                          type="button"
+                          :aria-label="isAudioPlaying ? 'Pause sample' : 'Play sample'"
+                          @click="toggleAudioPlayback"
+                        ></button>
+                        <button
+                          class="audio-icon-button next"
+                          type="button"
+                          aria-label="Next sample"
+                          @click="skipAudioTrack(1)"
+                        ></button>
+                      </div>
+                      <div class="audio-timeline">
+                        <span>{{ formatAudioTime(audioProgress) }}</span>
+                        <input
+                          type="range"
+                          min="0"
+                          :max="activeAudioDuration"
+                          :value="audioProgress"
+                          aria-label="Sample position"
+                          @input="updateAudioProgress"
+                        />
+                        <span>{{ activeAudioTrack.duration }}</span>
                       </div>
                     </div>
                   </Transition>
@@ -537,7 +498,6 @@ function formatAudioTime(seconds) {
 }
 
 .artwork-frame img,
-.audio-cover,
 .audio-track img {
   width: 100%;
   object-fit: cover;
@@ -552,7 +512,6 @@ function formatAudioTime(seconds) {
 .artwork-frame img,
 .video-embed-slot iframe,
 .video-embed-placeholder,
-.audio-cover,
 .audio-track img {
   pointer-events: none;
 }
@@ -668,16 +627,16 @@ function formatAudioTime(seconds) {
 }
 
 .audio-player {
-  --audio-player-expanded-max-height: 24rem;
+  --audio-player-expanded-max-height: 4.75rem;
   display: grid;
-  grid-template-columns: minmax(5.5rem, 7rem) minmax(0, 1fr);
-  gap: 0.9rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.8rem;
   align-items: center;
   border-top: 1px solid rgba(255, 220, 180, 0.14);
-  margin-top: 0.7rem;
+  margin-top: 0.55rem;
   max-height: var(--audio-player-expanded-max-height);
   overflow: hidden;
-  padding: 0.85rem 0.25rem 0.25rem;
+  padding: 0.55rem 0.25rem 0.1rem;
   transform-origin: top;
 }
 
@@ -710,53 +669,6 @@ function formatAudioTime(seconds) {
   max-height: var(--audio-player-expanded-max-height);
   opacity: 1;
   transform: translateY(0) scaleY(1);
-}
-
-.audio-cover {
-  aspect-ratio: 1;
-}
-
-.audio-main {
-  min-width: 0;
-  display: grid;
-  gap: 0.68rem;
-}
-
-.audio-now-playing {
-  min-width: 0;
-  display: grid;
-  gap: 0.12rem;
-}
-
-.portfolio-audio-meta-line {
-  --timescan-glyph-scale: 0.4;
-  --timescan-overlay-font-size: 0.68rem;
-  --timescan-overlay-line-height: 1.2;
-  --timescan-overlay-letter-spacing: 0.13em;
-  --timescan-min-height: 20px;
-  --timescan-ink: rgba(212, 161, 94, 0.88);
-  text-transform: uppercase;
-}
-
-.portfolio-audio-title-line {
-  --timescan-glyph-scale: 0.46;
-  --timescan-overlay-font-size: 1.05rem;
-  --timescan-overlay-line-height: 1.18;
-  --timescan-overlay-letter-spacing: 0;
-  --timescan-min-height: 34px;
-  --timescan-ink: rgba(255, 238, 220, 0.96);
-  font-weight: 700;
-}
-
-.portfolio-audio-artist-line,
-.portfolio-track-artist-line {
-  --timescan-glyph-scale: 0.34;
-  --timescan-overlay-font-size: 0.78rem;
-  --timescan-overlay-line-height: 1.24;
-  --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 22px;
-  --timescan-ink: rgba(255, 224, 190, 0.64);
-  font-style: normal;
 }
 
 .audio-controls {
@@ -987,7 +899,7 @@ function formatAudioTime(seconds) {
   }
 
   .audio-player {
-    grid-template-columns: 4.6rem minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 0.7rem;
   }
 
@@ -1031,11 +943,7 @@ function formatAudioTime(seconds) {
   }
 
   .audio-player {
-    grid-template-columns: minmax(5.5rem, 7rem) minmax(0, 1fr);
-  }
-
-  .audio-cover {
-    width: 100%;
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .audio-track-summary {
