@@ -400,16 +400,19 @@ function formatAudioTime(seconds) {
 
 <style scoped>
 .portfolio-page {
-  --page-inline-pad: clamp(0.85rem, 3vw, 1.25rem);
+  --portfolio-panel-inline-pad: clamp(0.85rem, 3vw, 1.25rem);
   width: calc(100% + (var(--app-inline-pad, 0rem) * 2));
   margin-inline: calc(var(--app-inline-pad, 0rem) * -1);
   gap: 0;
-  padding-inline: 0;
+  padding: 0 0 3rem;
 }
 
 .portfolio-page .page-hero {
-  padding: 2.4rem var(--page-inline-pad, 0) 2rem;
+  width: calc(100% - (var(--app-inline-pad, 0rem) * 2));
+  margin-inline: auto;
+  padding: 2.25rem var(--page-inline-pad, 0) 1.6rem;
   border-bottom: 1px solid rgba(255, 220, 180, 0.18);
+  gap: 0.4rem;
 }
 
 .portfolio-timescan-heading {
@@ -424,18 +427,19 @@ function formatAudioTime(seconds) {
 }
 
 .portfolio-intro-timescan {
+  width: min(720px, 100%);
   display: grid;
   justify-items: center;
   gap: 0.14rem;
 }
 
 .portfolio-intro-line {
-  --timescan-glyph-scale: 0.48;
-  --timescan-overlay-font-size: clamp(0.95rem, 2vw, 1.08rem);
-  --timescan-overlay-line-height: 1.35;
+  --timescan-glyph-scale: 0.6;
+  --timescan-overlay-font-size: 1.05rem;
+  --timescan-overlay-line-height: 1.25;
   --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 28px;
-  --timescan-ink: rgba(255, 228, 196, 0.78);
+  --timescan-min-height: 32px;
+  --timescan-ink: rgba(255, 220, 180, 0.72);
 }
 
 .portfolio-showcase-list {
@@ -473,7 +477,7 @@ function formatAudioTime(seconds) {
   display: flex;
   align-items: center;
   border-bottom: 1px solid rgba(255, 220, 180, 0.12);
-  padding: 0.9rem var(--page-inline-pad, 0);
+  padding: 0.9rem var(--portfolio-panel-inline-pad, 0);
   background: transparent;
   color: inherit;
   text-align: left;
@@ -493,7 +497,7 @@ function formatAudioTime(seconds) {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior-block: auto;
-  padding: clamp(0.85rem, 2vw, 1.25rem) var(--page-inline-pad, 0);
+  padding: clamp(0.85rem, 2vw, 1.25rem) var(--portfolio-panel-inline-pad, 0);
   scrollbar-width: thin;
 }
 
@@ -912,8 +916,8 @@ function formatAudioTime(seconds) {
 
 @media (max-width: 720px) {
   .portfolio-page .page-hero {
-    padding-top: 1.45rem;
-    padding-bottom: 1.45rem;
+    padding-top: 1.35rem;
+    padding-bottom: 1.35rem;
   }
 
   .artwork-strip,
