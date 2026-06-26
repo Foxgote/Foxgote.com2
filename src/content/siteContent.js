@@ -116,9 +116,9 @@ export const servicesContent = {
 }
 
 export const portfolioContent = {
-  heading: "Portfolio",
-  lead: "A living map of Foxgote work.",
-  intro: "Browse selected work and samples.",
+  eyebrow: "Portfolio",
+  heading: "A living map of Foxgote work.",
+  lead: "Browse selected work and samples.",
   showcases: [
     {
       id: "artworks",
@@ -423,9 +423,9 @@ export const timescanAssetDefinitions = [
       ),
     ),
   ]),
-  definition("portfolio.heading", portfolioContent.heading, 4, 24),
-  definition("portfolio.lead", portfolioContent.lead, 5, 24),
-  ...lineDefinitions(portfolioTextAssetKey("intro"), portfolioContent.intro, 5, 24, 34),
+  definition("portfolio.eyebrow", portfolioContent.eyebrow, 4, 10),
+  definition("portfolio.heading", portfolioContent.heading, 6, 28),
+  definition("portfolio.lead", portfolioContent.lead, 6, 20),
   ...portfolioContent.showcases.flatMap((panel) => [
     ...lineDefinitions(portfolioShowcaseTextAssetKey(panel.id, "label"), panel.label, 3, 8, 26),
     ...lineDefinitions(portfolioShowcaseTextAssetKey(panel.id, "title"), panel.title, 4, 14, 28),

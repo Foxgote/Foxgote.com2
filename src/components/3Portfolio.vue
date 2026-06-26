@@ -6,7 +6,6 @@ import {
   portfolioArtworkTextAssetKey,
   portfolioContent,
   portfolioShowcaseTextAssetKey,
-  portfolioTextAssetKey,
   portfolioVideoTextAssetKey,
 } from "@/content/siteContent"
 import heroPortfolio from "@/assets/img/toni-pykalaniemi-kb3d-cyberpunkcity-cmp-v019-0020.jpg"
@@ -29,6 +28,9 @@ function buildTimescanTokens(assetKey) {
 
 const portfolioHeadingTokens = computed(() =>
   buildTimescanTokens("portfolio.heading"),
+)
+const portfolioEyebrowTokens = computed(() =>
+  buildTimescanTokens("portfolio.eyebrow"),
 )
 const portfolioLeadTokens = computed(() => buildTimescanTokens("portfolio.lead"))
 const activeAudioIndex = ref(null)
@@ -164,7 +166,20 @@ function formatAudioTime(seconds) {
 
 <template>
   <section class="content-page portfolio-page">
-    <header class="page-hero">
+    <header class="page-hero portfolio-header">
+      <div class="portfolio-eyebrow">
+        <TimescanSentence
+          class="timescan-base timescan-h6 timescan-layout-center"
+          :overlay-text="portfolioContent.eyebrow"
+          asset-key="portfolio.eyebrow"
+          :glyph-tokens="portfolioEyebrowTokens"
+          :auto-trigger-on-view="true"
+          :view-trigger-threshold="PORTFOLIO_VIEW_TRIGGER_THRESHOLD"
+          :view-trigger-root-margin="PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN"
+          :view-trigger-delay-ms="PORTFOLIO_VIEW_TRIGGER_DELAY_MS"
+          :show-button="false"
+        />
+      </div>
       <h1 class="portfolio-timescan-heading">
         <TimescanSentence
           class="timescan-base timescan-h1 timescan-layout-center"
@@ -179,23 +194,18 @@ function formatAudioTime(seconds) {
           :show-button="false"
         />
       </h1>
-      <TimescanSentence
-        class="timescan-base timescan-h2 timescan-layout-center portfolio-timescan-lead"
-        :overlay-text="portfolioContent.lead"
-        asset-key="portfolio.lead"
-        :glyph-tokens="portfolioLeadTokens"
-        :auto-trigger-on-view="true"
-        :view-trigger-threshold="PORTFOLIO_VIEW_TRIGGER_THRESHOLD"
-        :view-trigger-root-margin="PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN"
-        :view-trigger-delay-ms="PORTFOLIO_VIEW_TRIGGER_DELAY_MS"
-        :show-button="false"
-      />
-      <div class="page-intro portfolio-intro-timescan">
-        <TimescanText
-          :text="portfolioContent.intro"
-          :asset-key="portfolioTextAssetKey('intro')"
-          sentence-class="timescan-base timescan-p timescan-layout-center portfolio-intro-line"
-          :max-chars="38"
+      <div class="portfolio-lead">
+        <TimescanSentence
+          class="timescan-base timescan-h2 timescan-layout-center"
+          :overlay-text="portfolioContent.lead"
+          asset-key="portfolio.lead"
+          :glyph-tokens="portfolioLeadTokens"
+          :auto-trigger-on-view="true"
+          :view-trigger-threshold="PORTFOLIO_VIEW_TRIGGER_THRESHOLD"
+          :view-trigger-root-margin="PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN"
+          :view-trigger-delay-ms="PORTFOLIO_VIEW_TRIGGER_DELAY_MS"
+          :glyph-scale="0.6"
+          :show-button="false"
         />
       </div>
     </header>
@@ -415,6 +425,18 @@ function formatAudioTime(seconds) {
   gap: 0.4rem;
 }
 
+.portfolio-header :deep(.timescan-sentence) {
+  width: 100%;
+}
+
+.portfolio-eyebrow {
+  margin-top: 32px;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(212, 161, 94, 0.92);
+}
+
 .portfolio-timescan-heading {
   margin: 0;
   width: 100%;
@@ -422,24 +444,10 @@ function formatAudioTime(seconds) {
   justify-content: center;
 }
 
-.portfolio-timescan-lead {
-  width: 100%;
-}
-
-.portfolio-intro-timescan {
-  width: min(720px, 100%);
-  display: grid;
-  justify-items: center;
-  gap: 0.14rem;
-}
-
-.portfolio-intro-line {
-  --timescan-glyph-scale: 0.6;
-  --timescan-overlay-font-size: 1.05rem;
-  --timescan-overlay-line-height: 1.25;
-  --timescan-overlay-letter-spacing: 0.01em;
-  --timescan-min-height: 32px;
-  --timescan-ink: rgba(255, 220, 180, 0.72);
+.portfolio-lead {
+  margin: 0.3rem 0 0;
+  color: rgba(255, 220, 180, 0.72);
+  font-size: 1.05rem;
 }
 
 .portfolio-showcase-list {

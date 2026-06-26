@@ -280,8 +280,20 @@ const timescanGlyphStrips = {
       `${TIMESCAN_STRIP_BASE}services-other-services-bullet-3/flicker-4.svg`,
     ],
   },
+  "portfolio.eyebrow": {
+    width: 1534,
+    height: 52,
+    maxGlyphs: 64,
+    base: `${TIMESCAN_STRIP_BASE}portfolio-eyebrow/base.svg`,
+    flicker: [
+      `${TIMESCAN_STRIP_BASE}portfolio-eyebrow/flicker-1.svg`,
+      `${TIMESCAN_STRIP_BASE}portfolio-eyebrow/flicker-2.svg`,
+      `${TIMESCAN_STRIP_BASE}portfolio-eyebrow/flicker-3.svg`,
+      `${TIMESCAN_STRIP_BASE}portfolio-eyebrow/flicker-4.svg`,
+    ],
+  },
   "portfolio.heading": {
-    width: 1334,
+    width: 1316,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}portfolio-heading/base.svg`,
@@ -293,7 +305,7 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.lead": {
-    width: 1307,
+    width: 1224,
     height: 52,
     maxGlyphs: 64,
     base: `${TIMESCAN_STRIP_BASE}portfolio-lead/base.svg`,
@@ -302,18 +314,6 @@ const timescanGlyphStrips = {
       `${TIMESCAN_STRIP_BASE}portfolio-lead/flicker-2.svg`,
       `${TIMESCAN_STRIP_BASE}portfolio-lead/flicker-3.svg`,
       `${TIMESCAN_STRIP_BASE}portfolio-lead/flicker-4.svg`,
-    ],
-  },
-  "portfolio.intro.line.0": {
-    width: 1223,
-    height: 52,
-    maxGlyphs: 64,
-    base: `${TIMESCAN_STRIP_BASE}portfolio-intro-line-0/base.svg`,
-    flicker: [
-      `${TIMESCAN_STRIP_BASE}portfolio-intro-line-0/flicker-1.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-intro-line-0/flicker-2.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-intro-line-0/flicker-3.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-intro-line-0/flicker-4.svg`,
     ],
   },
   "portfolio.showcase.artworks.label.line.0": {
