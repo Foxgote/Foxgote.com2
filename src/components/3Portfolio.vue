@@ -32,7 +32,7 @@ const portfolioHeadingTokens = computed(() =>
 )
 const portfolioLeadTokens = computed(() => buildTimescanTokens("portfolio.lead"))
 const activeAudioIndex = ref(null)
-const audioRef = ref(null)
+const audioRefs = ref([])
 const audioProgress = ref(0)
 const audioDuration = ref(0)
 const isAudioPlaying = ref(false)
@@ -58,8 +58,17 @@ function imageForKey(imageKey) {
   return showcaseImages[imageKey] || heroPortfolio
 }
 
+function setAudioRef(index, element) {
+  if (element) {
+    audioRefs.value[index] = element
+    return
+  }
+  delete audioRefs.value[index]
+}
+
 function getAudioPlayer() {
-  const player = Array.isArray(audioRef.value) ? audioRef.value[0] : audioRef.value
+  const index = activeAudioIndex.value
+  const player = Number.isInteger(index) ? audioRefs.value[index] : null
   return player && typeof player === "object" ? player : null
 }
 
@@ -309,7 +318,7 @@ function formatAudioTime(seconds) {
                     tabindex="0"
                     :data-audio-title="track.title"
                     :aria-expanded="index === activeAudioIndex"
-                    :aria-controls="index === activeAudioIndex ? 'portfolio-audio-player' : undefined"
+                    :aria-controls="index === activeAudioIndex ? `portfolio-audio-player-${index}` : undefined"
                     @click="selectAudioTrackByTitle(track.title)"
                     @keydown.enter.prevent="selectAudioTrackByTitle(track.title)"
                     @keydown.space.prevent="selectAudioTrackByTitle(track.title)"
@@ -325,16 +334,16 @@ function formatAudioTime(seconds) {
                     <small>{{ track.duration }}</small>
                   </div>
 
-                  <Transition name="audio-player-expand">
-                    <div
-                      v-if="index === activeAudioIndex && activeAudioTrack"
-                      id="portfolio-audio-player"
-                      class="audio-player"
-                      :key="activeAudioTrack.title"
-                    >
+                  <div
+                    :id="`portfolio-audio-player-${index}`"
+                    class="audio-player-shell"
+                    :class="{ 'is-expanded': index === activeAudioIndex }"
+                    :aria-hidden="index !== activeAudioIndex"
+                  >
+                    <div class="audio-player">
                       <audio
-                        ref="audioRef"
-                        :src="activeAudioTrack.src || undefined"
+                        :ref="(element) => setAudioRef(index, element)"
+                        :src="track.src || undefined"
                         preload="metadata"
                         @loadedmetadata="syncAudioMetadata"
                         @timeupdate="syncAudioProgress"
@@ -345,36 +354,40 @@ function formatAudioTime(seconds) {
                           class="audio-icon-button previous"
                           type="button"
                           aria-label="Previous sample"
+                          :disabled="index !== activeAudioIndex"
                           @click="skipAudioTrack(-1)"
                         ></button>
                         <button
                           class="audio-icon-button play"
-                          :class="{ 'is-playing': isAudioPlaying }"
+                          :class="{ 'is-playing': index === activeAudioIndex && isAudioPlaying }"
                           type="button"
                           :aria-label="isAudioPlaying ? 'Pause sample' : 'Play sample'"
+                          :disabled="index !== activeAudioIndex"
                           @click="toggleAudioPlayback"
                         ></button>
                         <button
                           class="audio-icon-button next"
                           type="button"
                           aria-label="Next sample"
+                          :disabled="index !== activeAudioIndex"
                           @click="skipAudioTrack(1)"
                         ></button>
                       </div>
                       <div class="audio-timeline">
-                        <span>{{ formatAudioTime(audioProgress) }}</span>
+                        <span>{{ formatAudioTime(index === activeAudioIndex ? audioProgress : 0) }}</span>
                         <input
                           type="range"
                           min="0"
-                          :max="activeAudioDuration"
-                          :value="audioProgress"
+                          :max="index === activeAudioIndex ? activeAudioDuration : track.durationSeconds"
+                          :value="index === activeAudioIndex ? audioProgress : 0"
                           aria-label="Sample position"
+                          :disabled="index !== activeAudioIndex"
                           @input="updateAudioProgress"
                         />
-                        <span>{{ activeAudioTrack.duration }}</span>
+                        <span>{{ track.duration }}</span>
                       </div>
                     </div>
-                  </Transition>
+                  </div>
                 </div>
               </div>
             </div>
@@ -626,49 +639,59 @@ function formatAudioTime(seconds) {
   gap: 0.85rem;
 }
 
+.audio-player-shell {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 0fr;
+  border-top: 0 solid transparent;
+  margin-top: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    grid-template-rows 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    opacity 180ms ease,
+    margin-top 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    border-top-color 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    border-top-width 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    visibility 0s linear 280ms;
+  visibility: hidden;
+  will-change: grid-template-rows, opacity;
+}
+
+.audio-player-shell.is-expanded {
+  grid-template-rows: 1fr;
+  border-top-color: rgba(255, 220, 180, 0.14);
+  border-top-width: 1px;
+  margin-top: 0.55rem;
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    grid-template-rows 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    opacity 180ms ease,
+    margin-top 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    border-top-color 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    border-top-width 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    visibility 0s;
+  visibility: visible;
+}
+
 .audio-player {
-  --audio-player-expanded-max-height: 4.75rem;
+  min-height: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 0.8rem;
   align-items: center;
-  border-top: 1px solid rgba(255, 220, 180, 0.14);
-  margin-top: 0.55rem;
-  max-height: var(--audio-player-expanded-max-height);
   overflow: hidden;
-  padding: 0.55rem 0.25rem 0.1rem;
-  transform-origin: top;
-}
-
-.audio-player-expand-enter-active,
-.audio-player-expand-leave-active {
-  overflow: hidden;
+  padding: 0 0.25rem;
   transition:
-    max-height 320ms ease,
-    opacity 220ms ease,
-    transform 320ms ease,
-    margin-top 320ms ease,
-    padding-top 320ms ease,
-    padding-bottom 320ms ease,
-    border-color 320ms ease;
+    padding-top 280ms cubic-bezier(0.33, 1, 0.68, 1),
+    padding-bottom 280ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-.audio-player-expand-enter-from,
-.audio-player-expand-leave-to {
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(-0.3rem) scaleY(0.985);
-  border-top-color: transparent;
-  margin-top: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.audio-player-expand-enter-to,
-.audio-player-expand-leave-from {
-  max-height: var(--audio-player-expanded-max-height);
-  opacity: 1;
-  transform: translateY(0) scaleY(1);
+.audio-player-shell.is-expanded .audio-player {
+  padding-top: 0.55rem;
+  padding-bottom: 0.1rem;
 }
 
 .audio-controls {
@@ -780,7 +803,7 @@ function formatAudioTime(seconds) {
 .audio-track {
   width: 100%;
   display: grid;
-  gap: 0.7rem;
+  gap: 0;
   border: 1px solid rgba(255, 220, 180, 0.1);
   padding: 0.5rem;
   background: rgba(10, 11, 13, 0.38);
@@ -952,14 +975,10 @@ function formatAudioTime(seconds) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .audio-player-expand-enter-active,
-  .audio-player-expand-leave-active {
+  .audio-player-shell,
+  .audio-player-shell.is-expanded,
+  .audio-player {
     transition: none;
-  }
-
-  .audio-player-expand-enter-from,
-  .audio-player-expand-leave-to {
-    transform: none;
   }
 }
 </style>
