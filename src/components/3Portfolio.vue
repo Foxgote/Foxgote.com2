@@ -1,38 +1,17 @@
 <script setup>
 import { computed, ref } from "vue"
 import {
-  getTimescanGlyphOptions,
-  getTimescanText,
   portfolioContent,
   portfolioShowcaseTextAssetKey,
   portfolioVideoTextAssetKey,
 } from "@/content/siteContent"
 import { imageForKey } from "@/content/contentMedia"
-import { buildGlyphSequence } from "@/utils/glyphSequence"
-import TimescanSentence from "./TimescanSentence.vue"
 import TimescanText from "./TimescanText.vue"
 
-const PORTFOLIO_VIEW_TRIGGER_DELAY_MS = 1100
-const PORTFOLIO_VIEW_TRIGGER_THRESHOLD = 0.2
-const PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN = "0px"
 const MEDIA_SCROLL_PREVIEW_CYCLES = 3
 const MEDIA_SCROLL_DRAG_THRESHOLD_PX = 6
 const DRAGGABLE_MEDIA_PANEL_IDS = new Set(["artworks", "videos"])
 
-function buildTimescanTokens(assetKey) {
-  return buildGlyphSequence(
-    getTimescanText(assetKey),
-    getTimescanGlyphOptions(assetKey),
-  )
-}
-
-const portfolioHeadingTokens = computed(() =>
-  buildTimescanTokens("portfolio.heading"),
-)
-const portfolioEyebrowTokens = computed(() =>
-  buildTimescanTokens("portfolio.eyebrow"),
-)
-const portfolioLeadTokens = computed(() => buildTimescanTokens("portfolio.lead"))
 const activeAudioIndex = ref(null)
 const audioRefs = ref([])
 const audioProgress = ref(0)
@@ -260,50 +239,6 @@ function formatAudioTime(seconds) {
 
 <template>
   <section class="content-page portfolio-page">
-    <header class="page-hero portfolio-header">
-      <div class="portfolio-eyebrow">
-        <TimescanSentence
-          class="timescan-base timescan-h6 timescan-layout-center"
-          :overlay-text="portfolioContent.eyebrow"
-          asset-key="portfolio.eyebrow"
-          :glyph-tokens="portfolioEyebrowTokens"
-          :auto-trigger-on-view="true"
-          :view-trigger-threshold="PORTFOLIO_VIEW_TRIGGER_THRESHOLD"
-          :view-trigger-root-margin="PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN"
-          :view-trigger-delay-ms="PORTFOLIO_VIEW_TRIGGER_DELAY_MS"
-          :show-button="false"
-        />
-      </div>
-      <h1 class="portfolio-timescan-heading">
-        <TimescanSentence
-          class="timescan-base timescan-h1 timescan-layout-center"
-          :overlay-text="portfolioContent.heading"
-          asset-key="portfolio.heading"
-          :glyph-tokens="portfolioHeadingTokens"
-          :glyph-scale="1.4"
-          :auto-trigger-on-view="true"
-          :view-trigger-threshold="PORTFOLIO_VIEW_TRIGGER_THRESHOLD"
-          :view-trigger-root-margin="PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN"
-          :view-trigger-delay-ms="PORTFOLIO_VIEW_TRIGGER_DELAY_MS"
-          :show-button="false"
-        />
-      </h1>
-      <div class="portfolio-lead">
-        <TimescanSentence
-          class="timescan-base timescan-h2 timescan-layout-center"
-          :overlay-text="portfolioContent.lead"
-          asset-key="portfolio.lead"
-          :glyph-tokens="portfolioLeadTokens"
-          :auto-trigger-on-view="true"
-          :view-trigger-threshold="PORTFOLIO_VIEW_TRIGGER_THRESHOLD"
-          :view-trigger-root-margin="PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN"
-          :view-trigger-delay-ms="PORTFOLIO_VIEW_TRIGGER_DELAY_MS"
-          :glyph-scale="0.6"
-          :show-button="false"
-        />
-      </div>
-    </header>
-
     <section class="portfolio-showcase-list">
       <article
         v-for="panel in portfolioContent.showcases"
@@ -514,48 +449,11 @@ function formatAudioTime(seconds) {
   --portfolio-showcase-max-width: 1200px;
   width: calc(100% + (var(--app-inline-pad, 0rem) * 2));
   max-width: none;
+  margin-block-start: -1px;
   margin-inline: calc(var(--app-inline-pad, 0rem) * -1);
   gap: 0;
   padding: 0 0 3rem;
   overflow-x: clip;
-}
-
-.portfolio-page .page-hero {
-  width: calc(100% - (var(--app-inline-pad, 0rem) * 2));
-  margin-inline: auto;
-  padding: 2.25rem var(--page-inline-pad, 0) 1.6rem;
-  border-bottom: 1px solid rgba(255, 220, 180, 0.18);
-  gap: 0.4rem;
-  min-width: 0;
-  overflow-x: clip;
-}
-
-.portfolio-header :deep(.timescan-sentence) {
-  width: 100%;
-}
-
-.portfolio-eyebrow {
-  margin-top: 32px;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(212, 161, 94, 0.92);
-}
-
-.portfolio-timescan-heading {
-  margin: 0;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  display: flex;
-  justify-content: center;
-  overflow-x: clip;
-}
-
-.portfolio-lead {
-  margin: 0.3rem 0 0;
-  color: rgba(255, 220, 180, 0.72);
-  font-size: 1.05rem;
 }
 
 .portfolio-showcase-list {
@@ -641,6 +539,10 @@ function formatAudioTime(seconds) {
   cursor: grab;
 }
 
+.portfolio-panel--videos .portfolio-panel-content {
+  padding-bottom: clamp(0.42rem, 0.75vw, 0.62rem);
+}
+
 .portfolio-panel--artworks .portfolio-panel-content.is-media-scroll-dragging,
 .portfolio-panel--videos .portfolio-panel-content.is-media-scroll-dragging {
   cursor: grabbing;
@@ -709,7 +611,7 @@ function formatAudioTime(seconds) {
   pointer-events: none;
 }
 
-.portfolio-caption-title-line {
+:deep(.portfolio-caption-title-line) {
   --timescan-glyph-scale: 0.34;
   --timescan-overlay-font-size: 0.78rem;
   --timescan-overlay-line-height: 1.25;
@@ -729,7 +631,9 @@ function formatAudioTime(seconds) {
 .video-embed-slot {
   flex: 0 0 clamp(24rem, 42vw, 32rem);
   display: grid;
-  gap: 0.1rem;
+  grid-template-rows: auto min-content;
+  align-content: start;
+  row-gap: 0;
   min-width: 0;
   color: rgba(255, 225, 190, 0.74);
   text-decoration: none;
@@ -803,10 +707,21 @@ function formatAudioTime(seconds) {
 .portfolio-video-title-link {
   display: block;
   min-width: 0;
-  margin-top: -0.04rem;
+  margin-top: -0.16rem;
   color: rgba(255, 238, 220, 0.92);
   font-weight: 700;
+  line-height: 1;
   text-decoration: none;
+}
+
+.portfolio-panel--videos :deep(.portfolio-caption-title-line) {
+  --timescan-overlay-line-height: 1.08;
+  --timescan-min-height: 18px;
+  --timescan-vertical-pad: 0;
+}
+
+.portfolio-panel--videos :deep(.portfolio-caption-title-line .sentence-strip-line) {
+  height: 18px !important;
 }
 
 .portfolio-video-title-link:hover,
@@ -1113,11 +1028,6 @@ function formatAudioTime(seconds) {
 }
 
 @media (max-width: 720px) {
-  .portfolio-page .page-hero {
-    padding-top: 1.35rem;
-    padding-bottom: 1.35rem;
-  }
-
   .artwork-strip,
   .video-embed-grid {
     grid-template-columns: 1fr;
@@ -1139,23 +1049,17 @@ function formatAudioTime(seconds) {
 }
 
 @media (max-width: 620px) {
-  .portfolio-timescan-heading :deep(.timescan-h1) {
-    --timescan-overlay-font-size: clamp(1.32rem, 6.9vw, 1.62rem);
-    --timescan-min-height: clamp(48px, 12vw, 60px);
-  }
-
   .portfolio-panel {
     height: auto;
     display: block;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: visible;
-    overscroll-behavior-inline: contain;
-    scrollbar-width: thin;
   }
 
   .portfolio-panel-header,
   .portfolio-panel-content {
-    min-width: 620px;
+    width: 100%;
+    min-width: 0;
   }
 
   .portfolio-panel-content {

@@ -412,7 +412,7 @@ onBeforeUnmount(() => {
 .hero-bg-overlay {
   z-index: 2;
   opacity: 0;
-  transition: opacity 700ms ease;
+  transition: opacity var(--hero-fade-duration, 700ms) ease;
 }
 
 .hero-bg-overlay-active {
@@ -434,7 +434,18 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(14px);
   background: rgba(10, 11, 13, calc(0.35 + var(--nav-alpha, 0) * 0.35));
   border-top: 1px solid rgba(255, 200, 140, 0.10);
+  opacity: 0;
+  animation:
+    nav-fade-in var(--welcome-sign-fade-duration, 2000ms)
+    ease-out var(--welcome-sign-fade-delay, 1700ms) both;
 }
+
+@keyframes nav-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
 .nav-inner{
   --nav-gap: clamp(0.65rem, 4vw, 2.6rem);
   max-width: 1200px;
@@ -500,6 +511,9 @@ onBeforeUnmount(() => {
 :global(:root) {
   --nav-inner-pad: 1.75rem;
   --nav-h: 64px;
+  --hero-fade-duration: 700ms;
+  --welcome-sign-fade-duration: 2000ms;
+  --welcome-sign-fade-delay: 1700ms;
 
   --home-colour: #d4a15e;
   --services-colour: #73d4ff;
@@ -532,11 +546,28 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 640px) {
+  .barlite {
+    height: calc(100vh - var(--nav-h));
+    min-height: 0;
+  }
+
+  @supports (height: 100svh) {
+    .barlite {
+      height: calc(100svh - var(--nav-h));
+    }
+  }
+
+  @supports (height: 100dvh) {
+    .barlite {
+      height: calc(100dvh - var(--nav-h));
+    }
+  }
+
   .nav-inner {
-    --nav-inner-pad: 0.65rem;
-    --nav-gap: clamp(0.84rem, 4.62vw, 1.28rem);
+    --nav-inner-pad: clamp(0.35rem, 2vw, 0.65rem);
+    --nav-gap: clamp(0.5rem, 3.6vw, 0.92rem);
     justify-content: center;
-    font-size: clamp(0.72rem, 2.8vw, 0.94rem);
+    font-size: clamp(0.68rem, 2.65vw, 0.9rem);
   }
 }
 

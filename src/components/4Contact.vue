@@ -518,8 +518,37 @@ watch(
     padding-top: 0.6rem;
   }
 
+  .contact-quickbar {
+    overflow: visible;
+    padding: 0 0 0.45rem;
+    scrollbar-width: none;
+  }
+
+  .contact-quickbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .quick-contact-track {
-    justify-content: flex-start;
+    width: 100%;
+    justify-content: center;
+    gap: clamp(1.1rem, 7vw, 1.65rem);
+  }
+
+  .quick-contact-link {
+    width: 2rem;
+    height: 2rem;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .quick-contact-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .quick-contact-label,
+  .quick-contact-value {
+    display: none;
   }
 
   .contact-email-header {

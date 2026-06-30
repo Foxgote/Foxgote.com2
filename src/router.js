@@ -85,6 +85,16 @@ function isAtOrBelowNavAnchor(selector = ".nav-anchor") {
   return gateLineDocY >= anchorDocY - ANCHOR_GATE_EPSILON_PX
 }
 
+function contentTopScrollPosition(selector = SCROLL_EFFECT_ANCHOR_SELECTOR) {
+  const anchor = document.querySelector(selector)
+  if (!anchor) return { left: 0, top: 0 }
+
+  const anchorDocY = anchor.getBoundingClientRect().top + window.scrollY
+  const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+  const top = Math.max(0, Math.min(anchorDocY - VIEWPORT_TOP_PAD_PX, maxTop))
+  return { left: 0, top }
+}
+
 function smoothScrollToElement(selector, duration = 800, offset = 0) {
   const el = document.querySelector(selector)
   if (!el) return
@@ -139,8 +149,6 @@ export default createRouter({
     const toSectionPath = getRouteSectionPath(to.path)
     const fromSectionPath = getRouteSectionPath(from.path)
 
-    if (savedPosition) return savedPosition
-
     if (to.hash === SCROLL_EFFECT_ANCHOR_HASH) {
       requestAnimationFrame(() => {
         smoothScrollToElement(SCROLL_EFFECT_ANCHOR_SELECTOR, 600, 0)
@@ -152,16 +160,18 @@ export default createRouter({
     if (isInitialNavigation && isReloadNavigation()) return { left: 0, top: 0 }
     if (isInitialNavigation) return { left: 0, top: 0 }
 
+    if (savedPosition && toSectionPath === fromSectionPath) return savedPosition
+
     // Keep scroll stable when opening/closing nested panels inside a section.
     if (toSectionPath === fromSectionPath) {
       stopSmoothScrollAnimation()
       return false
     }
 
-    // Do not trigger smooth hero scroll when we're already at/below the hero nav anchor.
-    if (isAtOrBelowNavAnchor()) {
+    // Top-level section changes should start at the top of the incoming component.
+    if (savedPosition || isAtOrBelowNavAnchor()) {
       stopSmoothScrollAnimation()
-      return false
+      return contentTopScrollPosition()
     }
 
     requestAnimationFrame(() => {

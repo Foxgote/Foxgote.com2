@@ -205,7 +205,6 @@ onBeforeUnmount(() => {
           :to="card.to"
           :aria-label="`Open ${card.title} details`"
         >
-          <span class="content-card-kicker">{{ card.imageLabel }}</span>
           <h2>{{ card.title }}</h2>
           <span
             class="service-card-thumbnail"
