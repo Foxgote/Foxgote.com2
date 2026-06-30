@@ -7,6 +7,8 @@ const barliteRef = ref(null)
 const navAnchorRef = ref(null)
 const route = useRoute()
 const routeTransitionName = ref("route-slide-left")
+const viewportDebugLabel = ref("")
+const isViewportDebugVisible = import.meta.env.DEV
 
 const HERO_FADE_DURATION_MS = 700
 const NAV_SCROLL_DURATION_MS = 2000
@@ -44,6 +46,14 @@ let heroFadeTimeoutId = 0
 let navSmoothScrollRafId = 0
 let navSmoothScrollCancelListenersActive = false
 let routeTransitionCleanupIds = []
+
+function updateViewportDebugLabel() {
+  if (!isViewportDebugVisible) return
+  const width = Math.round(window.innerWidth || 0)
+  const height = Math.round(window.innerHeight || 0)
+  const dpr = Math.round((window.devicePixelRatio || 1) * 100) / 100
+  viewportDebugLabel.value = `${width} x ${height} @${dpr}`
+}
 
 function isInSection(path, sectionPath) {
   if (typeof path !== "string") return false
@@ -293,14 +303,19 @@ function onNavClick(event) {
 
 onMounted(() => {
   scrollEffectEnabled = false
+  updateViewportDebugLabel()
   resetReloadScrollPosition()
   window.addEventListener("scroll", onScroll, { passive: true })
   window.addEventListener("resize", onScroll)
+  window.addEventListener("resize", updateViewportDebugLabel)
+  window.visualViewport?.addEventListener("resize", updateViewportDebugLabel)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", onScroll)
   window.removeEventListener("resize", onScroll)
+  window.removeEventListener("resize", updateViewportDebugLabel)
+  window.visualViewport?.removeEventListener("resize", updateViewportDebugLabel)
   cancelAnimationFrame(rafId)
   stopNavSmoothScrollAnimation()
   routeTransitionCleanupIds.forEach((id) => window.clearTimeout(id))
@@ -311,6 +326,14 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="app">
+    <div
+      v-if="isViewportDebugVisible"
+      class="viewport-debug"
+      aria-live="polite"
+    >
+      {{ viewportDebugLabel }}
+    </div>
+
     <header
       ref="barliteRef"
       class="barlite"
@@ -372,6 +395,25 @@ onBeforeUnmount(() => {
 <style scoped>
 #content-top {
   height: 0;
+}
+
+.viewport-debug {
+  position: fixed;
+  top: max(0.45rem, env(safe-area-inset-top));
+  right: max(0.45rem, env(safe-area-inset-right));
+  z-index: 90;
+  border: 1px solid rgba(255, 220, 180, 0.26);
+  border-radius: 4px;
+  background: rgba(5, 6, 8, 0.72);
+  backdrop-filter: blur(10px);
+  padding: 0.32rem 0.42rem;
+  color: rgba(255, 238, 220, 0.88);
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .barlite{
