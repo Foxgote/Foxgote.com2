@@ -17,7 +17,7 @@ const audioRefs = ref([])
 const audioProgress = ref(0)
 const audioDuration = ref(0)
 const isAudioPlaying = ref(false)
-const activeVideoEmbedKey = ref("")
+const activeVideoEmbedKey = ref(defaultVideoEmbedKey())
 const draggingMediaPanelId = ref(null)
 let mediaScrollDragState = null
 let shouldSuppressMediaClick = false
@@ -47,23 +47,39 @@ function videoItemKey(video, videoIndex) {
   return `${video.title}-${videoIndex}`
 }
 
-function canEmbedVideo(panel, video, videoIndex) {
-  return Boolean(video.embedUrl && videoIndex < (panel.videos?.length || 0))
+function defaultVideoEmbedKey() {
+  const videoPanel = portfolioContent.showcases.find((panel) => panel.id === "videos")
+  const firstEmbedIndex = (videoPanel?.videos || []).findIndex((video) => video.embedUrl)
+  if (firstEmbedIndex < 0) return ""
+  return videoItemKey(videoPanel.videos[firstEmbedIndex], firstEmbedIndex)
+}
+
+function canEmbedVideo(panel, video) {
+  return Boolean(video.embedUrl && (panel.videos?.length || 0) > 0)
 }
 
 function isVideoEmbedActive(panel, video, videoIndex) {
-  return canEmbedVideo(panel, video, videoIndex)
+  return canEmbedVideo(panel, video)
     && activeVideoEmbedKey.value === videoItemKey(video, videoIndex)
 }
 
 function videoEmbedUrl(video) {
   if (!video.embedUrl) return ""
-  const separator = video.embedUrl.includes("?") ? "&" : "?"
-  return `${video.embedUrl}${separator}autoplay=1`
+  try {
+    const url = new URL(video.embedUrl, window.location.origin)
+    url.searchParams.set("autoplay", "1")
+    url.searchParams.set("mute", "1")
+    url.searchParams.set("playsinline", "1")
+    url.searchParams.set("rel", "0")
+    return url.toString()
+  } catch {
+    const separator = video.embedUrl.includes("?") ? "&" : "?"
+    return `${video.embedUrl}${separator}autoplay=1&mute=1&playsinline=1&rel=0`
+  }
 }
 
 function activateVideoEmbed(panel, video, videoIndex) {
-  if (!canEmbedVideo(panel, video, videoIndex)) return
+  if (!canEmbedVideo(panel, video)) return
   activeVideoEmbedKey.value = videoItemKey(video, videoIndex)
 }
 
@@ -297,6 +313,8 @@ function formatAudioTime(seconds) {
               v-for="(video, videoIndex) in videoPreviewItems(panel)"
               :key="`${video.title}-${videoIndex}`"
               class="video-embed-slot"
+              :data-video-title="video.title"
+              :data-video-copy-index="videoIndex"
             >
               <iframe
                 v-if="isVideoEmbedActive(panel, video, videoIndex)"
@@ -307,7 +325,7 @@ function formatAudioTime(seconds) {
                 allowfullscreen
               ></iframe>
               <button
-                v-else-if="canEmbedVideo(panel, video, videoIndex)"
+                v-else-if="canEmbedVideo(panel, video)"
                 type="button"
                 class="video-embed-placeholder"
                 :style="{ backgroundImage: `url(${imageForKey(video.imageKey)})` }"

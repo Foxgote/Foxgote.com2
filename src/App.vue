@@ -418,7 +418,7 @@ onBeforeUnmount(() => {
 
 .barlite{
   height: calc(100vh - var(--nav-h));
-  min-height: 620px;
+  min-height: min(620px, calc(100vh - var(--nav-h)));
   position: relative;
   overflow: visible;
   display: grid;
@@ -427,6 +427,7 @@ onBeforeUnmount(() => {
 @supports (height: 100dvh) {
   .barlite {
     height: calc(100dvh - var(--nav-h));
+    min-height: min(620px, calc(100dvh - var(--nav-h)));
   }
 }
 
@@ -517,7 +518,7 @@ onBeforeUnmount(() => {
   bottom: -0.24rem;
   height: 2px;
   border-radius: 999px;
-  background: var(--accent, #d4a15e);
+  background: var(--route-colour, var(--accent, #d4a15e));
   transform: scaleX(0);
   transform-origin: var(--underline-origin-x, 50%) 50%;
   transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -539,7 +540,7 @@ onBeforeUnmount(() => {
 
 .nav-link.router-link-active {
   opacity: 1;
-  color: var(--accent, #d4a15e);
+  color: var(--route-colour, var(--accent, #d4a15e));
 }
 
 /* Bottom-of-hero nav, then sticky in normal document flow */
@@ -609,7 +610,14 @@ onBeforeUnmount(() => {
     --nav-inner-pad: clamp(0.35rem, 2vw, 0.65rem);
     --nav-gap: clamp(0.5rem, 3.6vw, 0.92rem);
     justify-content: center;
-    font-size: clamp(0.68rem, 2.65vw, 0.9rem);
+    font-size: clamp(0.74rem, 3.2vw, 0.94rem);
+  }
+}
+
+@media (max-width: 340px) {
+  .nav-inner {
+    --nav-gap: clamp(0.42rem, 3vw, 0.66rem);
+    font-size: clamp(0.68rem, 3vw, 0.78rem);
   }
 }
 
