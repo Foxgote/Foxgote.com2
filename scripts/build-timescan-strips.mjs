@@ -7,6 +7,7 @@ const PRECOMPUTED_FRAMES = Number(process.env.GLYPH_POOL_FRAMES ?? 4)
 const DEFAULT_STRIP_MAX_GLYPHS = Number(process.env.TIMESCAN_STRIP_MAX_GLYPHS ?? 64)
 const STRIP_GLYPH_HEIGHT = 52
 const STRIP_GLYPH_GAP_PX = 3
+const STRIP_EDGE_PAD_PX = 10
 const MIN_RENDER_HEIGHT_PX = 8
 const MIN_RENDER_WIDTH_PX = 4
 
@@ -359,6 +360,7 @@ function variantFileForEntry(entry, layerIndex) {
 function buildStripSvg(entries, layerIndex) {
   let x = 0
   const nestedSvgs = []
+  const safeStops = []
 
   for (let index = 0; index < entries.length; index++) {
     const entry = entries[index]
@@ -379,15 +381,19 @@ function buildStripSvg(entries, layerIndex) {
 
     x += renderWidth
     if (index < entries.length - 1) {
+      safeStops.push(metric(x + Math.max(1, STRIP_GLYPH_GAP_PX - 1)))
       x += STRIP_GLYPH_GAP_PX
+    } else {
+      safeStops.push(metric(x + STRIP_EDGE_PAD_PX))
     }
   }
 
-  const width = Math.max(1, metric(x))
+  const width = Math.max(1, metric(x + STRIP_EDGE_PAD_PX))
   const height = STRIP_GLYPH_HEIGHT
   return {
     width,
     height,
+    safeStops,
     svg: [
       '<svg xmlns="http://www.w3.org/2000/svg"',
       ` viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"`,
@@ -424,6 +430,7 @@ function writeGeneratedManifest(records) {
     lines.push(`    width: ${record.width},`)
     lines.push(`    height: ${record.height},`)
     lines.push(`    maxGlyphs: ${record.maxGlyphs},`)
+    lines.push(`    safeStops: [${record.safeStops.join(", ")}],`)
     lines.push(`    base: \`${"${TIMESCAN_STRIP_BASE}"}${record.slug}/base.svg\`,`)
     lines.push("    flicker: [")
     for (let index = 0; index < record.flickerCount; index++) {
@@ -502,6 +509,7 @@ async function main() {
       slug,
       width: baseStrip.width,
       height: baseStrip.height,
+      safeStops: baseStrip.safeStops,
       maxGlyphs: stripEntries.length,
       flickerCount: PRECOMPUTED_FRAMES,
     })

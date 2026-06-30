@@ -6,9 +6,7 @@ import {
   getTimescanText,
   servicesContent,
 } from "@/content/siteContent"
-import heroPortfolio from "@/assets/img/toni-pykalaniemi-kb3d-cyberpunkcity-cmp-v019-0020.jpg"
-import heroProjects from "@/assets/img/luis-carrasco-hotel-04.jpg"
-import heroServices from "@/assets/img/services.jpg"
+import { imageForKey } from "@/content/contentMedia"
 import { buildGlyphSequence } from "@/utils/glyphSequence"
 import TimescanSentence from "./TimescanSentence.vue"
 
@@ -24,11 +22,6 @@ const SERVICE_CARD_ROUTE_NAME_BY_ID = {
   "studio-rental": "ServiceStudioRental",
   "music-teaching": "ServiceMusicTeaching",
   "other-services": "ServiceOtherServices",
-}
-const SERVICE_CARD_THUMBNAIL_BY_ID = {
-  "studio-rental": heroServices,
-  "music-teaching": heroPortfolio,
-  "other-services": heroProjects,
 }
 
 const router = useRouter()
@@ -66,7 +59,7 @@ const servicesCards = computed(() => {
     ...card,
     action: card.detail?.ctaLabel || "View Details",
     contactTo: { name: "Contact", query: { service: card.id } },
-    thumbnailSrc: SERVICE_CARD_THUMBNAIL_BY_ID[card.id] || heroServices,
+    thumbnailSrc: imageForKey(card.thumbnailKey || "services"),
     to: { name: SERVICE_CARD_ROUTE_NAME_BY_ID[card.id] },
   }))
 })

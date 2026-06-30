@@ -3,14 +3,11 @@ import { computed, ref } from "vue"
 import {
   getTimescanGlyphOptions,
   getTimescanText,
-  portfolioArtworkTextAssetKey,
   portfolioContent,
   portfolioShowcaseTextAssetKey,
   portfolioVideoTextAssetKey,
 } from "@/content/siteContent"
-import heroPortfolio from "@/assets/img/toni-pykalaniemi-kb3d-cyberpunkcity-cmp-v019-0020.jpg"
-import heroProjects from "@/assets/img/luis-carrasco-hotel-04.jpg"
-import heroServices from "@/assets/img/services.jpg"
+import { imageForKey } from "@/content/contentMedia"
 import { buildGlyphSequence } from "@/utils/glyphSequence"
 import TimescanSentence from "./TimescanSentence.vue"
 import TimescanText from "./TimescanText.vue"
@@ -18,6 +15,9 @@ import TimescanText from "./TimescanText.vue"
 const PORTFOLIO_VIEW_TRIGGER_DELAY_MS = 1100
 const PORTFOLIO_VIEW_TRIGGER_THRESHOLD = 0.2
 const PORTFOLIO_VIEW_TRIGGER_ROOT_MARGIN = "0px"
+const MEDIA_SCROLL_PREVIEW_CYCLES = 3
+const MEDIA_SCROLL_DRAG_THRESHOLD_PX = 6
+const DRAGGABLE_MEDIA_PANEL_IDS = new Set(["artworks", "videos"])
 
 function buildTimescanTokens(assetKey) {
   return buildGlyphSequence(
@@ -38,12 +38,10 @@ const audioRefs = ref([])
 const audioProgress = ref(0)
 const audioDuration = ref(0)
 const isAudioPlaying = ref(false)
-
-const showcaseImages = {
-  portfolio: heroPortfolio,
-  projects: heroProjects,
-  services: heroServices,
-}
+const activeVideoEmbedKey = ref("")
+const draggingMediaPanelId = ref(null)
+let mediaScrollDragState = null
+let shouldSuppressMediaClick = false
 
 const audioSamples = computed(() =>
   portfolioContent.showcases.find((panel) => panel.id === "audio")?.audioSamples || [],
@@ -56,8 +54,107 @@ const activeAudioDuration = computed(() =>
   audioDuration.value || activeAudioTrack.value?.durationSeconds || 1,
 )
 
-function imageForKey(imageKey) {
-  return showcaseImages[imageKey] || heroPortfolio
+function artworkPreviewItems(panel) {
+  const artworks = panel.artworks || []
+  return Array.from({ length: MEDIA_SCROLL_PREVIEW_CYCLES }, () => artworks).flat()
+}
+
+function videoPreviewItems(panel) {
+  const videos = panel.videos || []
+  return Array.from({ length: MEDIA_SCROLL_PREVIEW_CYCLES }, () => videos).flat()
+}
+
+function videoItemKey(video, videoIndex) {
+  return `${video.title}-${videoIndex}`
+}
+
+function canEmbedVideo(panel, video, videoIndex) {
+  return Boolean(video.embedUrl && videoIndex < (panel.videos?.length || 0))
+}
+
+function isVideoEmbedActive(panel, video, videoIndex) {
+  return canEmbedVideo(panel, video, videoIndex)
+    && activeVideoEmbedKey.value === videoItemKey(video, videoIndex)
+}
+
+function videoEmbedUrl(video) {
+  if (!video.embedUrl) return ""
+  const separator = video.embedUrl.includes("?") ? "&" : "?"
+  return `${video.embedUrl}${separator}autoplay=1`
+}
+
+function activateVideoEmbed(panel, video, videoIndex) {
+  if (!canEmbedVideo(panel, video, videoIndex)) return
+  activeVideoEmbedKey.value = videoItemKey(video, videoIndex)
+}
+
+function isDraggableMediaPanel(panelId) {
+  return DRAGGABLE_MEDIA_PANEL_IDS.has(panelId)
+}
+
+function startMediaScrollDrag(panelId, event) {
+  if (!isDraggableMediaPanel(panelId)) return
+  if (event.pointerType !== "mouse" || event.button !== 0) return
+
+  const element = event.currentTarget
+  if (!(element instanceof HTMLElement)) return
+
+  mediaScrollDragState = {
+    element,
+    panelId,
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    startScrollLeft: element.scrollLeft,
+    dragging: false,
+  }
+
+  if (typeof element.setPointerCapture === "function") {
+    element.setPointerCapture(event.pointerId)
+  }
+}
+
+function moveMediaScrollDrag(event) {
+  const state = mediaScrollDragState
+  if (!state || state.pointerId !== event.pointerId) return
+
+  const deltaX = event.clientX - state.startX
+  const deltaY = event.clientY - state.startY
+
+  if (!state.dragging) {
+    if (Math.abs(deltaX) < MEDIA_SCROLL_DRAG_THRESHOLD_PX) return
+    if (Math.abs(deltaX) < Math.abs(deltaY)) return
+
+    state.dragging = true
+    shouldSuppressMediaClick = true
+    draggingMediaPanelId.value = state.panelId
+  }
+
+  event.preventDefault()
+  state.element.scrollLeft = state.startScrollLeft - deltaX
+}
+
+function finishMediaScrollDrag(event) {
+  const state = mediaScrollDragState
+  if (!state || state.pointerId !== event.pointerId) return
+
+  if (
+    typeof state.element.releasePointerCapture === "function" &&
+    state.element.hasPointerCapture?.(event.pointerId)
+  ) {
+    state.element.releasePointerCapture(event.pointerId)
+  }
+
+  mediaScrollDragState = null
+  draggingMediaPanelId.value = null
+}
+
+function blockDraggedMediaClick(event) {
+  if (!shouldSuppressMediaClick) return
+
+  shouldSuppressMediaClick = false
+  event.preventDefault()
+  event.stopPropagation()
 }
 
 function setAudioRef(index, element) {
@@ -109,21 +206,18 @@ function skipAudioTrack(direction) {
 async function toggleAudioPlayback() {
   if (!activeAudioTrack.value) return
   const player = getAudioPlayer()
-  if (activeAudioTrack.value.src && player && typeof player.play === "function") {
-    if (isAudioPlaying.value) {
-      pauseAudioPlayer()
-      isAudioPlaying.value = false
-      return
-    }
-    try {
-      await player.play()
-      isAudioPlaying.value = true
-    } catch {
-      isAudioPlaying.value = false
-    }
+  if (!activeAudioTrack.value.src || !player || typeof player.play !== "function") return
+  if (isAudioPlaying.value) {
+    pauseAudioPlayer()
+    isAudioPlaying.value = false
     return
   }
-  isAudioPlaying.value = !isAudioPlaying.value
+  try {
+    await player.play()
+    isAudioPlaying.value = true
+  } catch {
+    isAudioPlaying.value = false
+  }
 }
 
 function updateAudioProgress(event) {
@@ -215,6 +309,7 @@ function formatAudioTime(seconds) {
         v-for="panel in portfolioContent.showcases"
         :key="panel.id"
         class="portfolio-panel"
+        :class="`portfolio-panel--${panel.id}`"
       >
         <header
           class="portfolio-panel-header"
@@ -234,35 +329,28 @@ function formatAudioTime(seconds) {
         <div
           :id="`portfolio-panel-${panel.id}`"
           class="portfolio-panel-content"
+          :class="{ 'is-media-scroll-dragging': draggingMediaPanelId === panel.id }"
           :aria-labelledby="`portfolio-panel-${panel.id}-label`"
+          @pointerdown="startMediaScrollDrag(panel.id, $event)"
+          @pointermove="moveMediaScrollDrag"
+          @pointerup="finishMediaScrollDrag"
+          @pointercancel="finishMediaScrollDrag"
+          @lostpointercapture="finishMediaScrollDrag"
+          @click.capture="isDraggableMediaPanel(panel.id) && blockDraggedMediaClick($event)"
         >
           <div
             v-if="panel.id === 'artworks'"
             class="artwork-strip"
           >
             <figure
-              v-for="(artwork, artworkIndex) in panel.artworks"
-              :key="artwork.title"
+              v-for="(artwork, artworkIndex) in artworkPreviewItems(panel)"
+              :key="`${artwork.title}-${artworkIndex}`"
               class="artwork-frame"
             >
               <img
                 :src="imageForKey(artwork.imageKey)"
                 :alt="artwork.alt"
               />
-              <figcaption>
-                <TimescanText
-                  :text="artwork.title"
-                  :asset-key="portfolioArtworkTextAssetKey(panel.id, artworkIndex, 'title')"
-                  sentence-class="timescan-base timescan-caption timescan-layout-left portfolio-caption-title-line"
-                  :max-chars="24"
-                />
-                <TimescanText
-                  :text="artwork.year"
-                  :asset-key="portfolioArtworkTextAssetKey(panel.id, artworkIndex, 'year')"
-                  sentence-class="timescan-base timescan-caption timescan-layout-left portfolio-caption-meta-line"
-                  :max-chars="12"
-                />
-              </figcaption>
             </figure>
           </div>
 
@@ -270,41 +358,53 @@ function formatAudioTime(seconds) {
             v-else-if="panel.id === 'videos'"
             class="video-embed-grid"
           >
-            <div
-              v-for="(video, videoIndex) in panel.videos"
-              :key="video.title"
+            <article
+              v-for="(video, videoIndex) in videoPreviewItems(panel)"
+              :key="`${video.title}-${videoIndex}`"
               class="video-embed-slot"
             >
               <iframe
-                v-if="video.embedUrl"
-                :src="video.embedUrl"
+                v-if="isVideoEmbedActive(panel, video, videoIndex)"
+                :src="videoEmbedUrl(video)"
                 :title="video.title"
                 loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen
               ></iframe>
-              <div
+              <button
+                v-else-if="canEmbedVideo(panel, video, videoIndex)"
+                type="button"
+                class="video-embed-placeholder"
+                :style="{ backgroundImage: `url(${imageForKey(video.imageKey)})` }"
+                :aria-label="`Play ${video.title}`"
+                @click.stop="activateVideoEmbed(panel, video, videoIndex)"
+              >
+                <span class="video-play-mark" aria-hidden="true"></span>
+              </button>
+              <span
                 v-else
                 class="video-embed-placeholder"
                 :style="{ backgroundImage: `url(${imageForKey(video.imageKey)})` }"
               >
                 <span class="video-play-mark" aria-hidden="true"></span>
-              </div>
-              <div class="portfolio-media-caption">
+              </span>
+              <a
+                class="portfolio-video-title-link"
+                :class="{ 'is-placeholder': !video.linkUrl }"
+                :href="video.linkUrl || '#'"
+                target="_blank"
+                rel="noreferrer"
+                :aria-disabled="!video.linkUrl"
+                @click="!video.linkUrl && $event.preventDefault()"
+              >
                 <TimescanText
                   :text="video.title"
-                  :asset-key="portfolioVideoTextAssetKey(panel.id, videoIndex, 'title')"
+                  :asset-key="portfolioVideoTextAssetKey(panel.id, videoIndex % panel.videos.length, 'title')"
                   sentence-class="timescan-base timescan-caption timescan-layout-left portfolio-caption-title-line"
                   :max-chars="24"
                 />
-                <TimescanText
-                  :text="video.meta"
-                  :asset-key="portfolioVideoTextAssetKey(panel.id, videoIndex, 'meta')"
-                  sentence-class="timescan-base timescan-caption timescan-layout-left portfolio-caption-meta-line"
-                  :max-chars="26"
-                />
-              </div>
-            </div>
+              </a>
+            </article>
           </div>
 
           <div
@@ -372,7 +472,7 @@ function formatAudioTime(seconds) {
                           :class="{ 'is-playing': index === activeAudioIndex && isAudioPlaying }"
                           type="button"
                           :aria-label="isAudioPlaying ? 'Pause sample' : 'Play sample'"
-                          :disabled="index !== activeAudioIndex"
+                          :disabled="index !== activeAudioIndex || !track.src"
                           @click="toggleAudioPlayback"
                         ></button>
                         <button
@@ -391,7 +491,7 @@ function formatAudioTime(seconds) {
                           :max="index === activeAudioIndex ? activeAudioDuration : track.durationSeconds"
                           :value="index === activeAudioIndex ? audioProgress : 0"
                           aria-label="Sample position"
-                          :disabled="index !== activeAudioIndex"
+                          :disabled="index !== activeAudioIndex || !track.src"
                           @input="updateAudioProgress"
                         />
                         <span>{{ track.duration }}</span>
@@ -411,10 +511,13 @@ function formatAudioTime(seconds) {
 <style scoped>
 .portfolio-page {
   --portfolio-panel-inline-pad: clamp(0.85rem, 3vw, 1.25rem);
+  --portfolio-showcase-max-width: 1200px;
   width: calc(100% + (var(--app-inline-pad, 0rem) * 2));
+  max-width: none;
   margin-inline: calc(var(--app-inline-pad, 0rem) * -1);
   gap: 0;
   padding: 0 0 3rem;
+  overflow-x: clip;
 }
 
 .portfolio-page .page-hero {
@@ -423,6 +526,8 @@ function formatAudioTime(seconds) {
   padding: 2.25rem var(--page-inline-pad, 0) 1.6rem;
   border-bottom: 1px solid rgba(255, 220, 180, 0.18);
   gap: 0.4rem;
+  min-width: 0;
+  overflow-x: clip;
 }
 
 .portfolio-header :deep(.timescan-sentence) {
@@ -440,8 +545,11 @@ function formatAudioTime(seconds) {
 .portfolio-timescan-heading {
   margin: 0;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   justify-content: center;
+  overflow-x: clip;
 }
 
 .portfolio-lead {
@@ -452,6 +560,7 @@ function formatAudioTime(seconds) {
 
 .portfolio-showcase-list {
   width: 100%;
+  margin-inline: auto;
   display: grid;
   gap: 0;
 }
@@ -478,14 +587,20 @@ function formatAudioTime(seconds) {
   border-top: 1px solid rgba(255, 220, 180, 0.16);
 }
 
+.portfolio-panel--artworks,
+.portfolio-panel--videos {
+  height: auto;
+  grid-template-rows: auto auto;
+}
+
 .portfolio-panel-header {
   box-sizing: border-box;
   width: 100%;
-  min-height: 3.45rem;
+  min-height: 3.15rem;
   display: flex;
   align-items: center;
   border-bottom: 1px solid rgba(255, 220, 180, 0.12);
-  padding: 0.9rem var(--portfolio-panel-inline-pad, 0);
+  padding: 0.7rem var(--portfolio-panel-inline-pad, 0);
   background: transparent;
   color: inherit;
   text-align: left;
@@ -505,21 +620,76 @@ function formatAudioTime(seconds) {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior-block: auto;
-  padding: clamp(0.85rem, 2vw, 1.25rem) var(--portfolio-panel-inline-pad, 0);
+  padding: clamp(0.55rem, 1.4vw, 0.9rem) var(--portfolio-panel-inline-pad, 0);
   scrollbar-width: thin;
 }
 
+.portfolio-panel--artworks .portfolio-panel-content,
+.portfolio-panel--videos .portfolio-panel-content {
+  overflow-y: visible;
+  padding-top: clamp(0.35rem, 0.9vw, 0.58rem);
+  padding-bottom: clamp(0.35rem, 0.9vw, 0.58rem);
+}
+
+.portfolio-panel--artworks .portfolio-panel-content,
+.portfolio-panel--videos .portfolio-panel-content {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  padding-bottom: clamp(0.8rem, 1.2vw, 1rem);
+  scrollbar-color: rgba(212, 161, 94, 0.86) rgba(4, 5, 7, 0.88);
+  cursor: grab;
+}
+
+.portfolio-panel--artworks .portfolio-panel-content.is-media-scroll-dragging,
+.portfolio-panel--videos .portfolio-panel-content.is-media-scroll-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.portfolio-panel--artworks .portfolio-panel-content::-webkit-scrollbar,
+.portfolio-panel--videos .portfolio-panel-content::-webkit-scrollbar {
+  height: 0.78rem;
+}
+
+.portfolio-panel--artworks .portfolio-panel-content::-webkit-scrollbar-track,
+.portfolio-panel--videos .portfolio-panel-content::-webkit-scrollbar-track {
+  background: rgba(4, 5, 7, 0.88);
+  border-top: 1px solid rgba(255, 220, 180, 0.08);
+}
+
+.portfolio-panel--artworks .portfolio-panel-content::-webkit-scrollbar-thumb,
+.portfolio-panel--videos .portfolio-panel-content::-webkit-scrollbar-thumb {
+  min-width: 4rem;
+  border: 3px solid rgba(4, 5, 7, 0.88);
+  border-radius: 999px;
+  background: rgba(212, 161, 94, 0.86);
+}
+
+.portfolio-panel--artworks .portfolio-panel-content::-webkit-scrollbar-thumb:hover,
+.portfolio-panel--videos .portfolio-panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 220, 180, 0.92);
+}
+
+.portfolio-panel--artworks .portfolio-panel-content::-webkit-scrollbar-button,
+.portfolio-panel--videos .portfolio-panel-content::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .artwork-strip {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
+  width: max-content;
+  min-width: 100%;
+  display: flex;
+  gap: clamp(0.9rem, 1.8vw, 1.35rem);
 }
 
 .artwork-frame {
-  min-width: 0;
+  flex: 0 0 clamp(18rem, 31vw, 24rem);
   margin: 0;
   display: grid;
-  gap: 0.5rem;
+  gap: 0;
 }
 
 .artwork-frame img,
@@ -535,27 +705,8 @@ function formatAudioTime(seconds) {
 }
 
 .artwork-frame img,
-.video-embed-slot iframe,
-.video-embed-placeholder,
 .audio-track img {
   pointer-events: none;
-}
-
-.artwork-frame figcaption,
-.portfolio-media-caption {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  color: rgba(255, 225, 190, 0.74);
-  font-size: 0.78rem;
-  line-height: 1.25;
-}
-
-.artwork-frame figcaption > :first-child,
-.portfolio-media-caption > :first-child {
-  min-width: 0;
-  color: rgba(255, 238, 220, 0.92);
-  font-weight: 700;
 }
 
 .portfolio-caption-title-line {
@@ -568,24 +719,20 @@ function formatAudioTime(seconds) {
   font-weight: 700;
 }
 
-.portfolio-caption-meta-line {
-  --timescan-glyph-scale: 0.34;
-  --timescan-overlay-font-size: 0.78rem;
-  --timescan-overlay-line-height: 1.25;
-  --timescan-overlay-letter-spacing: 0.02em;
-  --timescan-min-height: 22px;
-  --timescan-ink: rgba(212, 161, 94, 0.84);
-}
-
 .video-embed-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
+  width: max-content;
+  min-width: 100%;
+  display: flex;
+  gap: clamp(0.9rem, 1.8vw, 1.35rem);
 }
 
 .video-embed-slot {
+  flex: 0 0 clamp(24rem, 42vw, 32rem);
   display: grid;
-  gap: 0.55rem;
+  gap: 0.1rem;
+  min-width: 0;
+  color: rgba(255, 225, 190, 0.74);
+  text-decoration: none;
 }
 
 .video-embed-slot iframe,
@@ -593,6 +740,7 @@ function formatAudioTime(seconds) {
   width: 100%;
   aspect-ratio: 16 / 9;
   border: 1px solid rgba(255, 220, 180, 0.12);
+  background: rgba(6, 7, 9, 0.92);
 }
 
 .video-embed-slot iframe {
@@ -600,10 +748,25 @@ function formatAudioTime(seconds) {
 }
 
 .video-embed-placeholder {
+  appearance: none;
   position: relative;
+  display: block;
   overflow: hidden;
+  padding: 0;
   background-position: center;
   background-size: cover;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.video-embed-placeholder:not(button) {
+  cursor: default;
+}
+
+.video-embed-placeholder:focus-visible {
+  outline: 2px solid rgba(255, 220, 180, 0.54);
+  outline-offset: 3px;
 }
 
 .video-embed-placeholder::after {
@@ -619,8 +782,8 @@ function formatAudioTime(seconds) {
   position: absolute;
   inset: 50% auto auto 50%;
   z-index: 1;
-  width: 3.1rem;
-  height: 3.1rem;
+  width: 2.55rem;
+  height: 2.55rem;
   transform: translate(-50%, -50%);
   border: 1px solid rgba(255, 229, 198, 0.72);
   border-radius: 50%;
@@ -630,20 +793,33 @@ function formatAudioTime(seconds) {
 .video-play-mark::before {
   content: "";
   position: absolute;
-  left: 1.18rem;
-  top: 0.86rem;
-  border-top: 0.7rem solid transparent;
-  border-bottom: 0.7rem solid transparent;
-  border-left: 1rem solid rgba(255, 229, 198, 0.9);
+  left: 0.98rem;
+  top: 0.7rem;
+  border-top: 0.58rem solid transparent;
+  border-bottom: 0.58rem solid transparent;
+  border-left: 0.82rem solid rgba(255, 229, 198, 0.9);
 }
 
-.portfolio-media-caption {
-  align-items: baseline;
+.portfolio-video-title-link {
+  display: block;
+  min-width: 0;
+  margin-top: -0.04rem;
+  color: rgba(255, 238, 220, 0.92);
+  font-weight: 700;
+  text-decoration: none;
 }
 
-.portfolio-media-caption > :last-child {
-  color: rgba(212, 161, 94, 0.84);
-  text-align: right;
+.portfolio-video-title-link:hover,
+.portfolio-video-title-link:focus-visible {
+  color: rgba(255, 238, 220, 0.92);
+  outline: none;
+}
+
+.portfolio-video-title-link:hover + .video-play-mark,
+.video-embed-slot:hover .video-play-mark,
+.video-embed-slot:focus-within .video-play-mark {
+  border-color: rgba(255, 229, 198, 0.95);
+  background: rgba(8, 8, 10, 0.62);
 }
 
 .audio-showcase {
@@ -912,9 +1088,23 @@ function formatAudioTime(seconds) {
   }
 }
 
+@media (min-width: 1200px) {
+  .portfolio-showcase-list {
+    width: min(
+      calc(100% - (var(--app-inline-pad, 0rem) * 2)),
+      var(--portfolio-showcase-max-width)
+    );
+  }
+}
+
 @media (max-width: 900px) {
   .portfolio-panel {
     height: clamp(20rem, 58vh, 34rem);
+  }
+
+  .portfolio-panel--artworks,
+  .portfolio-panel--videos {
+    height: auto;
   }
 
   .portfolio-panel-header {
@@ -933,6 +1123,11 @@ function formatAudioTime(seconds) {
     grid-template-columns: 1fr;
   }
 
+  .artwork-strip,
+  .video-embed-grid {
+    display: flex;
+  }
+
   .audio-player {
     grid-template-columns: auto minmax(0, 1fr);
     gap: 0.7rem;
@@ -944,6 +1139,11 @@ function formatAudioTime(seconds) {
 }
 
 @media (max-width: 620px) {
+  .portfolio-timescan-heading :deep(.timescan-h1) {
+    --timescan-overlay-font-size: clamp(1.32rem, 6.9vw, 1.62rem);
+    --timescan-min-height: clamp(48px, 12vw, 60px);
+  }
+
   .portfolio-panel {
     height: auto;
     display: block;
@@ -964,11 +1164,19 @@ function formatAudioTime(seconds) {
   }
 
   .artwork-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+  }
+
+  .artwork-frame {
+    flex-basis: min(78vw, 25rem);
   }
 
   .video-embed-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+  }
+
+  .video-embed-slot {
+    flex-basis: min(86vw, 32rem);
   }
 }
 

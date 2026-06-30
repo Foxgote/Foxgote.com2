@@ -41,6 +41,22 @@ export function useTimescanSentence(options = {}) {
         : config.glyphScale
     return Math.max(0.1, toNumber(value, 1))
   })
+  const stripAssetHeight = computed(() => {
+    const value =
+      typeof config.stripAssetHeight === "object"
+        ? config.stripAssetHeight?.value
+        : config.stripAssetHeight
+    return Math.max(1, toNumber(value, config.glyphHeight))
+  })
+  const stripSafeStops = computed(() => {
+    const value =
+      typeof config.stripSafeStops === "object"
+        ? config.stripSafeStops?.value
+        : config.stripSafeStops
+    return Array.isArray(value)
+      ? value.map((stop) => toNumber(stop, 0)).filter((stop) => stop > 0)
+      : []
+  })
   const overlayTextWidth = computed(() => {
     const value =
       typeof config.overlayTextWidth === "object"
@@ -281,11 +297,22 @@ export function useTimescanSentence(options = {}) {
       : sentenceScanTotalWidthPx.value,
   )
   const sentenceStripEdgePadPx = computed(() =>
-    Math.max(4, Math.min(12, effectiveGlyphHeight.value * 0.14)),
+    Math.max(8, Math.min(18, effectiveGlyphHeight.value * 0.2)),
   )
-  const sentenceStripWidthPx = computed(() =>
+  const sentenceUnsnappedStripWidthPx = computed(() =>
     Math.max(sentenceTotalWidthPx.value, sentenceScanTotalWidthPx.value) +
     sentenceStripEdgePadPx.value,
+  )
+  const scaledStripSafeStopsPx = computed(() => {
+    const stops = stripSafeStops.value
+    if (!stops.length) return []
+    const scale = effectiveGlyphHeight.value / stripAssetHeight.value
+    return stops.map((stop) => stop * scale)
+  })
+  const sentenceStripWidthPx = computed(() =>
+    scaledStripSafeStopsPx.value.find(
+      (stop) => stop >= sentenceUnsnappedStripWidthPx.value,
+    ) || sentenceUnsnappedStripWidthPx.value,
   )
 
   const sentenceRevealWidthsByIndexPx = computed(() => {

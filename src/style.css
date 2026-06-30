@@ -1,5 +1,10 @@
 :root {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --font-body: "Manrope", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "Satoshi", "Manrope", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --timescan-overlay-font-family: var(--font-body);
+  --timescan-overlay-font-weight: 500;
+
+  font-family: var(--font-body);
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
@@ -29,7 +34,7 @@
 
 html,
 body {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
@@ -37,6 +42,13 @@ body {
   min-width: 320px;
   display: block;
   overflow-x: hidden;
+  overflow-y: visible;
+}
+
+@supports (overflow: clip) {
+  body {
+    overflow-x: clip;
+  }
 }
 
 a {
@@ -68,13 +80,29 @@ a:hover {
 
 h1 {
   margin: 0 0 0.75rem 0;
+  font-family: var(--font-display);
   font-size: 3rem;
-  line-height:1.05;
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 620;
   letter-spacing: 0;
 }
 
 p {
   margin: 0.5rem 0 0 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
 .home-container {
@@ -206,7 +234,9 @@ p {
 .content-card h2 {
   margin: 0;
   color: rgba(255, 238, 220, 0.96);
+  font-family: var(--font-display);
   font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 620;
   line-height: 1.15;
   letter-spacing: 0;
 }
@@ -236,6 +266,7 @@ p {
   --timescan-vertical-pad: 0.16em;
   --timescan-reveal-bleed-block: 0.16em 0.24em;
   --timescan-reveal-bleed-margin-block: -0.16em -0.24em;
+  --timescan-reveal-bleed-inline-end: 0.08em;
 }
 
 .timescan-base {
@@ -246,8 +277,10 @@ p {
 }
 
 .timescan-h1 {
+  --timescan-overlay-font-family: var(--font-display);
+  --timescan-overlay-font-weight: 650;
   --timescan-overlay-font-size: clamp(1.9rem, 4.8vw, 3rem);
-  --timescan-overlay-line-height: 1.18;
+  --timescan-overlay-line-height: 1.08;
   --timescan-min-height: clamp(62px, 8.2vw, 88px);
   --timescan-vertical-pad: 0.08em;
   --timescan-ink: rgba(255, 205, 145, 0.98);

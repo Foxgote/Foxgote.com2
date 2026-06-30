@@ -5,9 +5,10 @@ const TIMESCAN_STRIP_BASE = `${String(import.meta.env?.BASE_URL || "/").replace(
 
 const timescanGlyphStrips = {
   "home.heading": {
-    width: 1387,
+    width: 1397,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 46, 73, 101, 121, 144, 167, 182, 205, 226, 253, 267, 281, 297, 321, 345, 371, 393, 407, 427, 457, 478, 501, 525, 546, 576, 596, 610, 632, 658, 682, 706, 722, 736, 750, 777, 798, 821, 836, 859, 882, 902, 930, 957, 984, 1012, 1032, 1055, 1078, 1093, 1116, 1137, 1164, 1178, 1192, 1208, 1232, 1256, 1282, 1304, 1318, 1338, 1368, 1397],
     base: `${TIMESCAN_STRIP_BASE}home-heading/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}home-heading/flicker-1.svg`,
@@ -17,9 +18,10 @@ const timescanGlyphStrips = {
     ],
   },
   "home.lead": {
-    width: 1317,
+    width: 1327,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [24, 50, 76, 102, 126, 146, 171, 191, 215, 236, 249, 267, 276, 297, 310, 331, 354, 376, 388, 414, 437, 463, 478, 496, 522, 547, 565, 580, 606, 629, 655, 667, 689, 712, 733, 746, 767, 776, 794, 807, 828, 852, 872, 897, 917, 941, 967, 993, 1019, 1045, 1069, 1089, 1114, 1134, 1158, 1179, 1192, 1210, 1219, 1240, 1253, 1274, 1297, 1327],
     base: `${TIMESCAN_STRIP_BASE}home-lead/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}home-lead/flicker-1.svg`,
@@ -29,9 +31,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.eyebrow": {
-    width: 1463,
+    width: 1473,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 43, 70, 92, 122, 143, 160, 177, 208, 229, 250, 273, 294, 325, 342, 359, 380, 410, 432, 459, 486, 508, 538, 559, 576, 593, 624, 645, 668, 689, 711, 738, 759, 782, 803, 834, 851, 868, 889, 919, 949, 970, 987, 1004, 1035, 1056, 1079, 1100, 1127, 1149, 1170, 1200, 1222, 1249, 1270, 1293, 1314, 1345, 1362, 1379, 1396, 1413, 1444, 1473],
     base: `${TIMESCAN_STRIP_BASE}services-eyebrow/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-eyebrow/flicker-1.svg`,
@@ -41,9 +44,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.heading": {
-    width: 1243,
+    width: 1253,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [27, 55, 66, 93, 130, 144, 162, 180, 187, 205, 225, 251, 277, 298, 321, 341, 350, 376, 396, 414, 439, 467, 481, 490, 514, 525, 532, 547, 575, 603, 618, 625, 636, 660, 669, 683, 711, 736, 754, 774, 800, 809, 829, 852, 873, 899, 925, 945, 963, 970, 988, 1006, 1020, 1057, 1084, 1095, 1106, 1133, 1170, 1184, 1202, 1220, 1227, 1253],
     base: `${TIMESCAN_STRIP_BASE}services-heading/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-heading/flicker-1.svg`,
@@ -53,9 +57,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.lead": {
-    width: 1321,
+    width: 1331,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [19, 52, 72, 93, 117, 138, 152, 178, 198, 226, 246, 271, 292, 306, 322, 338, 347, 367, 392, 409, 442, 462, 479, 504, 524, 533, 549, 565, 579, 600, 625, 645, 673, 693, 719, 733, 754, 778, 799, 819, 839, 860, 884, 905, 919, 945, 965, 993, 1013, 1038, 1059, 1073, 1089, 1105, 1114, 1134, 1159, 1176, 1196, 1229, 1250, 1270, 1303, 1331],
     base: `${TIMESCAN_STRIP_BASE}services-lead/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-lead/flicker-1.svg`,
@@ -65,9 +70,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.title": {
-    width: 1368,
+    width: 1378,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [12, 33, 40, 71, 94, 122, 134, 143, 150, 176, 196, 228, 255, 288, 302, 333, 355, 381, 402, 415, 441, 463, 494, 508, 541, 568, 600, 620, 646, 653, 662, 674, 702, 725, 756, 763, 770, 801, 824, 852, 864, 873, 880, 906, 926, 958, 985, 1018, 1032, 1063, 1085, 1111, 1124, 1145, 1176, 1183, 1204, 1217, 1243, 1265, 1296, 1310, 1343, 1378],
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-title/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-studio-rental-title/flicker-1.svg`,
@@ -77,9 +83,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.image": {
-    width: 1424,
+    width: 1434,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [24, 45, 59, 87, 111, 142, 156, 177, 201, 222, 248, 262, 288, 312, 333, 358, 382, 408, 422, 448, 469, 493, 514, 528, 559, 583, 611, 625, 639, 667, 691, 722, 736, 757, 781, 802, 828, 842, 868, 892, 917, 938, 966, 980, 1001, 1026, 1050, 1076, 1090, 1116, 1137, 1161, 1182, 1196, 1227, 1251, 1275, 1306, 1320, 1341, 1365, 1386, 1412, 1434],
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-image/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-studio-rental-image/flicker-1.svg`,
@@ -89,9 +96,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.bullet.0": {
-    width: 1285,
+    width: 1295,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [19, 37, 62, 90, 104, 113, 137, 148, 155, 170, 199, 218, 234, 271, 289, 303, 323, 353, 371, 391, 421, 441, 455, 473, 510, 526, 545, 574, 589, 596, 607, 631, 640, 654, 682, 707, 732, 760, 774, 783, 807, 818, 825, 840, 869, 888, 904, 941, 959, 973, 993, 1023, 1043, 1061, 1089, 1114, 1132, 1152, 1182, 1202, 1216, 1234, 1271, 1295],
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-0/flicker-1.svg`,
@@ -101,9 +109,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.bullet.1": {
-    width: 1118,
+    width: 1128,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 46, 62, 74, 97, 120, 132, 151, 165, 174, 200, 209, 232, 246, 263, 286, 295, 313, 336, 360, 378, 387, 410, 427, 441, 464, 473, 499, 508, 522, 541, 553, 576, 599, 611, 627, 643, 655, 678, 701, 713, 732, 746, 755, 781, 790, 813, 827, 844, 867, 876, 894, 918, 941, 953, 969, 992, 1016, 1034, 1043, 1066, 1083, 1097, 1128],
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-1/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-1/flicker-1.svg`,
@@ -113,9 +122,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.bullet.2": {
-    width: 1254,
+    width: 1264,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [19, 45, 75, 100, 111, 129, 149, 170, 183, 204, 227, 247, 259, 279, 299, 320, 329, 350, 376, 396, 417, 426, 447, 467, 487, 499, 519, 542, 563, 576, 597, 617, 635, 646, 671, 701, 731, 756, 767, 785, 805, 826, 839, 860, 883, 903, 915, 935, 955, 976, 985, 1006, 1026, 1052, 1077, 1107, 1133, 1153, 1174, 1183, 1204, 1224, 1244, 1264],
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-2/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-2/flicker-1.svg`,
@@ -125,9 +135,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.studio-rental.bullet.3": {
-    width: 1315,
+    width: 1325,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [24, 45, 71, 87, 94, 120, 143, 170, 179, 199, 223, 241, 255, 279, 297, 323, 344, 367, 388, 413, 436, 457, 483, 501, 525, 539, 557, 581, 601, 610, 637, 660, 686, 693, 709, 735, 761, 777, 784, 810, 833, 860, 869, 889, 913, 931, 945, 969, 987, 1013, 1034, 1057, 1082, 1103, 1119, 1145, 1166, 1191, 1214, 1235, 1261, 1279, 1303, 1325],
     base: `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-3/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-studio-rental-bullet-3/flicker-1.svg`,
@@ -137,9 +148,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.title": {
-    width: 1285,
+    width: 1295,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [25, 45, 63, 83, 106, 139, 162, 171, 178, 202, 213, 231, 254, 272, 294, 322, 345, 358, 378, 404, 417, 440, 468, 490, 508, 531, 549, 560, 584, 591, 600, 623, 656, 679, 699, 717, 735, 755, 778, 811, 834, 843, 850, 874, 885, 903, 926, 944, 966, 994, 1017, 1030, 1056, 1076, 1096, 1114, 1134, 1160, 1173, 1196, 1224, 1246, 1264, 1295],
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-title/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-music-teaching-title/flicker-1.svg`,
@@ -149,9 +161,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.image": {
-    width: 1360,
+    width: 1370,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [29, 44, 77, 92, 113, 134, 163, 182, 196, 210, 233, 251, 272, 300, 315, 345, 373, 394, 412, 435, 449, 463, 482, 511, 532, 553, 568, 601, 634, 649, 670, 691, 720, 739, 753, 767, 790, 808, 829, 857, 887, 902, 917, 950, 965, 995, 1023, 1044, 1062, 1085, 1099, 1113, 1132, 1161, 1182, 1203, 1224, 1245, 1274, 1293, 1307, 1321, 1344, 1370],
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-image/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-music-teaching-image/flicker-1.svg`,
@@ -161,9 +174,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.bullet.0": {
-    width: 1313,
+    width: 1323,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [27, 41, 67, 88, 99, 117, 140, 171, 185, 211, 233, 256, 277, 303, 319, 343, 361, 370, 384, 412, 421, 439, 463, 479, 505, 526, 549, 571, 597, 611, 642, 665, 683, 694, 715, 741, 767, 788, 799, 817, 840, 871, 885, 911, 933, 956, 977, 1003, 1019, 1043, 1061, 1070, 1098, 1112, 1133, 1159, 1173, 1201, 1210, 1228, 1252, 1268, 1294, 1323],
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-0/flicker-1.svg`,
@@ -173,9 +187,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.bullet.1": {
-    width: 1301,
+    width: 1311,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [27, 45, 59, 77, 107, 131, 142, 165, 185, 199, 214, 237, 258, 291, 311, 324, 344, 365, 383, 411, 432, 452, 465, 485, 518, 539, 562, 577, 591, 611, 634, 645, 669, 699, 717, 731, 745, 763, 793, 817, 828, 851, 871, 885, 900, 923, 944, 977, 997, 1010, 1030, 1051, 1079, 1097, 1115, 1129, 1147, 1175, 1196, 1216, 1229, 1249, 1282, 1311],
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-1/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-1/flicker-1.svg`,
@@ -185,9 +200,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.bullet.2": {
-    width: 1364,
+    width: 1374,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [17, 37, 57, 78, 106, 134, 159, 188, 213, 231, 254, 263, 277, 302, 320, 334, 354, 387, 407, 425, 458, 478, 492, 510, 535, 549, 558, 581, 599, 624, 653, 678, 706, 734, 755, 775, 795, 816, 844, 872, 897, 926, 951, 969, 992, 1001, 1015, 1040, 1058, 1072, 1092, 1125, 1143, 1163, 1184, 1204, 1224, 1242, 1275, 1295, 1309, 1327, 1352, 1374],
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-2/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-2/flicker-1.svg`,
@@ -197,9 +213,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.music-teaching.bullet.3": {
-    width: 1264,
+    width: 1274,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 48, 62, 80, 101, 124, 145, 168, 189, 204, 218, 241, 253, 267, 290, 315, 340, 356, 382, 405, 421, 446, 471, 494, 508, 520, 543, 557, 572, 593, 616, 637, 660, 681, 699, 713, 727, 745, 766, 789, 810, 833, 854, 869, 883, 906, 918, 932, 955, 980, 1005, 1021, 1044, 1070, 1088, 1102, 1128, 1151, 1167, 1192, 1217, 1240, 1254, 1274],
     base: `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-3/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-music-teaching-bullet-3/flicker-1.svg`,
@@ -209,9 +226,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.title": {
-    width: 1214,
+    width: 1224,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [10, 31, 60, 78, 98, 115, 126, 154, 175, 198, 231, 249, 270, 295, 304, 322, 331, 346, 367, 378, 393, 402, 420, 429, 454, 475, 493, 526, 549, 570, 598, 609, 626, 646, 664, 693, 722, 740, 760, 777, 788, 816, 837, 860, 893, 911, 932, 957, 966, 984, 993, 1008, 1019, 1040, 1058, 1087, 1108, 1119, 1134, 1143, 1161, 1170, 1195, 1224],
     base: `${TIMESCAN_STRIP_BASE}services-other-services-title/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-other-services-title/flicker-1.svg`,
@@ -221,9 +239,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.image": {
-    width: 1413,
+    width: 1423,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [31, 66, 94, 112, 130, 163, 170, 191, 217, 240, 256, 272, 290, 313, 348, 380, 403, 421, 437, 453, 476, 502, 523, 530, 563, 581, 599, 627, 655, 673, 691, 724, 731, 752, 778, 801, 817, 833, 851, 874, 906, 941, 959, 987, 1022, 1054, 1077, 1095, 1111, 1127, 1150, 1176, 1197, 1204, 1237, 1255, 1273, 1306, 1313, 1334, 1360, 1383, 1399, 1423],
     base: `${TIMESCAN_STRIP_BASE}services-other-services-image/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-other-services-image/flicker-1.svg`,
@@ -233,9 +252,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.bullet.0": {
-    width: 1170,
+    width: 1180,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 44, 58, 86, 104, 118, 144, 155, 175, 188, 208, 217, 235, 249, 268, 282, 305, 325, 346, 370, 390, 413, 427, 446, 460, 478, 487, 507, 520, 540, 551, 577, 591, 609, 637, 651, 665, 693, 711, 725, 751, 762, 782, 795, 815, 824, 842, 856, 875, 889, 912, 932, 956, 977, 1005, 1019, 1040, 1064, 1084, 1107, 1121, 1140, 1154, 1180],
     base: `${TIMESCAN_STRIP_BASE}services-other-services-bullet-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-other-services-bullet-0/flicker-1.svg`,
@@ -245,9 +265,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.bullet.1": {
-    width: 1353,
+    width: 1363,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [32, 53, 67, 96, 127, 146, 174, 188, 214, 238, 251, 272, 279, 310, 333, 361, 373, 382, 403, 436, 445, 457, 485, 508, 539, 546, 567, 580, 604, 630, 644, 672, 691, 722, 751, 765, 779, 808, 839, 858, 886, 900, 926, 950, 963, 984, 991, 1022, 1045, 1073, 1085, 1094, 1127, 1148, 1177, 1191, 1212, 1245, 1254, 1266, 1294, 1317, 1348, 1363],
     base: `${TIMESCAN_STRIP_BASE}services-other-services-bullet-1/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-other-services-bullet-1/flicker-1.svg`,
@@ -257,9 +278,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.bullet.2": {
-    width: 1183,
+    width: 1193,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [19, 39, 48, 66, 94, 113, 131, 147, 172, 190, 204, 224, 257, 277, 286, 306, 315, 335, 355, 375, 395, 404, 424, 433, 453, 486, 506, 520, 538, 563, 579, 597, 616, 644, 662, 671, 680, 698, 726, 745, 763, 779, 804, 822, 836, 856, 889, 909, 918, 938, 947, 967, 987, 1007, 1025, 1034, 1054, 1074, 1094, 1103, 1123, 1132, 1152, 1193],
     base: `${TIMESCAN_STRIP_BASE}services-other-services-bullet-2/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-other-services-bullet-2/flicker-1.svg`,
@@ -269,9 +291,10 @@ const timescanGlyphStrips = {
     ],
   },
   "services.other-services.bullet.3": {
-    width: 1210,
+    width: 1220,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [27, 45, 69, 80, 103, 131, 145, 159, 192, 211, 223, 239, 253, 260, 275, 303, 331, 342, 360, 388, 399, 427, 455, 470, 477, 491, 507, 519, 538, 571, 585, 599, 627, 650, 661, 685, 709, 720, 743, 771, 785, 799, 832, 851, 863, 879, 893, 900, 915, 943, 971, 982, 1010, 1028, 1039, 1063, 1081, 1109, 1120, 1148, 1176, 1191, 1198, 1220],
     base: `${TIMESCAN_STRIP_BASE}services-other-services-bullet-3/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}services-other-services-bullet-3/flicker-1.svg`,
@@ -281,9 +304,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.eyebrow": {
-    width: 1534,
+    width: 1544,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 44, 67, 90, 116, 149, 175, 199, 219, 240, 261, 285, 306, 326, 350, 376, 409, 435, 458, 481, 504, 527, 553, 586, 612, 636, 656, 677, 701, 722, 745, 768, 789, 813, 834, 854, 878, 904, 937, 963, 989, 1022, 1048, 1072, 1092, 1113, 1137, 1158, 1181, 1204, 1237, 1263, 1286, 1309, 1330, 1354, 1375, 1395, 1419, 1445, 1471, 1495, 1515, 1544],
     base: `${TIMESCAN_STRIP_BASE}portfolio-eyebrow/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-eyebrow/flicker-1.svg`,
@@ -293,9 +317,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.heading": {
-    width: 1316,
+    width: 1326,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [12, 35, 51, 64, 90, 97, 118, 127, 145, 174, 200, 209, 236, 271, 291, 319, 337, 358, 379, 406, 427, 448, 473, 494, 526, 544, 569, 589, 612, 625, 645, 670, 688, 720, 741, 766, 787, 808, 835, 856, 877, 895, 923, 943, 978, 1005, 1014, 1040, 1069, 1087, 1096, 1117, 1124, 1150, 1163, 1179, 1195, 1208, 1234, 1241, 1262, 1271, 1289, 1326],
     base: `${TIMESCAN_STRIP_BASE}portfolio-heading/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-heading/flicker-1.svg`,
@@ -305,9 +330,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.lead": {
-    width: 1224,
+    width: 1234,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 41, 53, 74, 83, 101, 114, 140, 171, 189, 203, 214, 240, 271, 295, 311, 323, 351, 365, 383, 402, 425, 443, 457, 485, 497, 513, 537, 568, 594, 605, 619, 637, 668, 694, 707, 725, 734, 755, 767, 779, 800, 809, 827, 840, 866, 897, 915, 929, 940, 966, 997, 1021, 1037, 1049, 1077, 1091, 1109, 1132, 1151, 1172, 1184, 1203, 1234],
     base: `${TIMESCAN_STRIP_BASE}portfolio-lead/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-lead/flicker-1.svg`,
@@ -317,9 +343,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.artworks.label.line.0": {
-    width: 1413,
+    width: 1423,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [28, 42, 70, 101, 129, 147, 165, 176, 190, 219, 230, 248, 266, 294, 325, 353, 381, 412, 440, 458, 476, 487, 516, 530, 561, 589, 603, 632, 643, 661, 679, 707, 735, 753, 771, 782, 811, 825, 853, 884, 902, 930, 961, 989, 1003, 1032, 1043, 1061, 1079, 1090, 1119, 1133, 1161, 1192, 1220, 1238, 1249, 1267, 1285, 1313, 1344, 1372, 1386, 1423],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-label-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-label-line-0/flicker-1.svg`,
@@ -329,9 +356,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.artworks.title.line.0": {
-    width: 1399,
+    width: 1409,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 43, 61, 82, 91, 117, 143, 161, 190, 216, 225, 252, 287, 307, 328, 351, 371, 406, 433, 442, 468, 497, 515, 541, 567, 576, 597, 615, 633, 654, 663, 689, 715, 733, 762, 788, 797, 824, 859, 879, 902, 923, 944, 962, 983, 1006, 1026, 1061, 1088, 1097, 1123, 1152, 1170, 1196, 1222, 1231, 1240, 1266, 1292, 1310, 1339, 1365, 1374, 1409],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-title-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-title-line-0/flicker-1.svg`,
@@ -341,9 +369,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.artworks.body.line.0": {
-    width: 1164,
+    width: 1174,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 48, 66, 87, 115, 133, 157, 169, 178, 196, 205, 220, 245, 259, 273, 290, 304, 324, 350, 373, 393, 407, 424, 438, 452, 477, 492, 501, 519, 528, 540, 564, 582, 610, 631, 649, 667, 688, 716, 734, 758, 770, 779, 797, 806, 821, 846, 860, 874, 891, 905, 925, 948, 974, 995, 1013, 1039, 1062, 1082, 1096, 1113, 1127, 1141, 1174],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-body-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-body-line-0/flicker-1.svg`,
@@ -353,9 +382,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.artworks.body.line.1": {
-    width: 1276,
+    width: 1286,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [31, 49, 64, 78, 89, 107, 120, 135, 162, 186, 202, 223, 237, 254, 283, 302, 318, 355, 373, 405, 442, 458, 477, 506, 523, 537, 558, 574, 598, 625, 640, 653, 671, 682, 696, 711, 726, 740, 751, 769, 782, 797, 824, 848, 864, 885, 899, 916, 945, 964, 980, 1017, 1049, 1067, 1081, 1096, 1114, 1146, 1183, 1199, 1218, 1247, 1264, 1286],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-body-line-1/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-body-line-1/flicker-1.svg`,
@@ -365,9 +395,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.artworks.body.line.2": {
-    width: 1337,
+    width: 1347,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [18, 46, 60, 86, 110, 133, 154, 172, 193, 204, 225, 246, 267, 290, 312, 329, 350, 374, 402, 421, 445, 466, 483, 505, 528, 549, 570, 591, 602, 623, 641, 662, 685, 709, 735, 749, 763, 789, 813, 836, 857, 875, 896, 907, 928, 949, 970, 993, 1015, 1032, 1053, 1077, 1096, 1124, 1150, 1164, 1192, 1211, 1235, 1256, 1273, 1295, 1318, 1347],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-body-line-2/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-body-line-2/flicker-1.svg`,
@@ -376,82 +407,11 @@ const timescanGlyphStrips = {
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-body-line-2/flicker-4.svg`,
     ],
   },
-  "portfolio.showcase.artworks.artwork.0.title.line.0": {
-    width: 1163,
-    height: 52,
-    maxGlyphs: 64,
-    base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-title-line-0/base.svg`,
-    flicker: [
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-title-line-0/flicker-1.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-title-line-0/flicker-2.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-title-line-0/flicker-3.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-title-line-0/flicker-4.svg`,
-    ],
-  },
-  "portfolio.showcase.artworks.artwork.0.year.line.0": {
-    width: 1496,
-    height: 52,
-    maxGlyphs: 64,
-    base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-year-line-0/base.svg`,
-    flicker: [
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-year-line-0/flicker-1.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-year-line-0/flicker-2.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-year-line-0/flicker-3.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-0-year-line-0/flicker-4.svg`,
-    ],
-  },
-  "portfolio.showcase.artworks.artwork.1.title.line.0": {
-    width: 1166,
-    height: 52,
-    maxGlyphs: 64,
-    base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-title-line-0/base.svg`,
-    flicker: [
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-title-line-0/flicker-1.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-title-line-0/flicker-2.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-title-line-0/flicker-3.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-title-line-0/flicker-4.svg`,
-    ],
-  },
-  "portfolio.showcase.artworks.artwork.1.year.line.0": {
-    width: 1496,
-    height: 52,
-    maxGlyphs: 64,
-    base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-year-line-0/base.svg`,
-    flicker: [
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-year-line-0/flicker-1.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-year-line-0/flicker-2.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-year-line-0/flicker-3.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-1-year-line-0/flicker-4.svg`,
-    ],
-  },
-  "portfolio.showcase.artworks.artwork.2.title.line.0": {
-    width: 1294,
-    height: 52,
-    maxGlyphs: 64,
-    base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-title-line-0/base.svg`,
-    flicker: [
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-title-line-0/flicker-1.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-title-line-0/flicker-2.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-title-line-0/flicker-3.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-title-line-0/flicker-4.svg`,
-    ],
-  },
-  "portfolio.showcase.artworks.artwork.2.year.line.0": {
-    width: 1496,
-    height: 52,
-    maxGlyphs: 64,
-    base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-year-line-0/base.svg`,
-    flicker: [
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-year-line-0/flicker-1.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-year-line-0/flicker-2.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-year-line-0/flicker-3.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-artworks-artwork-2-year-line-0/flicker-4.svg`,
-    ],
-  },
   "portfolio.showcase.videos.label.line.0": {
-    width: 1325,
+    width: 1335,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 48, 63, 81, 102, 120, 142, 165, 191, 214, 237, 259, 277, 298, 316, 331, 346, 364, 385, 403, 425, 448, 471, 497, 515, 530, 556, 579, 602, 624, 642, 663, 684, 702, 724, 747, 770, 796, 811, 829, 847, 868, 886, 901, 927, 950, 973, 995, 1017, 1040, 1063, 1089, 1104, 1122, 1143, 1161, 1184, 1206, 1224, 1245, 1263, 1278, 1304, 1335],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-label-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-label-line-0/flicker-1.svg`,
@@ -461,9 +421,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.videos.title.line.0": {
-    width: 1082,
+    width: 1092,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 44, 58, 69, 87, 101, 127, 134, 155, 173, 195, 206, 215, 236, 257, 281, 302, 311, 322, 344, 362, 383, 390, 416, 430, 448, 459, 473, 487, 498, 516, 530, 556, 563, 584, 602, 624, 635, 644, 665, 689, 710, 721, 735, 756, 780, 801, 810, 821, 843, 861, 882, 889, 915, 929, 947, 965, 979, 1005, 1012, 1033, 1051, 1073, 1092],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-title-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-title-line-0/flicker-1.svg`,
@@ -473,9 +434,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.videos.body.line.0": {
-    width: 1238,
+    width: 1449,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [27, 47, 67, 90, 116, 132, 161, 182, 202, 223, 248, 264, 283, 306, 328, 352, 377, 403, 423, 451, 477, 502, 526, 548, 571, 590, 606, 631, 652, 672, 693, 722, 738, 764, 787, 807, 827, 850, 876, 892, 921, 942, 962, 983, 1008, 1024, 1043, 1066, 1088, 1112, 1137, 1163, 1191, 1211, 1234, 1254, 1274, 1302, 1328, 1353, 1377, 1399, 1422, 1449],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-body-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-body-line-0/flicker-1.svg`,
@@ -485,9 +447,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.videos.body.line.1": {
-    width: 1512,
+    width: 1262,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [8, 26, 53, 73, 103, 117, 147, 165, 176, 194, 225, 246, 260, 293, 311, 325, 338, 356, 374, 383, 401, 414, 428, 446, 479, 493, 514, 545, 563, 574, 592, 622, 636, 666, 686, 713, 740, 760, 790, 804, 834, 852, 863, 881, 912, 933, 947, 980, 998, 1012, 1025, 1043, 1052, 1070, 1090, 1117, 1135, 1144, 1162, 1175, 1189, 1207, 1240, 1262],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-body-line-1/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-body-line-1/flicker-1.svg`,
@@ -497,9 +460,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.videos.body.line.2": {
-    width: 1263,
+    width: 1247,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 52, 75, 87, 98, 107, 134, 152, 173, 197, 221, 235, 258, 284, 296, 316, 337, 346, 376, 399, 408, 429, 449, 461, 487, 510, 524, 548, 572, 593, 611, 638, 647, 658, 670, 693, 716, 728, 739, 748, 775, 793, 814, 838, 862, 876, 899, 925, 937, 957, 978, 987, 1010, 1040, 1052, 1075, 1105, 1128, 1137, 1158, 1178, 1190, 1216, 1247],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-body-line-2/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-body-line-2/flicker-1.svg`,
@@ -509,9 +473,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.videos.body.line.3": {
-    width: 1190,
+    width: 1334,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [32, 53, 67, 96, 127, 136, 157, 181, 205, 223, 244, 253, 273, 295, 316, 341, 352, 370, 391, 424, 442, 453, 478, 499, 521, 541, 550, 571, 589, 613, 637, 658, 667, 698, 727, 741, 755, 784, 815, 824, 845, 869, 893, 911, 932, 941, 961, 983, 1004, 1029, 1040, 1058, 1091, 1112, 1141, 1155, 1176, 1209, 1227, 1238, 1263, 1284, 1306, 1334],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-body-line-3/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-body-line-3/flicker-1.svg`,
@@ -521,9 +486,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.videos.video.0.title.line.0": {
-    width: 1250,
+    width: 1260,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 44, 62, 85, 103, 112, 132, 141, 159, 186, 206, 236, 258, 281, 311, 331, 358, 376, 385, 405, 414, 432, 455, 473, 491, 514, 532, 541, 561, 570, 588, 615, 635, 665, 688, 710, 733, 751, 773, 796, 826, 846, 873, 891, 900, 920, 929, 947, 965, 974, 994, 1003, 1021, 1048, 1068, 1098, 1121, 1143, 1161, 1184, 1193, 1211, 1234, 1260],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-0-title-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-0-title-line-0/flicker-1.svg`,
@@ -532,22 +498,11 @@ const timescanGlyphStrips = {
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-0-title-line-0/flicker-4.svg`,
     ],
   },
-  "portfolio.showcase.videos.video.0.meta.line.0": {
-    width: 1502,
-    height: 52,
-    maxGlyphs: 64,
-    base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-0-meta-line-0/base.svg`,
-    flicker: [
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-0-meta-line-0/flicker-1.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-0-meta-line-0/flicker-2.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-0-meta-line-0/flicker-3.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-0-meta-line-0/flicker-4.svg`,
-    ],
-  },
   "portfolio.showcase.videos.video.1.title.line.0": {
-    width: 1455,
+    width: 1465,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [27, 58, 69, 89, 118, 136, 167, 188, 218, 232, 257, 275, 306, 334, 352, 377, 391, 421, 442, 473, 491, 520, 540, 551, 562, 582, 611, 629, 660, 681, 711, 725, 750, 768, 796, 827, 847, 858, 889, 917, 935, 960, 974, 1004, 1025, 1056, 1074, 1103, 1132, 1150, 1181, 1202, 1232, 1246, 1271, 1289, 1317, 1348, 1359, 1379, 1397, 1426, 1446, 1465],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-1-title-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-1-title-line-0/flicker-1.svg`,
@@ -556,22 +511,11 @@ const timescanGlyphStrips = {
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-1-title-line-0/flicker-4.svg`,
     ],
   },
-  "portfolio.showcase.videos.video.1.meta.line.0": {
-    width: 1502,
-    height: 52,
-    maxGlyphs: 64,
-    base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-1-meta-line-0/base.svg`,
-    flicker: [
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-1-meta-line-0/flicker-1.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-1-meta-line-0/flicker-2.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-1-meta-line-0/flicker-3.svg`,
-      `${TIMESCAN_STRIP_BASE}portfolio-showcase-videos-video-1-meta-line-0/flicker-4.svg`,
-    ],
-  },
   "portfolio.showcase.audio.label.line.0": {
-    width: 1165,
+    width: 1175,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [6, 25, 37, 60, 81, 100, 127, 145, 164, 171, 189, 216, 235, 256, 279, 291, 303, 326, 347, 366, 393, 411, 418, 437, 460, 472, 491, 498, 516, 543, 562, 583, 604, 623, 650, 668, 675, 694, 706, 729, 748, 769, 792, 804, 823, 830, 848, 875, 902, 920, 927, 946, 958, 981, 1002, 1021, 1039, 1066, 1085, 1106, 1129, 1141, 1160, 1175],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-label-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-label-line-0/flicker-1.svg`,
@@ -581,9 +525,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.title.line.0": {
-    width: 1430,
+    width: 1440,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 48, 60, 86, 108, 130, 150, 164, 185, 218, 240, 263, 281, 313, 339, 362, 394, 412, 435, 457, 490, 511, 525, 545, 567, 589, 615, 627, 639, 665, 687, 709, 729, 743, 764, 797, 819, 842, 860, 892, 915, 941, 967, 979, 1005, 1028, 1060, 1078, 1101, 1123, 1156, 1177, 1191, 1211, 1233, 1255, 1277, 1299, 1319, 1333, 1354, 1387, 1409, 1440],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-title-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-title-line-0/flicker-1.svg`,
@@ -593,9 +538,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.body.line.0": {
-    width: 1372,
+    width: 1382,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 42, 69, 90, 101, 119, 147, 167, 199, 220, 243, 267, 287, 304, 330, 357, 364, 387, 407, 430, 453, 460, 487, 513, 530, 550, 574, 597, 618, 650, 670, 698, 716, 727, 748, 775, 802, 823, 834, 852, 880, 900, 932, 953, 976, 1000, 1020, 1037, 1063, 1090, 1097, 1120, 1143, 1163, 1184, 1211, 1231, 1254, 1277, 1284, 1311, 1337, 1354, 1382],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-body-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-body-line-0/flicker-1.svg`,
@@ -605,9 +551,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.body.line.1": {
-    width: 1209,
+    width: 1219,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [12, 33, 40, 71, 94, 122, 134, 143, 150, 187, 205, 215, 234, 256, 267, 293, 313, 338, 359, 372, 397, 417, 443, 454, 476, 495, 505, 523, 560, 567, 576, 588, 616, 639, 670, 677, 684, 715, 738, 766, 778, 787, 794, 831, 849, 859, 878, 900, 911, 937, 957, 982, 995, 1016, 1047, 1054, 1075, 1088, 1113, 1133, 1159, 1170, 1192, 1219],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-body-line-1/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-body-line-1/flicker-1.svg`,
@@ -617,9 +564,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.body.line.2": {
-    width: 1375,
+    width: 1385,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [30, 48, 62, 73, 99, 130, 154, 170, 182, 205, 231, 259, 273, 284, 305, 336, 357, 390, 408, 439, 472, 493, 524, 545, 556, 570, 598, 624, 647, 659, 675, 699, 730, 756, 767, 781, 795, 806, 832, 863, 887, 903, 915, 938, 964, 992, 1006, 1017, 1038, 1069, 1090, 1123, 1154, 1172, 1183, 1197, 1215, 1246, 1279, 1300, 1331, 1352, 1363, 1385],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-body-line-2/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-body-line-2/flicker-1.svg`,
@@ -629,9 +577,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.0.meta.line.0": {
-    width: 1251,
+    width: 1261,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 41, 50, 68, 97, 115, 143, 163, 174, 188, 214, 235, 253, 277, 298, 324, 338, 349, 369, 397, 415, 444, 462, 471, 480, 498, 527, 545, 573, 593, 604, 618, 644, 665, 689, 707, 725, 734, 752, 776, 797, 823, 837, 848, 868, 896, 914, 943, 972, 990, 1018, 1038, 1049, 1063, 1089, 1110, 1134, 1152, 1161, 1179, 1197, 1226, 1244, 1261],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-0-meta-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-0-meta-line-0/flicker-1.svg`,
@@ -641,9 +590,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.0.title.line.0": {
-    width: 1377,
+    width: 1387,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 42, 63, 91, 111, 122, 154, 174, 192, 216, 238, 259, 278, 302, 323, 345, 369, 387, 407, 439, 450, 470, 498, 519, 540, 568, 588, 599, 631, 651, 669, 693, 715, 736, 760, 779, 807, 828, 847, 871, 892, 914, 938, 956, 976, 1008, 1019, 1039, 1059, 1070, 1102, 1122, 1140, 1164, 1186, 1207, 1231, 1250, 1271, 1299, 1310, 1330, 1358, 1387],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-0-title-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-0-title-line-0/flicker-1.svg`,
@@ -653,9 +603,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.0.artist.line.0": {
-    width: 1461,
+    width: 1471,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 46, 73, 101, 121, 144, 167, 182, 205, 229, 244, 267, 290, 310, 338, 365, 392, 420, 440, 463, 486, 501, 525, 548, 576, 603, 626, 650, 665, 688, 711, 731, 751, 774, 797, 812, 836, 859, 886, 914, 937, 957, 985, 1012, 1035, 1059, 1074, 1097, 1120, 1135, 1159, 1182, 1209, 1237, 1257, 1280, 1295, 1318, 1341, 1361, 1389, 1416, 1439, 1471],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-0-artist-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-0-artist-line-0/flicker-1.svg`,
@@ -665,9 +616,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.0.duration.line.0": {
-    width: 1187,
+    width: 1278,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 42, 62, 91, 104, 119, 139, 162, 177, 190, 219, 239, 259, 288, 301, 316, 339, 359, 388, 408, 428, 451, 466, 479, 492, 507, 530, 550, 570, 599, 614, 627, 656, 676, 696, 719, 742, 762, 782, 811, 824, 839, 859, 882, 897, 910, 939, 959, 979, 1008, 1021, 1036, 1059, 1079, 1108, 1128, 1148, 1171, 1186, 1199, 1212, 1227, 1250, 1278],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-0-duration-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-0-duration-line-0/flicker-1.svg`,
@@ -677,9 +629,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.1.meta.line.0": {
-    width: 1573,
+    width: 1583,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [24, 50, 76, 102, 126, 146, 171, 191, 215, 236, 269, 295, 321, 346, 372, 405, 426, 450, 470, 495, 515, 539, 565, 591, 617, 643, 667, 687, 712, 732, 756, 777, 810, 836, 861, 887, 913, 939, 965, 990, 1016, 1049, 1070, 1094, 1114, 1139, 1159, 1183, 1207, 1227, 1252, 1272, 1296, 1317, 1350, 1376, 1401, 1427, 1453, 1479, 1499, 1523, 1549, 1583],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-1-meta-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-1-meta-line-0/flicker-1.svg`,
@@ -689,9 +642,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.1.title.line.0": {
-    width: 1440,
+    width: 1450,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [30, 50, 75, 96, 120, 138, 161, 181, 204, 225, 247, 270, 290, 321, 344, 366, 387, 410, 430, 453, 471, 495, 516, 541, 566, 587, 611, 629, 652, 672, 695, 716, 738, 761, 792, 812, 833, 858, 878, 909, 932, 954, 975, 998, 1018, 1041, 1059, 1083, 1107, 1125, 1148, 1168, 1191, 1212, 1234, 1257, 1288, 1308, 1333, 1354, 1372, 1396, 1417, 1450],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-1-title-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-1-title-line-0/flicker-1.svg`,
@@ -701,9 +655,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.1.artist.line.0": {
-    width: 1461,
+    width: 1471,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 46, 73, 101, 121, 144, 167, 182, 205, 229, 244, 267, 290, 310, 338, 365, 392, 420, 440, 463, 486, 501, 525, 548, 576, 603, 626, 650, 665, 688, 711, 731, 751, 774, 797, 812, 836, 859, 886, 914, 937, 957, 985, 1012, 1035, 1059, 1074, 1097, 1120, 1135, 1159, 1182, 1209, 1237, 1257, 1280, 1295, 1318, 1341, 1361, 1389, 1416, 1439, 1471],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-1-artist-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-1-artist-line-0/flicker-1.svg`,
@@ -713,9 +668,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.1.duration.line.0": {
-    width: 1348,
+    width: 1278,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 42, 62, 91, 104, 119, 139, 162, 177, 190, 219, 239, 259, 288, 301, 316, 339, 359, 388, 408, 428, 451, 466, 479, 492, 507, 530, 550, 570, 599, 614, 627, 656, 676, 696, 719, 742, 762, 782, 811, 824, 839, 859, 882, 897, 910, 939, 959, 979, 1008, 1021, 1036, 1059, 1079, 1108, 1128, 1148, 1171, 1186, 1199, 1212, 1227, 1250, 1278],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-1-duration-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-1-duration-line-0/flicker-1.svg`,
@@ -725,9 +681,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.2.meta.line.0": {
-    width: 1267,
+    width: 1277,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [8, 29, 53, 74, 99, 119, 126, 147, 158, 186, 209, 235, 256, 265, 291, 314, 342, 353, 374, 381, 401, 426, 447, 471, 495, 516, 541, 561, 568, 589, 600, 628, 651, 677, 686, 707, 728, 752, 773, 782, 808, 831, 859, 870, 891, 898, 918, 943, 968, 988, 995, 1016, 1027, 1055, 1078, 1104, 1113, 1134, 1158, 1179, 1199, 1224, 1245, 1277],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-2-meta-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-2-meta-line-0/flicker-1.svg`,
@@ -737,9 +694,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.2.title.line.0": {
-    width: 1251,
+    width: 1261,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 42, 51, 69, 96, 116, 134, 145, 154, 180, 209, 235, 255, 278, 304, 333, 359, 368, 379, 397, 417, 444, 462, 471, 480, 498, 525, 545, 563, 574, 583, 609, 638, 664, 687, 707, 725, 734, 754, 777, 803, 832, 858, 867, 878, 896, 916, 943, 970, 990, 1008, 1019, 1028, 1054, 1083, 1109, 1132, 1152, 1161, 1179, 1199, 1226, 1244, 1261],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-2-title-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-2-title-line-0/flicker-1.svg`,
@@ -749,9 +707,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.2.artist.line.0": {
-    width: 1461,
+    width: 1471,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [23, 46, 73, 101, 121, 144, 167, 182, 205, 229, 244, 267, 290, 310, 338, 365, 392, 420, 440, 463, 486, 501, 525, 548, 576, 603, 626, 650, 665, 688, 711, 731, 751, 774, 797, 812, 836, 859, 886, 914, 937, 957, 985, 1012, 1035, 1059, 1074, 1097, 1120, 1135, 1159, 1182, 1209, 1237, 1257, 1280, 1295, 1318, 1341, 1361, 1389, 1416, 1439, 1471],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-2-artist-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-2-artist-line-0/flicker-1.svg`,
@@ -761,9 +720,10 @@ const timescanGlyphStrips = {
     ],
   },
   "portfolio.showcase.audio.track.2.duration.line.0": {
-    width: 1585,
+    width: 1278,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 42, 62, 91, 104, 119, 139, 162, 177, 190, 219, 239, 259, 288, 301, 316, 339, 359, 388, 408, 428, 451, 466, 479, 492, 507, 530, 550, 570, 599, 614, 627, 656, 676, 696, 719, 742, 762, 782, 811, 824, 839, 859, 882, 897, 910, 939, 959, 979, 1008, 1021, 1036, 1059, 1079, 1108, 1128, 1148, 1171, 1186, 1199, 1212, 1227, 1250, 1278],
     base: `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-2-duration-line-0/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}portfolio-showcase-audio-track-2-duration-line-0/flicker-1.svg`,
@@ -773,9 +733,10 @@ const timescanGlyphStrips = {
     ],
   },
   "projects.heading": {
-    width: 1352,
+    width: 1362,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [28, 56, 68, 85, 101, 134, 160, 174, 197, 219, 236, 257, 281, 307, 335, 349, 361, 387, 407, 432, 453, 462, 483, 511, 539, 568, 596, 617, 626, 647, 672, 692, 718, 730, 744, 772, 798, 822, 843, 860, 882, 905, 919, 945, 978, 994, 1011, 1023, 1035, 1052, 1068, 1101, 1127, 1141, 1164, 1186, 1203, 1224, 1248, 1274, 1302, 1316, 1328, 1362],
     base: `${TIMESCAN_STRIP_BASE}projects-heading/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}projects-heading/flicker-1.svg`,
@@ -785,9 +746,10 @@ const timescanGlyphStrips = {
     ],
   },
   "projects.lead": {
-    width: 1364,
+    width: 1374,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [20, 41, 70, 89, 103, 117, 140, 158, 179, 208, 229, 249, 278, 294, 318, 343, 369, 390, 401, 427, 448, 473, 489, 508, 529, 550, 569, 585, 610, 631, 657, 668, 689, 715, 740, 764, 780, 809, 829, 850, 879, 900, 918, 941, 955, 969, 988, 1017, 1046, 1065, 1079, 1093, 1116, 1134, 1155, 1184, 1205, 1225, 1254, 1270, 1294, 1319, 1345, 1374],
     base: `${TIMESCAN_STRIP_BASE}projects-lead/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}projects-lead/flicker-1.svg`,
@@ -797,9 +759,10 @@ const timescanGlyphStrips = {
     ],
   },
   "contact.heading": {
-    width: 1134,
+    width: 1144,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [8, 34, 48, 65, 85, 109, 121, 143, 160, 178, 185, 216, 225, 243, 257, 277, 290, 319, 337, 348, 363, 391, 411, 425, 451, 460, 474, 494, 522, 537, 548, 566, 595, 608, 628, 642, 660, 669, 700, 707, 725, 742, 764, 776, 800, 820, 837, 851, 865, 882, 902, 926, 938, 960, 977, 995, 1002, 1033, 1042, 1060, 1074, 1094, 1107, 1144],
     base: `${TIMESCAN_STRIP_BASE}contact-heading/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}contact-heading/flicker-1.svg`,
@@ -809,9 +772,10 @@ const timescanGlyphStrips = {
     ],
   },
   "contact.lead": {
-    width: 1254,
+    width: 1264,
     height: 52,
     maxGlyphs: 64,
+    safeStops: [22, 44, 61, 82, 106, 132, 160, 174, 186, 206, 226, 252, 275, 295, 311, 328, 344, 353, 376, 396, 416, 445, 458, 473, 495, 518, 533, 546, 575, 595, 615, 638, 647, 663, 680, 696, 716, 739, 765, 785, 805, 817, 831, 859, 885, 909, 930, 947, 964, 985, 1009, 1035, 1063, 1077, 1089, 1109, 1129, 1155, 1178, 1198, 1214, 1231, 1247, 1264],
     base: `${TIMESCAN_STRIP_BASE}contact-lead/base.svg`,
     flicker: [
       `${TIMESCAN_STRIP_BASE}contact-lead/flicker-1.svg`,

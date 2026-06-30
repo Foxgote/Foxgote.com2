@@ -304,6 +304,11 @@ function setupViewTriggerFallback() {
   viewTriggerFallbackListenersActive = true
 }
 
+const sentenceStripSafeStops = computed(() =>
+  Array.isArray(stripAsset.value?.safeStops) ? stripAsset.value.safeStops : [],
+)
+const sentenceStripAssetHeight = computed(() => stripAsset.value?.height || 0)
+
 const {
   sentenceGlyphEntries,
   sentenceGlyphMaskStyle,
@@ -327,6 +332,8 @@ const {
   containerWidth: width,
   glyphScale,
   overlayTextWidth: overlayTextWidthPx,
+  stripAssetHeight: sentenceStripAssetHeight,
+  stripSafeStops: sentenceStripSafeStops,
 })
 
 const hasTokens = computed(() => sentenceGlyphEntries.value.length > 0)
@@ -696,10 +703,14 @@ defineExpose({
   white-space: nowrap;
   overflow: hidden;
   color: var(--sentence-ink);
+  font-family: var(--timescan-overlay-font-family, inherit);
   font-size: var(--timescan-overlay-font-size, 1.3rem);
+  font-weight: var(--timescan-overlay-font-weight, inherit);
+  font-optical-sizing: auto;
   line-height: var(--timescan-overlay-line-height, 1);
   letter-spacing: var(--timescan-overlay-letter-spacing, 0.03em);
   padding-block: var(--timescan-reveal-bleed-block, 0.16em 0.24em);
+  padding-inline-end: var(--timescan-reveal-bleed-inline-end, 0.08em);
   margin-block: var(--timescan-reveal-bleed-margin-block, -0.16em -0.24em);
   text-shadow: 0 0 12px var(--sentence-glow);
   transition: opacity 60ms steps(1, end);
@@ -713,7 +724,10 @@ defineExpose({
   pointer-events: none;
   visibility: hidden;
   color: transparent;
+  font-family: var(--timescan-overlay-font-family, inherit);
   font-size: var(--timescan-overlay-font-size, 1.3rem);
+  font-weight: var(--timescan-overlay-font-weight, inherit);
+  font-optical-sizing: auto;
   line-height: var(--timescan-overlay-line-height, 1);
   letter-spacing: var(--timescan-overlay-letter-spacing, 0.03em);
 }

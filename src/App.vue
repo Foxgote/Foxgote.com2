@@ -1,11 +1,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from "vue"
 import { RouterLink, RouterView, useRoute } from "vue-router"
-import heroHome from "./assets/img/barlite.png"
-import heroServices from "./assets/img/services.jpg"
-import heroPortfolio from "./assets/img/toni-pykalaniemi-kb3d-cyberpunkcity-cmp-v019-0020.jpg"
-import heroContact from "./assets/img/neil-ross-west-kayro-mezzotint.jpg"
-import heroProjects from "./assets/img/luis-carrasco-hotel-04.jpg"
+import { routeHeroUrlForPath } from "./content/contentMedia.js"
 
 const barliteRef = ref(null)
 const navAnchorRef = ref(null)
@@ -34,13 +30,6 @@ const ROUTE_TRANSITION_CLASSES = [
   "route-slide-right-leave-from",
   "route-slide-right-leave-to",
 ]
-const ROUTE_HERO_URLS = {
-  "/": heroHome,
-  "/services": heroServices,
-  "/portfolio": heroPortfolio,
-  "/contact": heroContact,
-  "/projects": heroProjects,
-}
 const ROUTE_THEME_KEYS = {
   "/": "home",
   "/services": "services",
@@ -70,7 +59,7 @@ function normalizeRoutePath(path) {
   return "/"
 }
 
-const baseHeroUrl = ref(ROUTE_HERO_URLS[normalizeRoutePath(route.path)] || heroHome)
+const baseHeroUrl = ref(routeHeroUrlForPath(normalizeRoutePath(route.path)))
 const overlayHeroUrl = ref("")
 const heroOverlayActive = ref(false)
 
@@ -94,7 +83,7 @@ watch(
 )
 
 function heroUrlForPath(path) {
-  return ROUTE_HERO_URLS[normalizeRoutePath(path)] || heroHome
+  return routeHeroUrlForPath(normalizeRoutePath(path))
 }
 
 function transitionHeroForPath(path) {
@@ -555,8 +544,7 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 1;
   min-height: 100vh;
-  overflow-x: hidden;
-  overflow-x: clip;
+  overflow-x: visible;
 }
 
 .content :deep(.route-slide-left-enter-active),
