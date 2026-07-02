@@ -9,6 +9,9 @@ const route = useRoute()
 const routeTransitionName = ref("route-slide-left")
 const viewportDebugLabel = ref("")
 const isViewportDebugVisible = import.meta.env.DEV
+const shipficQueueUrl =
+  import.meta.env.VITE_SHIPFIC_QUEUE_URL ||
+  (import.meta.env.DEV ? "http://127.0.0.1:8123/queue" : "https://tsssf.net/queue")
 
 const HERO_FADE_DURATION_MS = 700
 const NAV_SCROLL_DURATION_MS = 2000
@@ -333,6 +336,12 @@ onBeforeUnmount(() => {
     >
       {{ viewportDebugLabel }}
     </div>
+    <a
+      class="shipfic-easter-button"
+      :href="shipficQueueUrl"
+      aria-label="Join a waiting Shipfic game"
+      title="Join a waiting Shipfic game"
+    ></a>
 
     <header
       ref="barliteRef"
@@ -414,6 +423,42 @@ onBeforeUnmount(() => {
   letter-spacing: 0;
   line-height: 1;
   pointer-events: none;
+}
+
+.shipfic-easter-button {
+  position: fixed;
+  top: max(0.75rem, env(safe-area-inset-top));
+  right: max(0.75rem, env(safe-area-inset-right));
+  z-index: 100;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(236, 216, 255, 0.72);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.72), transparent 24%),
+    #7a37ff;
+  box-shadow:
+    0 0 0 1px rgba(36, 13, 70, 0.66),
+    0 0 14px rgba(122, 55, 255, 0.58);
+  opacity: 0.78;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.shipfic-easter-button:hover,
+.shipfic-easter-button:focus-visible {
+  opacity: 1;
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 1px rgba(236, 216, 255, 0.84),
+    0 0 18px rgba(153, 92, 255, 0.72);
+}
+
+.shipfic-easter-button:focus-visible {
+  outline: 2px solid rgba(236, 216, 255, 0.74);
+  outline-offset: 4px;
 }
 
 .barlite{
