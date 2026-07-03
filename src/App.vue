@@ -42,6 +42,7 @@ const ROUTE_THEME_KEYS = {
   "/contact": "contact",
   "/projects": "projects",
 }
+const welcomeMessage = "Welcome."
 
 let rafId = 0
 let scrollEffectEnabled = false
@@ -361,6 +362,12 @@ onBeforeUnmount(() => {
         <div class="hero-dim"></div>
       </div>
 
+      <p
+        class="welcome-text"
+        :aria-label="welcomeMessage"
+      >
+        <span>{{ welcomeMessage }}</span>
+      </p>
     </header>
 
     <nav id="site-nav" class="nav nav-hero" @click.capture="onNavClick">
@@ -512,6 +519,121 @@ onBeforeUnmount(() => {
   inset: 0;
   background: rgba(0, 0, 0, var(--barlite-dim, 0.2));
   z-index: 3;
+}
+
+.welcome-text {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(1.15rem, 3.2vh, 2.4rem);
+  z-index: 2;
+  width: min(94vw, 1180px);
+  margin: 0;
+  transform: translateX(-50%);
+  color: rgba(255, 244, 230, 0.96);
+  font-family: "Oxanium", var(--font-display, var(--font-body, system-ui, sans-serif));
+  font-size: clamp(2.85rem, 6.5vw, 6.4rem);
+  font-weight: 500;
+  line-height: 0.92;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow:
+    0 0 12px rgba(255, 196, 130, 0.14),
+    0 0 34px rgba(255, 154, 99, 0.12),
+    0 8px 26px rgba(0, 0, 0, 0.66);
+  pointer-events: none;
+}
+
+.welcome-text span {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  text-wrap: balance;
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+  animation:
+    welcome-reveal 950ms steps(14, end) 280ms both,
+    welcome-flicker 950ms steps(1, end) 280ms both;
+}
+
+.welcome-text span::after {
+  content: "";
+  position: absolute;
+  top: -0.08em;
+  bottom: -0.08em;
+  left: 0;
+  width: 22%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 223, 185, 0.34),
+    transparent
+  );
+  mix-blend-mode: screen;
+  transform: translateX(-130%);
+  animation: welcome-scan 950ms steps(14, end) 280ms both;
+  pointer-events: none;
+}
+
+@keyframes welcome-reveal {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  8% {
+    opacity: 0.35;
+  }
+  18% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes welcome-flicker {
+  0%,
+  11%,
+  25% {
+    filter: brightness(0.82);
+  }
+  6%,
+  17%,
+  31%,
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@keyframes welcome-scan {
+  0% {
+    opacity: 0;
+    transform: translateX(-130%);
+  }
+  12% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(480%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-text span {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    animation: none;
+  }
+
+  .welcome-text span::after {
+    display: none;
+  }
 }
 /* Shared nav look */
 .nav {
