@@ -2,6 +2,7 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue"
 import { RouterLink, RouterView, useRoute } from "vue-router"
 import { routeHeroUrlForPath } from "./content/contentMedia.js"
+import { routeThemeForKey } from "./content/routeThemes.js"
 
 const barliteRef = ref(null)
 const navAnchorRef = ref(null)
@@ -41,6 +42,12 @@ const ROUTE_THEME_KEYS = {
   "/portfolio": "portfolio",
   "/contact": "contact",
   "/projects": "projects",
+}
+const ROUTE_THEME_STYLE_PROPS = {
+  primary: "--route-colour",
+  soft: "--route-colour-soft",
+  glow: "--route-glow",
+  navBorder: "--route-nav-border",
 }
 const welcomeMessage = "Welcome."
 
@@ -124,7 +131,12 @@ function transitionHeroForPath(path) {
 
 function applyRouteTheme(path) {
   const themeKey = ROUTE_THEME_KEYS[normalizeRoutePath(path)] || "home"
-  document.documentElement.setAttribute("data-route-theme", themeKey)
+  const root = document.documentElement
+  const theme = routeThemeForKey(themeKey)
+  root.setAttribute("data-route-theme", themeKey)
+  Object.entries(ROUTE_THEME_STYLE_PROPS).forEach(([themeProp, cssVar]) => {
+    root.style.setProperty(cssVar, theme[themeProp])
+  })
 }
 
 watch(
@@ -372,7 +384,7 @@ onBeforeUnmount(() => {
 
     <nav id="site-nav" class="nav nav-hero" @click.capture="onNavClick">
       <div class="nav-inner">
-        <RouterLink to="/" class="nav-link">Home</RouterLink>
+        <RouterLink to="/" class="nav-link">About Me</RouterLink>
         <RouterLink to="/services" class="nav-link">Services</RouterLink>
         <RouterLink to="/portfolio" class="nav-link">Portfolio</RouterLink>
         <RouterLink to="/contact" class="nav-link">
@@ -537,8 +549,8 @@ onBeforeUnmount(() => {
   letter-spacing: 0;
   text-align: center;
   text-shadow:
-    0 0 12px rgba(255, 196, 130, 0.14),
-    0 0 34px rgba(255, 154, 99, 0.12),
+    0 0 12px var(--route-colour-soft, rgba(255, 196, 130, 0.14)),
+    0 0 34px var(--route-glow, rgba(255, 154, 99, 0.12)),
     0 8px 26px rgba(0, 0, 0, 0.66);
   pointer-events: none;
 }
@@ -643,7 +655,7 @@ onBeforeUnmount(() => {
   align-items: center;        /* vertical centering */
   backdrop-filter: blur(14px);
   background: rgba(10, 11, 13, calc(0.35 + var(--nav-alpha, 0) * 0.35));
-  border-top: 1px solid rgba(255, 200, 140, 0.10);
+  border-top: 1px solid var(--route-nav-border, rgba(255, 200, 140, 0.10));
   opacity: 0;
   animation:
     nav-fade-in var(--welcome-sign-fade-duration, 2000ms)
@@ -708,6 +720,7 @@ onBeforeUnmount(() => {
 .nav-link.router-link-active {
   opacity: 1;
   color: var(--route-colour, var(--accent, #d4a15e));
+  text-shadow: 0 0 18px var(--route-glow, rgba(212, 161, 94, 0.14));
 }
 
 /* Bottom-of-hero nav, then sticky in normal document flow */
@@ -725,28 +738,10 @@ onBeforeUnmount(() => {
   --welcome-sign-fade-duration: 2000ms;
   --welcome-sign-fade-delay: 1700ms;
 
-  --home-colour: #d4a15e;
-  --services-colour: #73d4ff;
-  --portfolio-colour: #ff9a63;
-  --contact-colour: #d4a15e;
-  --projects-colour: #b6a2ff;
-
-  --route-colour: var(--home-colour);
-}
-:global(:root[data-route-theme="home"]) {
-  --route-colour: var(--home-colour);
-}
-:global(:root[data-route-theme="services"]) {
-  --route-colour: var(--services-colour);
-}
-:global(:root[data-route-theme="portfolio"]) {
-  --route-colour: var(--portfolio-colour);
-}
-:global(:root[data-route-theme="contact"]) {
-  --route-colour: var(--contact-colour);
-}
-:global(:root[data-route-theme="projects"]) {
-  --route-colour: var(--projects-colour);
+  --route-colour: #d4a15e;
+  --route-colour-soft: rgba(212, 161, 94, 0.18);
+  --route-glow: rgba(255, 176, 96, 0.16);
+  --route-nav-border: rgba(255, 200, 140, 0.12);
 }
 
 /* Scroll target sits below the sticky nav, so content starts clear of it. */

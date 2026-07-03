@@ -8,12 +8,24 @@ export const contentStorage = {
     fallbackImageKey: "portfolio",
     images: {
       home: {
-        src: "../assets/img/barlite.png",
-        alt: "Foxgote studio bar interior",
+        src: "../assets/img/studio/studio-wide-door-cables.jpg",
+        alt: "Wide view of the Foxgote private music room with instruments, desk, and studio wall",
       },
       services: {
-        src: "../assets/img/services.jpg",
-        alt: "Studio services thumbnail",
+        src: "../assets/img/studio/studio-room-main.jpg",
+        alt: "Foxgote private music room with desk, drums, guitars, and recording setup",
+      },
+      studioEquipment: {
+        src: "../assets/img/studio/studio-equipment-detail.jpg",
+        alt: "Foxgote instrument corner with bass, drums, pedals, amps, and guitars",
+      },
+      studioWriting: {
+        src: "../assets/img/studio/studio-writing-lesson-detail.jpg",
+        alt: "Foxgote writing desk with guitar, speakers, and music books",
+      },
+      studioWide: {
+        src: "../assets/img/studio/studio-wide-door-cables.jpg",
+        alt: "Wide Foxgote room view with guitars, drums, desk, and cable storage",
       },
       portfolio: {
         src: "../assets/img/toni-pykalaniemi-kb3d-cyberpunkcity-cmp-v019-0020.jpg",
@@ -38,29 +50,29 @@ export const contentStorage = {
   },
 
   home: {
-    heading: "Foxgote",
-    lead: "Studio time, lessons, and project support.",
+    heading: "About Me",
+    lead: "Piano, guitar, theory, and creative work.",
     intro:
-      "Book the room for focused writing, sharpen your playing with one-on-one coaching, or bring a rough idea in and leave with a clearer next step.",
+      "I am a teacher-musician with 15 years in classical piano, 8 years on guitar, and 6 years teaching music performance and theory at a well-known music school. Foxgote is where lessons, private room sessions, and creative projects meet.",
     actions: [
       { label: "Explore Services", to: "/services" },
-      { label: "Start A Booking", to: "/contact" },
+      { label: "Start A Conversation", to: "/contact" },
     ],
     highlights: [
       {
-        title: "Studio Time",
+        title: "Player And Teacher",
         body:
-          "Reserve a practical creative room for tracking, writing, rehearsal, or a focused production block.",
+          "Classical piano is the main spine, guitar is the second language, and saxophone, flute, and drums add useful side perspectives.",
       },
       {
-        title: "Music Coaching",
+        title: "Lessons With Structure",
         body:
-          "Private sessions for technique, theory, songwriting, performance, and steady practice momentum.",
+          "Qualified to teach piano and guitar, with performance, theory, and practice plans shaped around the student in front of me.",
       },
       {
-        title: "Project Support",
+        title: "Creative Systems",
         body:
-          "Feedback, stem prep, demo polish, and release-minded help for independent songs and sessions.",
+          "Programming, physics, math, art, games, and the occasional cooking detour stay in the background as tools for sharper creative work.",
       },
     ],
   },
@@ -72,81 +84,106 @@ export const contentStorage = {
     cards: [
       {
         id: "studio-rental",
-        title: "Studio Rental",
+        title: "Studio Time",
         thumbnailKey: "services",
         imageLabel: "Room Booking",
-        imageAriaLabel: "Studio rental booking marker",
+        imageAriaLabel: "Studio time booking marker",
         summary:
-          "A flexible creative room for writing, rehearsal, vocal tracking, and focused recording blocks.",
+          "A private home-studio room for focused writing, practice, demo tracking, and small creative sessions.",
         bullets: [
-          "Hourly, half-day, and full-day blocks",
-          "Control room plus live room access",
-          "Setup support available on request",
-          "Evening sessions when scheduling allows",
+          "Private room for focused music work",
+          "Guitar, bass, MIDI, and e-drum friendly",
+          "Good for demos, practice, and writing",
+          "Availability by request and schedule",
         ],
         detail: {
           kicker: "Service Detail",
           summary:
-            "Book the room, lock in your schedule, and keep session flow simple.",
+            "Book a practical private music room without pretending it is a commercial studio floor.",
           bullets: [
-            "Use the space for writing, rehearsal, vocal tracking, or a focused record day.",
-            "Choose a booking window that fits the session instead of overcommitting the day.",
-            "Add setup or engineer support when the session needs a faster start.",
-            "Bring references, stems, or rough demos so the room time turns into usable progress.",
+            "Use the room for writing, quiet rehearsal, demo tracking, arrangement work, or focused practice.",
+            "Bring references, rough demos, tabs, charts, stems, or a clear target for the session.",
+            "Ask ahead if you need help setting up instruments, DAW routing, or a basic recording workflow.",
           ],
-          ctaLabel: "Ask About Studio Time",
+          bestFor: [
+            "Solo players and small creative sessions",
+            "Piano/guitar writing, MIDI parts, e-drums, bass, and demo work",
+            "People who want a private room with instruments close by",
+          ],
+          notIdealFor: [
+            "Full band volume or live acoustic drums",
+            "Commercial soundproof isolation claims",
+            "Large DJ/live mixer setups",
+          ],
+          ctaLabel: "Ask About Availability",
         },
       },
       {
         id: "music-teaching",
         title: "Music Teaching",
-        thumbnailKey: "portfolio",
+        thumbnailKey: "studioWriting",
         imageLabel: "Focused Lessons",
         imageAriaLabel: "Music teaching session marker",
         summary:
-          "One-on-one coaching for players and writers who want structure without losing the spark.",
+          "Piano and guitar lessons with theory, performance, and practice structure built around your goals.",
         bullets: [
-          "Private one-on-one coaching",
+          "Piano and guitar teaching",
+          "Theory and performance coaching",
           "Beginner through advanced pacing",
-          "Technique, theory, and songwriting",
-          "Practice plans with weekly goals",
+          "Practice plans with useful next steps",
         ],
         detail: {
           kicker: "Service Detail",
           summary:
-            "Personalized coaching blocks designed around your goals, pace, and sound.",
+            "One-on-one music coaching from a teacher with 6 years of performance and theory teaching experience.",
           bullets: [
-            "Bring a song, a technique problem, or a blank slate and build the lesson from there.",
-            "Work through playing, theory, writing, performance, or recording confidence.",
-            "Keep each session anchored to a short list of useful next actions.",
-            "Leave with practice notes that make the week between lessons easier to use.",
+            "Build piano or guitar technique with clear musical purpose instead of isolated drills only.",
+            "Use theory to understand songs, chords, rhythm, phrasing, and performance choices.",
+            "Bring exam work, personal songs, technique blocks, or a blank slate and shape the lesson from there.",
+          ],
+          bestFor: [
+            "Piano or guitar students who want structure",
+            "Players who need theory to become usable",
+            "Performance confidence, practice planning, and musical problem solving",
+          ],
+          notIdealFor: [
+            "Students looking for a one-size-fits-all syllabus",
+            "Production-only sessions with no playing or theory goal",
           ],
           ctaLabel: "Ask About Lessons",
         },
       },
       {
         id: "other-services",
-        title: "Production Support",
-        thumbnailKey: "projects",
+        title: "Project Support",
+        thumbnailKey: "studioEquipment",
         imageLabel: "Project Help",
-        imageAriaLabel: "Production support marker",
+        imageAriaLabel: "Project support marker",
         summary:
-          "Scoped help for demos, vocals, arrangements, stems, and the messy middle of finishing work.",
+          "Scoped help for demos, arrangements, session organization, art/game ideas, and unfinished creative work.",
         bullets: [
-          "Vocal tracking and comp prep",
-          "Demo polish and arrangement feedback",
-          "Mix-ready stem export workflow",
-          "Custom support by project scope",
+          "Demo and arrangement feedback",
+          "Session cleanup and file organization",
+          "Art, game, and site-adjacent support",
+          "Scope set by the project",
         ],
         detail: {
           kicker: "Service Detail",
           summary:
-            "Flexible support services for focused releases and cleaner delivery.",
+            "Flexible support for the messy middle of a creative project, without overselling production mastery.",
           bullets: [
-            "Tighten a demo with arrangement, tone, and structure feedback.",
-            "Prepare stems, comp vocals, or organize files before mixing.",
-            "Set a practical scope for the part of the project that needs help now.",
-            "Turn scattered session material into something easier to finish or hand off.",
+            "Tighten a demo with arrangement, tone, structure, and next-step feedback.",
+            "Clean up sessions, notes, references, stems, or project materials before the next handoff.",
+            "Use the wider Foxgote skillset for art/game/site thinking when the project crosses media.",
+          ],
+          bestFor: [
+            "Rough ideas that need structure",
+            "Demo review and arrangement direction",
+            "Creative projects that touch music, art, games, or web work",
+          ],
+          notIdealFor: [
+            "Full-service label, management, or final commercial mix promises",
+            "Projects with no clear scope or decision maker",
           ],
           ctaLabel: "Scope A Project",
         },
@@ -171,18 +208,21 @@ export const contentStorage = {
             title: "City Render Study",
             year: "2026",
             imageKey: "portfolio",
+            statusLabel: "WIP",
             alt: "Cinematic city render placeholder for a future artwork entry",
           },
           {
             title: "Room Light Study",
             year: "2026",
             imageKey: "services",
+            statusLabel: "WIP",
             alt: "Studio room placeholder for a future artwork entry",
           },
           {
             title: "Project Frame",
             year: "2026",
             imageKey: "projects",
+            statusLabel: "SOON",
             alt: "Architectural frame placeholder for a future artwork entry",
           },
         ],
@@ -198,14 +238,16 @@ export const contentStorage = {
           {
             title: "Session Reel",
             imageKey: "portfolio",
-            embedUrl: "https://www.youtube.com/embed/WEu_QQdiHZI",
-            linkUrl: "https://www.youtube.com/watch?v=WEu_QQdiHZI",
+            statusLabel: "SAMPLE PENDING",
+            embedUrl: "",
+            linkUrl: "",
           },
           {
             title: "Performance Clip",
             imageKey: "projects",
-            embedUrl: "https://www.youtube.com/embed/WEu_QQdiHZI",
-            linkUrl: "https://www.youtube.com/watch?v=WEu_QQdiHZI",
+            statusLabel: "SAMPLE PENDING",
+            embedUrl: "",
+            linkUrl: "",
           },
         ],
       },
@@ -221,28 +263,31 @@ export const contentStorage = {
             title: "Midnight Demo",
             artist: "Foxgote",
             meta: "Recording sample",
-            duration: "00:02",
-            durationSeconds: 2,
+            duration: "TBD",
+            durationSeconds: 1,
             imageKey: "services",
-            src: "/audio/foxgote-test-sample.mp3",
+            statusLabel: "SAMPLE PENDING",
+            src: "",
           },
           {
             title: "Lesson Motif",
             artist: "Foxgote",
             meta: "Teaching example",
-            duration: "00:02",
-            durationSeconds: 2,
-            imageKey: "portfolio",
-            src: "/audio/foxgote-test-sample.mp3",
+            duration: "TBD",
+            durationSeconds: 1,
+            imageKey: "studioWriting",
+            statusLabel: "SAMPLE PENDING",
+            src: "",
           },
           {
             title: "Stem Rough",
             artist: "Foxgote",
             meta: "Production sample",
-            duration: "00:02",
-            durationSeconds: 2,
-            imageKey: "projects",
-            src: "/audio/foxgote-test-sample.mp3",
+            duration: "TBD",
+            durationSeconds: 1,
+            imageKey: "studioEquipment",
+            statusLabel: "SAMPLE PENDING",
+            src: "",
           },
         ],
       },
@@ -252,7 +297,7 @@ export const contentStorage = {
         title: "Services",
         label: "Bookable paths",
         body:
-          "Studio rental, teaching, and production support are separated into quick choices so visitors can find the right kind of session.",
+          "Studio time, teaching, and project support are separated into quick choices so visitors can find the right kind of session.",
         to: "/services",
         action: "View Services",
       },
@@ -279,25 +324,31 @@ export const contentStorage = {
     heading: "Projects",
     lead: "Current builds and creative systems.",
     intro:
-      "These are living project lanes rather than a static archive: each one points toward work that can become releases, lessons, or better studio sessions.",
+      "These are living project lanes rather than a finished archive: each one points toward work that can become releases, lessons, tools, or better studio sessions.",
     items: [
       {
-        title: "Session Room Workflow",
+        title: "Private Room Workflow",
         status: "Building",
         body:
-          "A repeatable process for booking notes, setup choices, reference tracks, and clean handoff after a session.",
+          "A repeatable process for booking notes, setup choices, reference tracks, and clean handoff after a private room session.",
       },
       {
         title: "Lesson Paths",
         status: "Active",
         body:
-          "Modular practice arcs for technique, songwriting, theory, and performance so each student can move with purpose.",
+          "Modular practice arcs for piano, guitar, theory, and performance so each student can move with purpose.",
       },
       {
-        title: "Demo-To-Release Support",
+        title: "Demo And Project Support",
         status: "Scoping",
         body:
-          "A practical lane for turning rough recordings into organized stems, stronger arrangements, and mix-ready sessions.",
+          "A practical lane for turning rough recordings, project notes, and scattered references into cleaner next steps.",
+      },
+      {
+        title: "Art And Game Work",
+        status: "WIP",
+        body:
+          "A holding lane for visual pieces, game experiments, and playable or watchable samples as they become ready to show.",
       },
       {
         title: "Foxgote.com",

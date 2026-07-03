@@ -298,6 +298,12 @@ function formatAudioTime(seconds) {
               :key="`${artwork.title}-${artworkIndex}`"
               class="artwork-frame"
             >
+              <span
+                v-if="artwork.statusLabel"
+                class="portfolio-status-badge"
+              >
+                {{ artwork.statusLabel }}
+              </span>
               <img
                 :src="imageForKey(artwork.imageKey)"
                 :alt="artwork.alt"
@@ -332,14 +338,34 @@ function formatAudioTime(seconds) {
                 :aria-label="`Play ${video.title}`"
                 @click.stop="activateVideoEmbed(panel, video, videoIndex)"
               >
-                <span class="video-play-mark" aria-hidden="true"></span>
+                <span
+                  v-if="video.statusLabel"
+                  class="portfolio-status-badge"
+                >
+                  {{ video.statusLabel }}
+                </span>
+                <span
+                  v-if="!video.statusLabel"
+                  class="video-play-mark"
+                  aria-hidden="true"
+                ></span>
               </button>
               <span
                 v-else
                 class="video-embed-placeholder"
                 :style="{ backgroundImage: `url(${imageForKey(video.imageKey)})` }"
               >
-                <span class="video-play-mark" aria-hidden="true"></span>
+                <span
+                  v-if="video.statusLabel"
+                  class="portfolio-status-badge"
+                >
+                  {{ video.statusLabel }}
+                </span>
+                <span
+                  v-if="!video.statusLabel"
+                  class="video-play-mark"
+                  aria-hidden="true"
+                ></span>
               </span>
               <a
                 class="portfolio-video-title-link"
@@ -391,6 +417,12 @@ function formatAudioTime(seconds) {
                       :alt="`${track.title} thumbnail`"
                     />
                     <span>
+                      <small
+                        v-if="track.statusLabel"
+                        class="audio-track-status"
+                      >
+                        {{ track.statusLabel }}
+                      </small>
                       <strong>{{ track.title }}</strong>
                       <em>{{ track.artist }}</em>
                     </span>
@@ -606,10 +638,31 @@ function formatAudioTime(seconds) {
 }
 
 .artwork-frame {
+  position: relative;
   flex: 0 0 clamp(18rem, 31vw, 24rem);
   margin: 0;
   display: grid;
   gap: 0;
+}
+
+.portfolio-status-badge {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.35rem;
+  padding: 0.28rem 0.48rem;
+  border: 1px solid rgba(255, 220, 180, 0.28);
+  background: rgba(6, 7, 9, 0.74);
+  color: rgba(255, 229, 198, 0.92);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  pointer-events: none;
 }
 
 .artwork-frame img,
@@ -1003,6 +1056,19 @@ function formatAudioTime(seconds) {
 
 .audio-track-summary small {
   color: rgba(212, 161, 94, 0.78);
+}
+
+.audio-track-status {
+  justify-self: start;
+  width: max-content;
+  border: 1px solid rgba(255, 220, 180, 0.22);
+  padding: 0.18rem 0.36rem;
+  color: rgba(255, 229, 198, 0.82);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .portfolio-track-duration-line {
