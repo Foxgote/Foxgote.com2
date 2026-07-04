@@ -368,7 +368,7 @@ onBeforeUnmount(() => {
   height: 100%;
   display: block;
   object-fit: cover;
-  filter: saturate(0.92) contrast(1.04) brightness(0.74);
+  filter: saturate(1.08) contrast(1.01) brightness(1.08);
 }
 
 .service-card-action {

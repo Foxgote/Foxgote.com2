@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue"
 import { getServiceById } from "@/content/siteContent"
+import { imageAltForKey, imageForKey } from "@/content/contentMedia"
 
 const props = defineProps({
   serviceId: {
@@ -11,6 +12,15 @@ const props = defineProps({
 
 const service = computed(() => getServiceById(props.serviceId))
 const detail = computed(() => service.value?.detail || {})
+const galleryItems = computed(() => {
+  return (detail.value?.gallery || [])
+    .map((item) => ({
+      ...item,
+      alt: item.alt || imageAltForKey(item.imageKey),
+      src: imageForKey(item.imageKey),
+    }))
+    .filter((item) => item.src)
+})
 const contactTo = computed(() => ({
   name: "Contact",
   query: { service: props.serviceId },
@@ -33,6 +43,27 @@ const contactTo = computed(() => ({
         {{ detail.summary }}
       </p>
     </header>
+
+    <div
+      v-if="galleryItems.length"
+      class="service-detail-gallery"
+      :aria-label="`${service.title} preview images`"
+    >
+      <article
+        v-for="item in galleryItems"
+        :key="`${service.id}-${item.label}`"
+        class="service-detail-gallery-item"
+      >
+        <img
+          :src="item.src"
+          :alt="item.alt"
+        />
+        <div class="service-detail-gallery-copy">
+          <h3>{{ item.label }}</h3>
+          <p>{{ item.caption }}</p>
+        </div>
+      </article>
+    </div>
 
     <ul class="service-detail-list">
       <li
@@ -101,7 +132,7 @@ const contactTo = computed(() => ({
   padding: clamp(1.45rem, 2.6vw, 2.2rem) clamp(1.05rem, 2.2vw, 1.8rem)
     clamp(1.05rem, 2.2vw, 1.8rem);
   display: grid;
-  grid-template-rows: auto auto auto auto;
+  grid-template-rows: auto auto auto auto auto;
   gap: 1rem;
   overflow: auto;
 }
@@ -142,6 +173,62 @@ h3 {
 .service-detail-summary {
   margin: 0.2rem 0 0;
   color: rgba(255, 220, 180, 0.82);
+}
+
+.service-detail-gallery {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.service-detail-gallery-item {
+  position: relative;
+  min-height: 8.5rem;
+  display: grid;
+  align-content: end;
+  overflow: hidden;
+  border: 1px solid rgba(255, 220, 180, 0.14);
+  border-radius: 8px;
+  background: rgba(8, 8, 10, 0.48);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.service-detail-gallery-item:first-child {
+  min-height: 10rem;
+}
+
+.service-detail-gallery-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.08) contrast(1.02) brightness(1.03);
+  transform: scale(1.01);
+}
+
+.service-detail-gallery-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(6, 7, 9, 0.04) 0%, rgba(6, 7, 9, 0.74) 100%),
+    linear-gradient(90deg, rgba(20, 90, 58, 0.12), rgba(212, 161, 94, 0.06));
+}
+
+.service-detail-gallery-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.32rem;
+  padding: 0.75rem;
+}
+
+.service-detail-gallery-copy p {
+  margin: 0;
+  color: rgba(255, 224, 190, 0.78);
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .service-detail-list,
@@ -240,6 +327,15 @@ h3 {
 }
 
 @media (max-width: 640px) {
+  .service-detail-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .service-detail-gallery-item,
+  .service-detail-gallery-item:first-child {
+    min-height: 8.25rem;
+  }
+
   .service-detail-fit-grid {
     grid-template-columns: 1fr;
   }

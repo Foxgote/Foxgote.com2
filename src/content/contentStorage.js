@@ -100,6 +100,23 @@ export const contentStorage = {
           kicker: "Service Detail",
           summary:
             "Book a practical private music room without pretending it is a commercial studio floor.",
+          gallery: [
+            {
+              imageKey: "services",
+              label: "Room Setup",
+              caption: "Desk, drums, guitars, bass, and practice space in one room.",
+            },
+            {
+              imageKey: "studioEquipment",
+              label: "Instrument Corner",
+              caption: "Pedals, amps, e-drums, and nearby instruments for quick ideas.",
+            },
+            {
+              imageKey: "studioWide",
+              label: "Room Context",
+              caption: "A wider look at the actual private room and working layout.",
+            },
+          ],
           bullets: [
             "Use the room for writing, quiet rehearsal, demo tracking, arrangement work, or focused practice.",
             "Bring references, rough demos, tabs, charts, stems, or a clear target for the session.",
@@ -136,6 +153,23 @@ export const contentStorage = {
           kicker: "Service Detail",
           summary:
             "One-on-one music coaching from a teacher with 6 years of performance and theory teaching experience.",
+          gallery: [
+            {
+              imageKey: "studioWriting",
+              label: "Theory Desk",
+              caption: "Books, notes, and instrument context for focused lesson work.",
+            },
+            {
+              imageKey: "services",
+              label: "Performance Room",
+              caption: "Keys, guitar, drums, and listening setup for practical coaching.",
+            },
+            {
+              imageKey: "studioWide",
+              label: "Practice Layout",
+              caption: "A room view for pacing lesson, practice, and performance work.",
+            },
+          ],
           bullets: [
             "Build piano or guitar technique with clear musical purpose instead of isolated drills only.",
             "Use theory to understand songs, chords, rhythm, phrasing, and performance choices.",
@@ -155,37 +189,55 @@ export const contentStorage = {
       },
       {
         id: "other-services",
-        title: "Project Support",
+        title: "Misc Support",
         thumbnailKey: "studioEquipment",
-        imageLabel: "Project Help",
-        imageAriaLabel: "Project support marker",
+        imageLabel: "Misc Help",
+        imageAriaLabel: "Misc support marker",
         summary:
-          "Scoped help for demos, arrangements, session organization, art/game ideas, and unfinished creative work.",
+          "Flexible help for odd requests: homework guidance, creative problems, study support, tech questions, and practical tasks.",
         bullets: [
-          "Demo and arrangement feedback",
-          "Session cleanup and file organization",
-          "Art, game, and site-adjacent support",
-          "Scope set by the project",
+          "Homework and study guidance",
+          "Creative, music, art, or game help",
+          "Tech, math, physics, and random questions",
+          "Scope set by the request",
         ],
         detail: {
           kicker: "Service Detail",
           summary:
-            "Flexible support for the messy middle of a creative project, without overselling production mastery.",
+            "A catch-all lane for useful help when the request does not fit neatly into lessons or studio time.",
+          gallery: [
+            {
+              imageKey: "studioWriting",
+              label: "Problem Desk",
+              caption: "A place to unpack assignments, notes, questions, or messy briefs.",
+            },
+            {
+              imageKey: "projects",
+              label: "Reference Work",
+              caption: "Useful for creative, technical, art, game, or site-adjacent questions.",
+            },
+            {
+              imageKey: "portfolio",
+              label: "Creative Scope",
+              caption: "A temporary visual slot for future misc-help examples and screenshots.",
+            },
+          ],
           bullets: [
-            "Tighten a demo with arrangement, tone, structure, and next-step feedback.",
-            "Clean up sessions, notes, references, stems, or project materials before the next handoff.",
-            "Use the wider Foxgote skillset for art/game/site thinking when the project crosses media.",
+            "Bring the assignment, question, bug, reference, or messy idea and scope what kind of help is actually useful.",
+            "Use it for study guidance, theory/math/physics explanations, creative feedback, light tech help, or general problem solving.",
+            "The goal is support and clarity, not pretending every request is a polished production service.",
           ],
           bestFor: [
-            "Rough ideas that need structure",
-            "Demo review and arrangement direction",
-            "Creative projects that touch music, art, games, or web work",
+            "Homework guidance and study support",
+            "Odd creative or technical questions",
+            "Small tasks that need thinking, structure, or a second pair of eyes",
           ],
           notIdealFor: [
-            "Full-service label, management, or final commercial mix promises",
-            "Projects with no clear scope or decision maker",
+            "Submitting work dishonestly on someone else's behalf",
+            "Large jobs with no clear scope",
+            "Legal, medical, financial, or other high-stakes advice",
           ],
-          ctaLabel: "Scope A Project",
+          ctaLabel: "Ask About Misc Help",
         },
       },
     ],
@@ -297,7 +349,7 @@ export const contentStorage = {
         title: "Services",
         label: "Bookable paths",
         body:
-          "Studio time, teaching, and project support are separated into quick choices so visitors can find the right kind of session.",
+          "Studio time, teaching, and misc support are separated into quick choices so visitors can find the right kind of session.",
         to: "/services",
         action: "View Services",
       },
@@ -339,10 +391,10 @@ export const contentStorage = {
           "Modular practice arcs for piano, guitar, theory, and performance so each student can move with purpose.",
       },
       {
-        title: "Demo And Project Support",
+        title: "Misc And Project Support",
         status: "Scoping",
         body:
-          "A practical lane for turning rough recordings, project notes, and scattered references into cleaner next steps.",
+          "A practical lane for homework notes, rough recordings, project questions, and random practical problems that need cleaner next steps.",
       },
       {
         title: "Art And Game Work",
