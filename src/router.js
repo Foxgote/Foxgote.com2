@@ -26,7 +26,8 @@ function getRouteSectionPath(path) {
 }
 
 const routes = [
-  { path: "/", name: "Home", component: () => import("./components/1Home.vue") },
+  { path: "/", name: "Home", component: () => import("./components/LaunchHome.vue") },
+  { path: "/about", name: "About", component: () => import("./components/1Home.vue") },
   {
     path: "/services",
     name: "Services",

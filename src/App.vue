@@ -149,7 +149,7 @@ watch(
 )
 
 function routeViewKey(path) {
-  return normalizeRoutePath(path)
+  return path === "/about" ? "/about" : normalizeRoutePath(path)
 }
 
 function cleanupRouteTransitionClasses(el) {
@@ -357,6 +357,7 @@ onBeforeUnmount(() => {
     ></a>
 
     <header
+      v-if="route.path !== '/'"
       ref="barliteRef"
       class="barlite"
     >
@@ -384,7 +385,8 @@ onBeforeUnmount(() => {
 
     <nav id="site-nav" class="nav nav-hero" @click.capture="onNavClick">
       <div class="nav-inner">
-        <RouterLink to="/" class="nav-link">About Me</RouterLink>
+        <RouterLink to="/" class="nav-link">Lessons</RouterLink>
+        <RouterLink to="/about" class="nav-link">About Me</RouterLink>
         <RouterLink to="/services" class="nav-link">Services</RouterLink>
         <RouterLink to="/portfolio" class="nav-link">Portfolio</RouterLink>
         <RouterLink to="/contact" class="nav-link">
@@ -505,7 +507,7 @@ onBeforeUnmount(() => {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: var(--hero-url);
+  background-image: radial-gradient(ellipse at 15% 20%, #654629 0, transparent 55%), radial-gradient(ellipse at 90% 80%, #594333 0, transparent 55%), linear-gradient(135deg, #201710, #171310 55%, #30251c);
   background-size: cover;
   background-position: center;
   filter: blur(var(--barlite-blur, 0px));
@@ -769,9 +771,10 @@ onBeforeUnmount(() => {
   }
 
   .nav-inner {
+    overflow-x: auto;
     --nav-inner-pad: clamp(0.35rem, 2vw, 0.65rem);
     --nav-gap: clamp(0.5rem, 3.6vw, 0.92rem);
-    justify-content: center;
+    justify-content: flex-start;
     font-size: clamp(0.74rem, 3.2vw, 0.94rem);
   }
 }

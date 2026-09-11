@@ -53,7 +53,7 @@ export const contentStorage = {
     heading: "About Me",
     lead: "Piano, guitar, theory, and creative work.",
     intro:
-      "I am a teacher-musician with 15 years in classical piano, 8 years on guitar, and 6 years teaching music performance and theory at a well-known music school. Foxgote is where lessons, private room sessions, and creative projects meet.",
+      "I am a teacher-musician with 15 years in classical piano, 8 years on guitar, and 5 years teaching at Aureus Academy. My studio brings lessons, private room sessions, and creative projects together.",
     actions: [
       { label: "Explore Services", to: "/services" },
       { label: "Start A Conversation", to: "/contact" },
@@ -152,7 +152,7 @@ export const contentStorage = {
         detail: {
           kicker: "Service Detail",
           summary:
-            "One-on-one music coaching from a teacher with 6 years of performance and theory teaching experience.",
+            "One-on-one music coaching from a former Aureus Academy teacher with 5 years of teaching experience there.",
           gallery: [
             {
               imageKey: "studioWriting",

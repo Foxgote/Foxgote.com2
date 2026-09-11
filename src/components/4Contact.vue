@@ -2,6 +2,7 @@
 import { computed, ref, watch } from "vue"
 import { useRoute } from "vue-router"
 import { contactContent, getServiceById } from "@/content/siteContent"
+import BandAnnouncement from "./BandAnnouncement.vue"
 
 const route = useRoute()
 
@@ -81,6 +82,7 @@ watch(
 
 <template>
   <section class="contact-page">
+    <BandAnnouncement />
     <nav
       class="contact-quickbar"
       aria-label="Quick contact links"
