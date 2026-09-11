@@ -18,6 +18,7 @@ function isInSection(path, sectionPath) {
 
 function getRouteSectionPath(path) {
   if (typeof path !== "string") return "/"
+  if (path === "/about") return "/about"
   if (isInSection(path, "/services")) return "/services"
   if (isInSection(path, "/portfolio")) return "/portfolio"
   if (isInSection(path, "/contact")) return "/contact"
@@ -149,6 +150,10 @@ export default createRouter({
   scrollBehavior(to, from, savedPosition) {
     const toSectionPath = getRouteSectionPath(to.path)
     const fromSectionPath = getRouteSectionPath(from.path)
+    if (to.path === "/" && to.hash === "#enquire") {
+      return { el: "#enquire", top: 88 }
+    }
+    if (to.path === "/" && from.path !== "/") return { top: 0, left: 0 }
 
     if (to.hash === SCROLL_EFFECT_ANCHOR_HASH) {
       requestAnimationFrame(() => {

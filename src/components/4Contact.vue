@@ -5,6 +5,14 @@ import { contactContent, getServiceById } from "@/content/siteContent"
 import BandAnnouncement from "./BandAnnouncement.vue"
 
 const route = useRoute()
+const contactChannels = contactContent.channels
+  .filter(channel => ['whatsapp', 'telegram'].includes(channel.id))
+  .map(channel => ({
+    ...channel,
+    href: channel.id === 'whatsapp'
+      ? `https://wa.me/65${channel.value.replace(/\D/g, '')}`
+      : `https://t.me/${channel.value.replace(/^@/, '')}`,
+  }))
 
 const senderEmail = ref("")
 const draftCc = ref("")
@@ -88,9 +96,10 @@ watch(
       aria-label="Quick contact links"
     >
       <div class="quick-contact-track">
-        <span
-          v-for="channel in contactContent.channels"
+        <a
+          v-for="channel in contactChannels"
           :key="channel.id"
+          :href="channel.href"
           class="quick-contact-link"
           :aria-label="`${channel.label} ${channel.value}`"
         >
@@ -137,7 +146,7 @@ watch(
           </span>
           <span class="quick-contact-label">{{ channel.label }}</span>
           <span class="quick-contact-value">{{ channel.value }}</span>
-        </span>
+        </a>
       </div>
     </nav>
 

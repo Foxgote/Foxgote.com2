@@ -267,10 +267,13 @@ onBeforeUnmount(() => {
   margin: 0 auto;
   padding: 2.25rem var(--page-inline-pad, 0);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.6rem;
 }
 
 .services-header {
+  min-width: 0;
+  overflow-x: clip;
   display: grid;
   gap: 0.4rem;
   justify-items: center;

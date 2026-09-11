@@ -500,6 +500,7 @@ onBeforeUnmount(() => {
 .hero-bg-stack {
   position: fixed;
   inset: 0;
+  overflow: hidden;
   pointer-events: none;
   z-index: -2;
 }
@@ -658,10 +659,7 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(14px);
   background: rgba(10, 11, 13, calc(0.35 + var(--nav-alpha, 0) * 0.35));
   border-top: 1px solid var(--route-nav-border, rgba(255, 200, 140, 0.10));
-  opacity: 0;
-  animation:
-    nav-fade-in var(--welcome-sign-fade-duration, 2000ms)
-    ease-out var(--welcome-sign-fade-delay, 1700ms) both;
+  opacity: 1;
 }
 
 @keyframes nav-fade-in {
@@ -771,12 +769,17 @@ onBeforeUnmount(() => {
   }
 
   .nav-inner {
-    overflow-x: auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
     --nav-inner-pad: clamp(0.35rem, 2vw, 0.65rem);
     --nav-gap: clamp(0.5rem, 3.6vw, 0.92rem);
-    justify-content: flex-start;
+    justify-content: center;
     font-size: clamp(0.74rem, 3.2vw, 0.94rem);
   }
+  .nav { height: auto; min-height: 64px; }
+  .nav-link { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .nav-link::after { bottom: 3px; left: 20%; right: 20%; }
 }
 
 @media (max-width: 340px) {
