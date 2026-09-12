@@ -2,6 +2,7 @@
 import { computed } from "vue"
 import { getServiceById } from "@/content/siteContent"
 import { imageAltForKey, imageForKey } from "@/content/contentMedia"
+import TrialBooking from "../TrialBooking.vue"
 
 const props = defineProps({
   serviceId: {
@@ -43,6 +44,8 @@ const contactTo = computed(() => ({
         {{ detail.summary }}
       </p>
     </header>
+
+    <TrialBooking v-if="service.id === 'music-teaching'" />
 
     <div
       v-if="galleryItems.length"

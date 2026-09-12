@@ -357,7 +357,6 @@ onBeforeUnmount(() => {
     ></a>
 
     <header
-      v-if="route.path !== '/'"
       ref="barliteRef"
       class="barlite"
     >
@@ -385,8 +384,7 @@ onBeforeUnmount(() => {
 
     <nav id="site-nav" class="nav nav-hero" @click.capture="onNavClick">
       <div class="nav-inner">
-        <RouterLink to="/" class="nav-link">Lessons</RouterLink>
-        <RouterLink to="/about" class="nav-link">About Me</RouterLink>
+        <RouterLink to="/" class="nav-link">About Me</RouterLink>
         <RouterLink to="/services" class="nav-link">Services</RouterLink>
         <RouterLink to="/portfolio" class="nav-link">Portfolio</RouterLink>
         <RouterLink to="/contact" class="nav-link">
@@ -483,6 +481,7 @@ onBeforeUnmount(() => {
 }
 
 .barlite{
+  z-index: 0;
   height: calc(100vh - var(--nav-h));
   min-height: min(620px, calc(100vh - var(--nav-h)));
   position: relative;

@@ -27,8 +27,8 @@ function getRouteSectionPath(path) {
 }
 
 const routes = [
-  { path: "/", name: "Home", component: () => import("./components/LaunchHome.vue") },
-  { path: "/about", name: "About", component: () => import("./components/1Home.vue") },
+  { path: "/", name: "Home", component: () => import("./components/1Home.vue") },
+  { path: "/about", redirect: "/" },
   {
     path: "/services",
     name: "Services",
@@ -150,9 +150,6 @@ export default createRouter({
   scrollBehavior(to, from, savedPosition) {
     const toSectionPath = getRouteSectionPath(to.path)
     const fromSectionPath = getRouteSectionPath(from.path)
-    if (to.path === "/" && to.hash === "#enquire") {
-      return { el: "#enquire", top: 88 }
-    }
     if (to.path === "/" && from.path !== "/") return { top: 0, left: 0 }
 
     if (to.hash === SCROLL_EFFECT_ANCHOR_HASH) {

@@ -55,7 +55,7 @@ export const contentStorage = {
     intro:
       "I am a teacher-musician with 15 years in classical piano, 8 years on guitar, and 5 years teaching at Aureus Academy. My studio brings lessons, private room sessions, and creative projects together.",
     actions: [
-      { label: "Explore Services", to: "/services" },
+      { label: "Book A Free Trial", to: "/services/music-teaching" },
       { label: "Start A Conversation", to: "/contact" },
     ],
     highlights: [
