@@ -150,7 +150,6 @@ export default createRouter({
   scrollBehavior(to, from, savedPosition) {
     const toSectionPath = getRouteSectionPath(to.path)
     const fromSectionPath = getRouteSectionPath(from.path)
-    if (to.path === "/" && from.path !== "/") return { top: 0, left: 0 }
 
     if (to.hash === SCROLL_EFFECT_ANCHOR_HASH) {
       requestAnimationFrame(() => {
