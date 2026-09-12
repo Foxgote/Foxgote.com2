@@ -31,7 +31,14 @@ const selectedServiceLabel = computed(() =>
   selectedService.value ? selectedService.value.title : "General Inquiry",
 )
 
-const isSending = computed(() => submitState.value === "sending")
+const emailDraftUrl = computed(() => {
+  const params = new URLSearchParams({
+    subject: draftSubject.value.trim() || contactContent.draft.subjectFallback,
+    body: `Reply to: ${senderEmail.value.trim()}\n\n${draftContent.value.trim()}`,
+  })
+  if (draftCc.value.trim()) params.set("cc", draftCc.value.trim())
+  return `mailto:${contactContent.email}?${params.toString().replace(/\+/g, '%20')}`
+})
 
 function defaultSubjectForService(service) {
   return service
@@ -40,41 +47,15 @@ function defaultSubjectForService(service) {
 }
 
 function resetSubmitStatus() {
-  if (submitState.value === "sending") return
   submitState.value = "idle"
   submitMessage.value = ""
 }
 
-async function submitContactForm() {
-  submitState.value = "sending"
-  submitMessage.value = ""
-
-  try {
-    const response = await fetch("/api/contact", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: senderEmail.value.trim(),
-        cc: draftCc.value.trim(),
-        subject: draftSubject.value.trim() || contactContent.draft.subjectFallback,
-        content: draftContent.value.trim(),
-        website: websiteTrap.value.trim(),
-      }),
-    })
-    const result = await response.json().catch(() => ({}))
-
-    if (!response.ok || !result.ok) {
-      throw new Error(result.error || "Email could not be sent.")
-    }
-
-    submitState.value = "success"
-    submitMessage.value = "Message sent."
-  } catch (error) {
-    submitState.value = "error"
-    submitMessage.value = error instanceof Error ? error.message : "Email could not be sent."
-  }
+function submitContactForm() {
+  if (websiteTrap.value) return
+  window.location.assign(emailDraftUrl.value)
+  submitState.value = "idle"
+  submitMessage.value = "Finish sending in your email app. If no app opens, use WhatsApp above."
 }
 
 watch(
@@ -161,6 +142,8 @@ watch(
         <span class="contact-service-label">{{ selectedServiceLabel }}</span>
       </header>
 
+      <p class="email-draft-note">This opens a draft in your email app for you to review and send. You can also enquire using WhatsApp above.</p>
+
       <form
         class="email-compose-form"
         @submit.prevent="submitContactForm"
@@ -236,9 +219,8 @@ watch(
             <button
               class="email-send-button"
               type="submit"
-              :disabled="isSending"
             >
-              {{ isSending ? "Sending" : "Send Email" }}
+              Open email draft
             </button>
           </div>
         </div>
