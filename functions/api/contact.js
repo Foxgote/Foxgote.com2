@@ -1,5 +1,5 @@
 const RESEND_EMAILS_ENDPOINT = "https://api.resend.com/emails"
-const FALLBACK_TO_EMAIL = "hello@foxgote.com"
+const FALLBACK_TO_EMAIL = "forestaiteall@gmail.com"
 const DEFAULT_SUBJECT = "Booking inquiry"
 const MAX_EMAIL_LENGTH = 254
 const MAX_SUBJECT_LENGTH = 160

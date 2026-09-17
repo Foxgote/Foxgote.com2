@@ -1,6 +1,6 @@
 // Edit this file when you want to change site copy, links, and portfolio entries.
 // Keep ids stable unless you also want to regenerate related Timescan assets.
-const CONTACT_EMAIL = "hello@foxgote.com"
+const CONTACT_EMAIL = "forestaiteall@gmail.com"
 
 export const contentStorage = {
   media: {
@@ -53,26 +53,26 @@ export const contentStorage = {
     heading: "About Me",
     lead: "Piano, guitar, theory, and creative work.",
     intro:
-      "I am a teacher-musician with 15 years in classical piano, 8 years on guitar, and 5 years teaching at Aureus Academy. My studio brings lessons, private room sessions, and creative projects together.",
+      "Hi, I’m Forest, a music teacher with a small home studio in Ubi. I spent five years teaching at Aureus Academy, and have played classical piano for 15 years and guitar for eight. Whether you’re picking up an instrument for the first time or finding your way back to music, I’d love to help you along.",
     actions: [
       { label: "Book A Free Trial", to: "/services/music-teaching" },
       { label: "Start A Conversation", to: "/contact" },
     ],
     highlights: [
       {
-        title: "Player And Teacher",
+        title: "Music I Enjoy",
         body:
-          "Classical piano is the main spine, guitar is the second language, and saxophone, flute, and drums add useful side perspectives.",
+          "My taste in music is pretty wide: rock, jazz, metal, classical, alternative, electronic, and plenty in between. I enjoy exploring different sounds, so I’m always happy to hear what you’re listening to.",
       },
       {
-        title: "Lessons With Structure",
+        title: "Learning At Your Pace",
         body:
-          "Qualified to teach piano and guitar, with performance, theory, and practice plans shaped around the student in front of me.",
+          "Bring a favourite song, an exam piece, or something you’ve been stuck on. We’ll work through it together and find a manageable next step for your practice.",
       },
       {
-        title: "Creative Systems",
+        title: "Outside Of Music",
         body:
-          "Programming, physics, math, art, games, and the occasional cooking detour stay in the background as tools for sharper creative work.",
+          "I’m also interested in programming, physics, maths, art and games, with the occasional cooking detour. I like having things to learn outside of music too.",
       },
     ],
   },
@@ -142,7 +142,7 @@ export const contentStorage = {
         imageLabel: "Focused Lessons",
         imageAriaLabel: "Music teaching session marker",
         summary:
-          "Piano and guitar lessons with theory, performance, and practice structure built around your goals.",
+          "One-to-one lessons at my home studio in Ubi, or at your place. Come try a free lesson and tell me what you’d like to play.",
         bullets: [
           "Piano and guitar teaching",
           "Theory and performance coaching",
@@ -152,7 +152,7 @@ export const contentStorage = {
         detail: {
           kicker: "Service Detail",
           summary:
-            "One-on-one music coaching from a former Aureus Academy teacher with 5 years of teaching experience there.",
+            "I spent five years teaching at Aureus Academy. Here, we can take the time to work on the music you enjoy, at a pace that suits you.",
           gallery: [
             {
               imageKey: "studioWriting",

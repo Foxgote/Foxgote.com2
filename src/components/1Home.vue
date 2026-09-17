@@ -54,6 +54,11 @@ const homeLeadTokens = computed(() => buildTimescanTokens("home.lead"))
       <p class="page-intro">
         {{ homeContent.intro }}
       </p>
+      <div class="lesson-note" aria-label="Lesson prices">
+        <p><strong>Free trial</strong><span aria-hidden="true"> · </span>S$35/hour at my studio<span aria-hidden="true"> · </span>S$60/hour at your place</p>
+        <p>Ubi, Singapore 410633. The same hourly rates at every skill level.</p>
+        <p>Free trials at my studio or your place — message me to arrange a time.</p>
+      </div>
       <div class="page-actions">
         <RouterLink
           v-for="action in homeContent.actions"
@@ -80,6 +85,19 @@ const homeLeadTokens = computed(() => buildTimescanTokens("home.lead"))
 </template>
 
 <style scoped>
+.lesson-note {
+  width: min(720px, 100%);
+  margin: 0.65rem auto 0.35rem;
+  padding: 0.9rem 0;
+  border-block: 1px solid rgba(255, 220, 180, 0.16);
+  color: rgba(255, 228, 196, 0.84);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+.lesson-note p { margin: 0; }
+.lesson-note strong { color: var(--accent); font-weight: 600; }
+.lesson-note p + p { margin-top: 0.25rem; font-size: 0.8rem; color: rgba(255, 220, 180, 0.65); }
 .home-timescan-heading {
   margin: 0;
   width: 100%;

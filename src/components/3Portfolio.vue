@@ -255,6 +255,7 @@ function formatAudioTime(seconds) {
 
 <template>
   <section class="content-page portfolio-page">
+    <div class="portfolio-unfinished" inert aria-hidden="true">
     <section class="portfolio-showcase-list">
       <article
         v-for="panel in portfolioContent.showcases"
@@ -490,11 +491,29 @@ function formatAudioTime(seconds) {
         </div>
       </article>
     </section>
+    </div>
+    <div class="portfolio-frost">
+      <div class="portfolio-wip" role="status">
+        <p class="wip-label">Portfolio · Work in progress</p>
+        <h1>A little more music to come.</h1>
+        <p>I’m putting together recordings and things I’ve been working on. I’ll share them here when they’re ready.</p>
+        <RouterLink to="/services/music-teaching" class="page-action-link">Book a free trial</RouterLink>
+      </div>
+    </div>
   </section>
 </template>
 
 <style scoped>
+.portfolio-unfinished { max-height: 620px; overflow: hidden; pointer-events: none; }
+.portfolio-frost { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 2rem 1.25rem; background: rgba(24, 19, 14, .82); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-block: 1px solid rgba(255, 220, 180, .16); }
+.portfolio-wip { max-width: 520px; text-align: center; font-family: var(--font-body); color: var(--text); }
+.portfolio-wip h1 { font-family: var(--font-display); font-size: clamp(1.65rem, 5vw, 2.5rem); font-weight: 600; }
+.portfolio-wip p { line-height: 1.8; }
+.portfolio-wip .wip-label { color: var(--accent); font-size: .85rem; }
+.portfolio-wip .page-action-link { display: inline-flex; margin-top: 1rem; min-height: 44px; align-items: center; }
 .portfolio-page {
+  position: relative;
+  min-height: 460px;
   --portfolio-panel-inline-pad: clamp(0.85rem, 3vw, 1.25rem);
   --portfolio-showcase-max-width: 1200px;
   width: calc(100% + (var(--app-inline-pad, 0rem) * 2));

@@ -15,23 +15,24 @@ function enquire() { window.location.assign(`https://wa.me/${phone.length === 8 
 <template>
   <section class="trial-booking" aria-labelledby="trial-heading">
     <div class="rates">
-      <div><span>STUDIO · UBI 410633</span><strong>S$35 <small>/ hour</small></strong></div>
-      <div><span>AT YOUR LOCATION</span><strong>S$60 <small>/ hour</small></strong></div>
-      <div><span>FIRST SESSION</span><strong>Free trial</strong></div>
+      <div><span>My studio in Ubi</span><strong>S$35 <small>/ hour</small></strong></div>
+      <div><span>At your place</span><strong>S$60 <small>/ hour</small></strong></div>
+      <div><span>Come try a lesson</span><strong>Free trial</strong></div>
     </div>
-    <p>Same hourly rates at every skill level. Piano, acoustic and electric guitar, bass, drums and saxophone. Classical, rock, pop and jazz.</p>
+    <p>The hourly rate stays the same as you progress. I teach piano, acoustic and electric guitar, bass, drums and saxophone, across classical, rock, pop and jazz.</p>
     <details><summary>Compare lesson rates</summary><p>My S$35 studio hour is approximately 46% less than Replugged’s published individual pop piano/guitar rate of S$260 for four 60-minute lessons (S$65/hour). <a href="https://www.replugged.com/faqs/" target="_blank" rel="noopener noreferrer">Published rates</a>, checked 11 September 2026. Programmes and terms differ; comparison applies to studio lessons.</p></details>
     <h3 id="trial-heading">Book a free trial</h3>
+    <p>Your free trial can be at my studio in Ubi or at your place. Contact me to arrange a time. It’s fine if you’re not sure where to start — we can figure that out together.</p>
     <form @submit.prevent="enquire">
       <div class="fields">
         <label>Your name<input v-model="name" required autocomplete="name" maxlength="100"></label>
         <label>Instrument<select v-model="instrument"><option>Piano</option><option>Acoustic guitar</option><option>Electric guitar</option><option>Bass</option><option>Drums</option><option>Saxophone</option><option>Music theory</option><option>Help me choose</option></select></label>
-        <label>Regular lesson location<select v-model="location"><option>Studio in Ubi — S$35/hour</option><option>My location — S$60/hour</option></select></label>
+        <label>Where would you like your regular lessons?<select v-model="location"><option>Studio in Ubi — S$35/hour</option><option>My location — S$60/hour</option></select></label>
         <label>Availability (optional)<input v-model="availability" maxlength="250" placeholder="Preferred days and times"></label>
       </div>
-      <label>Experience / goals (optional)<textarea v-model="goals" rows="3" maxlength="1200" placeholder="What would you like to work on?"></textarea></label>
+      <label>A little about you (optional)<textarea v-model="goals" rows="3" maxlength="1200" placeholder="A song you love, what you’ve played before, or something you’d like help with…"></textarea></label>
       <div class="booking-actions"><button type="submit" class="page-action-link">Continue to WhatsApp</button><a :href="emailUrl" class="page-action-link">Open email draft</a></div>
-      <p class="booking-note">Finish sending in WhatsApp or your email app. Your trial time, duration and location are confirmed together after your enquiry.</p>
+      <p class="booking-note">This opens a message for you to review and send. We’ll arrange your trial’s time, length and location together.</p>
     </form>
   </section>
 </template>
