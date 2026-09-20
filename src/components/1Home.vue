@@ -7,6 +7,7 @@ import {
 } from "@/content/siteContent"
 import { buildGlyphSequence } from "@/utils/glyphSequence"
 import TimescanSentence from "./TimescanSentence.vue"
+import { imageForKey } from "@/content/contentMedia"
 
 const HOME_VIEW_TRIGGER_DELAY_MS = 1100
 const HOME_VIEW_TRIGGER_THRESHOLD = 0.2
@@ -71,6 +72,17 @@ const homeLeadTokens = computed(() => buildTimescanTokens("home.lead"))
       </div>
     </header>
 
+    <section class="studio-glimpses" aria-label="A look inside my Ubi studio">
+      <figure>
+        <img :src="imageForKey('services')" alt="My Ubi studio with piano, guitars, saxophone and electronic drums" loading="lazy" decoding="async" width="4080" height="3072" />
+        <figcaption>A little room for making music.</figcaption>
+      </figure>
+      <figure>
+        <img :src="imageForKey('studioWriting')" alt="Guitar and music books beside the listening speakers at my studio desk" loading="lazy" decoding="async" width="4080" height="3072" />
+        <figcaption>Bring a song you love. We can start there.</figcaption>
+      </figure>
+    </section>
+
     <section class="content-card-grid">
       <article
         v-for="highlight in homeContent.highlights"
@@ -85,6 +97,33 @@ const homeLeadTokens = computed(() => buildTimescanTokens("home.lead"))
 </template>
 
 <style scoped>
+.studio-glimpses {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  width: min(900px, 100%);
+  margin: 1.5rem auto;
+}
+.studio-glimpses figure { margin: 0; min-width: 0; }
+.studio-glimpses img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 220, 180, 0.18);
+}
+.studio-glimpses figcaption {
+  padding: 0.65rem 0;
+  color: rgba(255, 220, 180, 0.78);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .studio-glimpses { grid-template-columns: 1fr; }
+}
 .lesson-note {
   width: min(720px, 100%);
   margin: 0.65rem auto 0.35rem;
