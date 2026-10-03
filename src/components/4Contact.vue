@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue"
 import { useRoute } from "vue-router"
 import { contactContent, getServiceById } from "@/content/siteContent"
 import BandAnnouncement from "./BandAnnouncement.vue"
+import { openLessonEnquiry, onLessonEnquiryClick } from "../utils/enquiryTracking.js"
 
 const route = useRoute()
 const contactChannels = contactContent.channels
@@ -53,7 +54,8 @@ function resetSubmitStatus() {
 
 function submitContactForm() {
   if (websiteTrap.value) return
-  window.location.assign(emailDraftUrl.value)
+  if (selectedService.value?.id === "music-teaching") openLessonEnquiry(emailDraftUrl.value)
+  else window.location.assign(emailDraftUrl.value)
   submitState.value = "idle"
   submitMessage.value = "Finish sending in your email app. If no app opens, use WhatsApp above."
 }
@@ -81,6 +83,7 @@ watch(
           v-for="channel in contactChannels"
           :key="channel.id"
           :href="channel.href"
+          @click="selectedService?.id === 'music-teaching' && onLessonEnquiryClick($event)"
           class="quick-contact-link"
           :aria-label="`${channel.label} ${channel.value}`"
         >

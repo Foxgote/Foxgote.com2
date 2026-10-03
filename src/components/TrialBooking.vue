@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from "vue"
 import { contactContent } from "../content/siteContent.js"
+import { openLessonEnquiry, onLessonEnquiryClick } from "../utils/enquiryTracking.js"
 const name = ref("")
 const instrument = ref("Piano")
 const location = ref("Studio in Ubi — S$35/hour")
@@ -9,7 +10,7 @@ const goals = ref("")
 const phone = contactContent.channels.find(channel => channel.id === "whatsapp").value.replace(/\D/g, "")
 const message = computed(() => ["Hi! I'd like to book a free trial lesson.", `Name: ${name.value.trim()}`, `Instrument: ${instrument.value}`, `Regular lesson location: ${location.value}`, `Availability: ${availability.value.trim() || "Let's discuss"}`, `Experience / goals: ${goals.value.trim() || "Let's discuss"}`, "Please confirm the trial duration, location and available times."].join("\n"))
 const emailUrl = computed(() => `mailto:${contactContent.email}?subject=Free%20trial%20enquiry&body=${encodeURIComponent(message.value)}`)
-function enquire() { window.location.assign(`https://wa.me/${phone.length === 8 ? `65${phone}` : phone}?text=${encodeURIComponent(message.value)}`) }
+function enquire() { openLessonEnquiry(`https://wa.me/${phone.length === 8 ? `65${phone}` : phone}?text=${encodeURIComponent(message.value)}`) }
 </script>
 
 <template>
@@ -31,7 +32,7 @@ function enquire() { window.location.assign(`https://wa.me/${phone.length === 8 
         <label>Availability (optional)<input v-model="availability" maxlength="250" placeholder="Preferred days and times"></label>
       </div>
       <label>A little about you (optional)<textarea v-model="goals" rows="3" maxlength="1200" placeholder="A song you love, what you’ve played before, or something you’d like help with…"></textarea></label>
-      <div class="booking-actions"><button type="submit" class="page-action-link">Continue to WhatsApp</button><a :href="emailUrl" class="page-action-link">Open email draft</a></div>
+      <div class="booking-actions"><button type="submit" class="page-action-link">Continue to WhatsApp</button><a :href="emailUrl" @click="onLessonEnquiryClick" class="page-action-link">Open email draft</a></div>
       <p class="booking-note">This opens a message for you to review and send. We’ll arrange your trial’s time, length and location together.</p>
     </form>
   </section>
