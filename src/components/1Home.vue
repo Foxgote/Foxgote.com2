@@ -56,7 +56,7 @@ const homeLeadTokens = computed(() => buildTimescanTokens("home.lead"))
         {{ homeContent.intro }}
       </p>
       <div class="lesson-note" aria-label="Lesson prices">
-        <p><strong>Free trial</strong><span aria-hidden="true"> · </span>S$35/hour at my studio<span aria-hidden="true"> · </span>S$60/hour at your place</p>
+        <p><strong>Free trial</strong><span aria-hidden="true"> · </span>S$35/hour at my studio<span aria-hidden="true"> · </span>S$65/hour at your place</p>
         <p>Ubi, Singapore 410633. The same hourly rates at every skill level.</p>
         <p>Free trials at my studio or your place — message me to arrange a time.</p>
       </div>

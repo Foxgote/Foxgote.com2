@@ -17,7 +17,7 @@ function enquire() { openLessonEnquiry(`https://wa.me/${phone.length === 8 ? `65
   <section class="trial-booking" aria-labelledby="trial-heading">
     <div class="rates">
       <div><span>My studio in Ubi</span><strong>S$35 <small>/ hour</small></strong></div>
-      <div><span>At your place</span><strong>S$60 <small>/ hour</small></strong></div>
+      <div><span>At your place</span><strong>S$65 <small>/ hour</small></strong></div>
       <div><span>Come try a lesson</span><strong>Free trial</strong></div>
     </div>
     <p>The hourly rate stays the same as you progress. I teach piano, acoustic and electric guitar, bass, drums and saxophone, across classical, rock, pop and jazz.</p>
@@ -28,7 +28,7 @@ function enquire() { openLessonEnquiry(`https://wa.me/${phone.length === 8 ? `65
       <div class="fields">
         <label>Your name<input v-model="name" required autocomplete="name" maxlength="100"></label>
         <label>Instrument<select v-model="instrument"><option>Piano</option><option>Acoustic guitar</option><option>Electric guitar</option><option>Bass</option><option>Drums</option><option>Saxophone</option><option>Music theory</option><option>Help me choose</option></select></label>
-        <label>Where would you like your regular lessons?<select v-model="location"><option>Studio in Ubi — S$35/hour</option><option>My location — S$60/hour</option></select></label>
+        <label>Where would you like your regular lessons?<select v-model="location"><option>Studio in Ubi — S$35/hour</option><option>My location — S$65/hour</option></select></label>
         <label>Availability (optional)<input v-model="availability" maxlength="250" placeholder="Preferred days and times"></label>
       </div>
       <label>A little about you (optional)<textarea v-model="goals" rows="3" maxlength="1200" placeholder="A song you love, what you’ve played before, or something you’d like help with…"></textarea></label>
